@@ -1,0 +1,103 @@
+<?php
+/**
+ * CYN Tourism — Invoice Model
+ */
+class Invoice
+{
+    public static function getAll(array $filters = [], int $page = 1, int $perPage = 20): array
+    {
+        $where  = [];
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $where[]  = "(invoice_no LIKE ? OR company_name LIKE ?)";
+            $s = '%' . $filters['search'] . '%';
+            $params[] = $s; $params[] = $s;
+        }
+        if (!empty($filters['status'])) {
+            $where[]  = "status = ?";
+            $params[] = $filters['status'];
+        }
+        if (!empty($filters['date_from'])) {
+            $where[]  = "invoice_date >= ?";
+            $params[] = $filters['date_from'];
+        }
+        if (!empty($filters['date_to'])) {
+            $where[]  = "invoice_date <= ?";
+            $params[] = $filters['date_to'];
+        }
+        if (!empty($filters['type'])) {
+            $where[]  = "type = ?";
+            $params[] = $filters['type'];
+        }
+
+        $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+        $offset = ($page - 1) * $perPage;
+
+        $total = (int)(Database::fetchOne(
+            "SELECT COUNT(*) as c FROM invoices $whereClause", $params
+        )['c'] ?? 0);
+
+        $rows = Database::fetchAll(
+            "SELECT * FROM invoices $whereClause ORDER BY created_at DESC LIMIT $perPage OFFSET $offset",
+            $params
+        );
+
+        return [
+            'data'  => $rows,
+            'total' => $total,
+            'page'  => $page,
+            'pages' => (int)ceil($total / $perPage),
+        ];
+    }
+
+    public static function getById(int $id): ?array
+    {
+        return Database::fetchOne("SELECT * FROM invoices WHERE id = ?", [$id]) ?: null;
+    }
+
+    public static function create(array $data): int
+    {
+        $no = 'INV-' . date('Ym') . '-' . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        $data['invoice_no']  = $no;
+        $data['created_at']  = date('Y-m-d H:i:s');
+        $data['created_by']  = $_SESSION['user_id'] ?? null;
+        return Database::getInstance()->insert('invoices', $data);
+    }
+
+    public static function update(int $id, array $data): void
+    {
+        $sets   = [];
+        $params = [];
+        foreach ($data as $k => $v) { $sets[] = "$k = ?"; $params[] = $v; }
+        $params[] = $id;
+        Database::execute("UPDATE invoices SET " . implode(', ', $sets) . " WHERE id = ?", $params);
+    }
+
+    public static function delete(int $id): void
+    {
+        Database::execute("DELETE FROM invoices WHERE id = ?", [$id]);
+    }
+
+    public static function markPaid(int $id, string $method = 'cash'): void
+    {
+        Database::execute(
+            "UPDATE invoices SET status = 'paid', payment_method = ?, payment_date = CURDATE(), paid_amount = total_amount WHERE id = ?",
+            [$method, $id]
+        );
+    }
+
+    public static function getSummary(): array
+    {
+        return Database::fetchOne(
+            "SELECT
+                COUNT(*) as total,
+                SUM(CASE WHEN status='pending' OR status='sent' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status='paid' THEN 1 ELSE 0 END) as paid,
+                SUM(CASE WHEN status='overdue' THEN 1 ELSE 0 END) as overdue,
+                SUM(total_amount) as total_amount,
+                SUM(paid_amount) as paid_amount
+             FROM invoices"
+        ) ?: [];
+    }
+}

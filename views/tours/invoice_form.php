@@ -1,0 +1,115 @@
+<?php
+/**
+ * New Tour Invoice Form — Tailwind CSS + Alpine.js
+ */
+?>
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-file-invoice text-purple-500 mr-2"></i>New Tour Invoice</h1>
+        <p class="text-sm text-gray-500 mt-1">Create a new tour invoice</p>
+    </div>
+    <a href="<?= url('tour-invoice') ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 transition">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+     x-data="{
+        tours: [{ name: '', date: '', duration: '', price: 0 }],
+        currency: 'USD',
+        get total() { return this.tours.reduce((s, t) => s + parseFloat(t.price || 0), 0); },
+        addTour() { this.tours.push({ name: '', date: '', duration: '', price: 0 }); },
+        removeTour(i) { if (this.tours.length > 1) this.tours.splice(i, 1); }
+     }">
+    <form method="POST" action="<?= url('tour-invoice/store') ?>" @submit.prevent="
+        const fd = new FormData($el);
+        fd.set('tours', JSON.stringify(tours));
+        fd.set('total_price', total);
+        fetch($el.action, { method: 'POST', body: fd }).then(r => { if(r.redirected) window.location = r.url; else r.text().then(t => { document.open(); document.write(t); document.close(); }); });
+    " class="space-y-6">
+
+        <!-- Company Info -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-building text-purple-400 mr-1"></i> Company Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name *</label>
+                    <input type="text" name="company_name" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Company name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hotel Name</label>
+                    <input type="text" name="hotel_name" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Hotel name">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tour Items -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-map-marked-alt text-purple-400 mr-1"></i> Tour Items</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-700/50">
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Tour Name</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Date</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Duration</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500">Price</th>
+                            <th class="px-3 py-2 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(tour, idx) in tours" :key="idx">
+                            <tr class="border-b border-gray-100 dark:border-gray-700">
+                                <td class="px-3 py-2"><input type="text" x-model="tour.name" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" placeholder="Tour name"></td>
+                                <td class="px-3 py-2"><input type="date" x-model="tour.date" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"></td>
+                                <td class="px-3 py-2"><input type="text" x-model="tour.duration" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" placeholder="e.g. Full Day"></td>
+                                <td class="px-3 py-2"><input type="number" x-model="tour.price" step="0.01" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-right"></td>
+                                <td class="px-3 py-2"><button type="button" @click="removeTour(idx)" class="text-red-400 hover:text-red-600 transition" x-show="tours.length > 1"><i class="fas fa-trash-alt"></i></button></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" @click="addTour()" class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-purple-600 hover:text-purple-700">
+                <i class="fas fa-plus-circle"></i> Add Tour
+            </button>
+        </div>
+
+        <!-- Pricing -->
+        <div>
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-calculator text-purple-400 mr-1"></i> Pricing</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
+                    <select name="currency" x-model="currency" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="TRY">TRY (₺)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount</label>
+                    <div class="px-4 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <span class="text-2xl font-bold text-purple-700 dark:text-purple-300" x-text="total.toFixed(2)"></span>
+                        <span class="text-sm text-purple-500 ml-1" x-text="currency"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+            <textarea name="notes" rows="3" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Additional notes..."></textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <a href="<?= url('tour-invoice') ?>" class="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 transition">Cancel</a>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:-translate-y-0.5">
+                <i class="fas fa-save mr-1"></i> Create Invoice
+            </button>
+        </div>
+    </form>
+</div>

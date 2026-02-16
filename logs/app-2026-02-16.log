@@ -1,0 +1,18 @@
+[2026-02-16 22:25:05] [AUTH] Auth action: failed {"email":"admin@cyntourism.com","reason":"wrong_password","user_id":null,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}
+[2026-02-16 22:25:28] [AUTH] Auth action: failed {"email":"admin@cyntourism.com","reason":"wrong_password","user_id":null,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}
+[2026-02-16 22:26:15] [AUTH] Auth action: failed {"email":"admin@cyntourism.com","reason":"wrong_password","user_id":null,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}
+[2026-02-16 22:26:40] [AUTH] Auth action: failed {"email":"admin@cyntourism.com","reason":"wrong_password","user_id":null,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}
+[2026-02-16 22:27:40] [AUTH] Auth action: failed {"email":"admin@cyntourism.com","reason":"wrong_password","user_id":null,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}
+[2026-02-16 22:28:44] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:29:20] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:30:11] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:31:25] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:33:02] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:37:47] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:38:24] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:38:55] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:39:32] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:40:42] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:41:13] [SECURITY] Login attempt during lockout {"email":"admin@cyntourism.com","ip":"::1"}
+[2026-02-16 22:42:16] [AUTH] Auth action: failed {"email":"admin@cyntourism.com","reason":"wrong_password","user_id":null,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}
+[2026-02-16 22:42:38] [AUTH] Auth action: login {"user_id":1,"ip":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36"}

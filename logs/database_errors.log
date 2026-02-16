@@ -1,0 +1,436 @@
+[2026-02-12 07:06:12] Query failed: SQLSTATE[42000]: Syntax error or access violation: 1305 FUNCTION barqvkxs_cyn.strftime does not exist | SQL: SELECT strftime('%Y-%m', invoice_date) as month,
+                    SUM(total_amount) as revenue, COUNT(*) as count
+             FROM invoices
+             WHERE invoice_date BETWEEN ? AND ? AND status IN ('paid','partial')
+             GROUP BY month ORDER BY month | IP: 197.231.1.30 | URL: /reports
+[2026-02-12 07:06:22] Query failed: SQLSTATE[42000]: Syntax error or access violation: 1305 FUNCTION barqvkxs_cyn.strftime does not exist | SQL: SELECT strftime('%Y-%m', invoice_date) as month,
+                    SUM(total_amount) as revenue, COUNT(*) as count
+             FROM invoices
+             WHERE invoice_date BETWEEN ? AND ? AND status IN ('paid','partial')
+             GROUP BY month ORDER BY month | IP: 102.214.208.168 | URL: /reports
+[2026-02-12 07:20:56] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as c FROM partners  | IP: 102.214.208.168 | URL: /partners
+[2026-02-12 07:20:58] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as c FROM partners  | IP: 102.214.208.168 | URL: /partners
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:00] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:06] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, hotel_name, pickup_date, pickup_time,
+                    pickup_location, dropoff_location, transfer_type, total_pax, status
+             FROM vouchers WHERE pickup_date BETWEEN ? AND ? ORDER BY pickup_time ASC | IP: 102.214.208.168 | URL: /calendar
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:21:08] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=tr
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:22:57] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:04] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.services' doesn't exist | SQL: SELECT COUNT(*) as cnt FROM services WHERE 1=1 | IP: 102.214.208.168 | URL: /services
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:07] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:17] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:20] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices  | IP: 102.214.208.168 | URL: /invoices
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE pickup_date = ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist | SQL: SELECT COUNT(*) as val FROM hotel_vouchers WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.tours' doesn't exist | SQL: SELECT COUNT(*) as val FROM tours WHERE created_at >= ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partners' doesn't exist | SQL: SELECT COUNT(*) as val FROM partners WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vehicles' doesn't exist | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.drivers' doesn't exist | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT id, voucher_no, company_name, pickup_date, pickup_time,
+                        pickup_location, dropoff_location, status
+                 FROM vouchers
+                 WHERE pickup_date >= ?
+                 ORDER BY pickup_date ASC, pickup_time ASC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.vouchers' doesn't exist | SQL: SELECT COUNT(*) as c FROM vouchers WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.invoices' doesn't exist | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.notifications' doesn't exist | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:23:22] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.partner_messages' doesn't exist | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: 102.214.208.168 | URL: /dashboard?lang=en
+[2026-02-12 07:24:25] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /transfer-invoice
+[2026-02-12 07:24:31] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /transfer-invoice
+[2026-02-12 07:25:05] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /hotel-invoice
+[2026-02-12 07:25:06] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /hotel-invoice
+[2026-02-12 07:25:34] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /transfer-invoice
+[2026-02-12 07:26:11] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /hotel-invoice
+[2026-02-12 07:26:36] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /hotel-invoice
+[2026-02-12 07:26:51] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /tour-invoice
+[2026-02-12 07:28:03] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotels' doesn't exist | SQL: SELECT h.*,
+                    (SELECT COUNT(*) FROM hotel_rooms WHERE hotel_id = h.id) as room_count,
+                    (SELECT MIN(price_single) FROM hotel_rooms WHERE hotel_id = h.id AND price_single > 0) as min_price,
+                    (SELECT MAX(price_single) FROM hotel_rooms WHERE hotel_id = h.id) as max_price
+             FROM hotels h WHERE 1=1 ORDER BY h.name ASC | IP: 102.214.208.168 | URL: /hotels/profiles
+[2026-02-12 07:28:58] Query failed: SQLSTATE[42000]: Syntax error or access violation: 1305 FUNCTION barqvkxs_cyn.strftime does not exist | SQL: SELECT strftime('%Y-%m', invoice_date) as month,
+                    SUM(total_amount) as revenue, COUNT(*) as count
+             FROM invoices
+             WHERE invoice_date BETWEEN ? AND ? AND status IN ('paid','partial')
+             GROUP BY month ORDER BY month | IP: 102.214.208.168 | URL: /reports
+[2026-02-12 07:43:27] Query failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'WHERE' | SQL: SELECT COUNT(*) as c FROM invoices WHERE type = ? | IP: 102.214.208.168 | URL: /hotel-invoice
+[2026-02-12 08:01:02] Query failed: SQLSTATE[42000]: Syntax error or access violation: 1305 FUNCTION barqvkxs_cyn.strftime does not exist | SQL: SELECT strftime('%Y-%m', invoice_date) as month,
+                    SUM(total_amount) as revenue, COUNT(*) as count
+             FROM invoices
+             WHERE invoice_date BETWEEN ? AND ? AND status IN ('paid','partial')
+             GROUP BY month ORDER BY month | IP: 102.214.208.168 | URL: /reports
+[2026-02-12 08:03:10] Query failed: SQLSTATE[42000]: Syntax error or access violation: 1305 FUNCTION barqvkxs_cyn.strftime does not exist | SQL: SELECT strftime('%Y-%m', invoice_date) as month,
+                    SUM(total_amount) as revenue, COUNT(*) as count
+             FROM invoices
+             WHERE invoice_date BETWEEN ? AND ? AND status IN ('paid','partial')
+             GROUP BY month ORDER BY month | IP: 102.214.208.168 | URL: /reports
+[2026-02-16 21:17:07] Database connection failed: SQLSTATE[HY000] [2002] No such file or directory | IP: CLI | URL: N/A
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as val FROM invoices WHERE created_at >= ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as val FROM invoices WHERE status IN ('pending','draft') | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: vehicles | SQL: SELECT COUNT(*) as val FROM vehicles WHERE status = 'available' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: drivers | SQL: SELECT COUNT(*) as val FROM drivers WHERE status = 'active' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT currency, COALESCE(SUM(total_amount), 0) as total, COUNT(*) as count
+                 FROM invoices
+                 WHERE created_at >= ? AND status = 'paid'
+                 GROUP BY currency
+                 ORDER BY total DESC | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COUNT(*) as c FROM invoices WHERE created_at BETWEEN ? AND ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT COALESCE(SUM(total_amount), 0) as t FROM invoices WHERE created_at BETWEEN ? AND ? AND status = 'paid' | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: invoices | SQL: SELECT status, COUNT(*) as count FROM invoices GROUP BY status | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:39] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-16 22:42:50] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotels/profiles
+[2026-02-16 22:42:50] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotels/profiles
+[2026-02-16 22:43:01] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotels/profiles/create
+[2026-02-16 22:43:01] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotels/profiles/create
+[2026-02-16 22:43:18] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-16 22:43:18] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher

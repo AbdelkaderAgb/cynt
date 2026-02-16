@@ -1,0 +1,94 @@
+# ============================================================================
+# UPLOADS DIRECTORY SECURITY - .htaccess
+# ============================================================================
+# This file protects the uploads directory from unauthorized access
+# Place this file as .htaccess in the uploads/ directory
+# ============================================================================
+
+# Disable PHP execution
+# Note: php_flag only works with mod_php, not PHP-FPM
+# Using both methods for compatibility
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+
+# Deny access to sensitive files
+<IfModule mod_authz_core.c>
+    # Apache 2.4+
+    <FilesMatch "\.(php|php\.|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|htaccess|htpasswd)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    # Apache 2.2
+    <FilesMatch "\.(php|php\.|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|htaccess|htpasswd)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# Deny access to hidden files
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "^\.">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# Allow only specific file types
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|pdf|doc|docx)$">
+        Require all granted
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|pdf|doc|docx)$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</IfModule>
+
+# Disable script execution
+Options -ExecCGI
+AddHandler cgi-script .php .pl .py .jsp .asp .sh .cgi
+
+# Disable directory browsing
+Options -Indexes
+
+# Prevent access to .htaccess itself
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Compress images
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE image/jpeg image/png image/gif
+</IfModule>
+
+# Cache static files
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>

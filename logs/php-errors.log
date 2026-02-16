@@ -1,0 +1,309 @@
+[12-Feb-2026 07:06:12 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Report.php(14): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Controllers/ReportController.php(18): Report::getMonthlyRevenue()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): ReportController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:06:22 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Report.php(14): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Controllers/ReportController.php(18): Report::getMonthlyRevenue()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): ReportController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:20:56 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Partner.php(29): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/PartnerController.php(19): Partner::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): PartnerController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:20:58 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Partner.php(29): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/PartnerController.php(19): Partner::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): PartnerController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:21:06 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Controllers/CalendarController.php(18): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Core/App.php(145): CalendarController->index()
+#3 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#4 /home/barqvkxs/public_html/index.php(223): App::run()
+#5 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:23:04 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Controllers/ServiceController.php(34): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Core/App.php(145): ServiceController->index()
+#3 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#4 /home/barqvkxs/public_html/index.php(223): App::run()
+#5 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:23:15 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'barqvkxs_cyn.hotel_vouchers' doesn't exist in /home/barqvkxs/public_html/src/Controllers/HotelController.php:30
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/HotelController.php(30): PDO->prepare()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->voucher()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/HotelController.php on line 30
+[12-Feb-2026 07:23:20 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/InvoiceController.php(19): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): InvoiceController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:24:25 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/TransferController.php(69): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): TransferController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:24:31 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/TransferController.php(69): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): TransferController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:25:05 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/HotelController.php(242): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:25:06 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/HotelController.php(242): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:25:34 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/TransferController.php(69): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): TransferController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:26:11 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/HotelController.php(242): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:26:36 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/HotelController.php(242): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:26:51 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/TourController.php(208): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): TourController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:28:03 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Controllers/HotelProfileController.php(33): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Core/App.php(145): HotelProfileController->index()
+#3 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#4 /home/barqvkxs/public_html/index.php(223): App::run()
+#5 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:28:58 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Report.php(14): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Controllers/ReportController.php(18): Report::getMonthlyRevenue()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): ReportController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 07:43:27 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(242): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Invoice.php(37): Database::fetchOne()
+#2 /home/barqvkxs/public_html/src/Controllers/HotelController.php(242): Invoice::getAll()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->invoice()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 08:01:02 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Report.php(14): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Controllers/ReportController.php(18): Report::getMonthlyRevenue()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): ReportController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 08:03:10 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /home/barqvkxs/public_html/config/database.php:204
+Stack trace:
+#0 /home/barqvkxs/public_html/config/database.php(229): Database->query()
+#1 /home/barqvkxs/public_html/src/Models/Report.php(14): Database::fetchAll()
+#2 /home/barqvkxs/public_html/src/Controllers/ReportController.php(18): Report::getMonthlyRevenue()
+#3 /home/barqvkxs/public_html/src/Core/App.php(145): ReportController->index()
+#4 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#5 /home/barqvkxs/public_html/index.php(223): App::run()
+#6 {main}
+  thrown in /home/barqvkxs/public_html/config/database.php on line 204
+[12-Feb-2026 16:57:17 Europe/Istanbul] PHP Fatal error:  Uncaught Error: Call to undefined function url() in /home/barqvkxs/public_html/set_partner_passwords.php:48
+Stack trace:
+#0 {main}
+  thrown in /home/barqvkxs/public_html/set_partner_passwords.php on line 48
+[12-Feb-2026 16:58:35 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'partner_id' in 'WHERE' in /home/barqvkxs/public_html/src/Controllers/PortalController.php:71
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(71): PDO->query()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->dashboard()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 71
+[12-Feb-2026 17:04:10 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 1364 Field 'id' doesn't have a default value in /home/barqvkxs/public_html/src/Controllers/PortalController.php:479
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(479): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->messageSend()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 479
+[12-Feb-2026 17:05:22 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'file_path' cannot be null in /home/barqvkxs/public_html/src/Controllers/PortalController.php:479
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(479): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->messageSend()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 479
+[12-Feb-2026 17:05:55 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'file_path' cannot be null in /home/barqvkxs/public_html/src/Controllers/PortalController.php:479
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(479): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->messageSend()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 479
+[12-Feb-2026 17:16:17 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 1364 Field 'id' doesn't have a default value in /home/barqvkxs/public_html/src/Controllers/PortalController.php:425
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(425): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->bookingRequestStore()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 425
+[12-Feb-2026 17:21:45 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'file_path' cannot be null in /home/barqvkxs/public_html/src/Controllers/PortalController.php:479
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(479): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->messageSend()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 479
+[12-Feb-2026 17:23:01 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'file_path' cannot be null in /home/barqvkxs/public_html/src/Controllers/PortalController.php:479
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(479): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->messageSend()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 479
+[12-Feb-2026 17:27:04 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'file_path' cannot be null in /home/barqvkxs/public_html/src/Controllers/PortalController.php:479
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PortalController.php(479): PDOStatement->execute()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PortalController->messageSend()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PortalController.php on line 479
+[12-Feb-2026 17:30:22 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '('now') WHERE id = ?' at line 1 in /home/barqvkxs/public_html/src/Controllers/PartnerController.php:209
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PartnerController.php(209): PDO->prepare()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PartnerController->bookingRequestAction()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PartnerController.php on line 209
+[12-Feb-2026 17:39:56 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'hotel_name' in 'INSERT INTO' in /home/barqvkxs/public_html/src/Controllers/TourController.php:79
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/TourController.php(79): PDO->prepare()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): TourController->voucherStore()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/TourController.php on line 79
+[12-Feb-2026 18:26:32 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '('now') WHERE id = ?' at line 1 in /home/barqvkxs/public_html/src/Controllers/PartnerController.php:209
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/PartnerController.php(209): PDO->prepare()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): PartnerController->bookingRequestAction()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/PartnerController.php on line 209
+[12-Feb-2026 18:30:15 Europe/Istanbul] PHP Warning:  Undefined variable $search in /home/barqvkxs/public_html/views/portal/receipts.php on line 12
+[12-Feb-2026 18:30:15 Europe/Istanbul] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/barqvkxs/public_html/views/portal/receipts.php on line 12
+[12-Feb-2026 18:30:15 Europe/Istanbul] PHP Warning:  Undefined variable $pages in /home/barqvkxs/public_html/views/portal/receipts.php on line 64
+[12-Feb-2026 18:34:02 Europe/Istanbul] PHP Warning:  Undefined variable $pages in /home/barqvkxs/public_html/views/portal/invoices.php on line 75
+[12-Feb-2026 18:35:30 Europe/Istanbul] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'address' in 'INSERT INTO' in /home/barqvkxs/public_html/src/Controllers/HotelController.php:79
+Stack trace:
+#0 /home/barqvkxs/public_html/src/Controllers/HotelController.php(79): PDO->prepare()
+#1 /home/barqvkxs/public_html/src/Core/App.php(145): HotelController->voucherStore()
+#2 /home/barqvkxs/public_html/src/Core/App.php(87): App::dispatch()
+#3 /home/barqvkxs/public_html/index.php(223): App::run()
+#4 {main}
+  thrown in /home/barqvkxs/public_html/src/Controllers/HotelController.php on line 79

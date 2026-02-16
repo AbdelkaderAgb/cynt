@@ -1,0 +1,8 @@
+{
+    "name": "cyn/tourism",
+    "description": "CYN Tourism Management",
+    "type": "project",
+    "require": {
+        "dompdf/dompdf": "^3.1"
+    }
+}
