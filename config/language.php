@@ -26,6 +26,7 @@ $fallbackLang = 'en';
 $availableLangs = [
     'en' => ['name' => 'English', 'flag' => '🇬🇧', 'dir' => 'ltr'],
     'tr' => ['name' => 'Türkçe', 'flag' => '🇹🇷', 'dir' => 'ltr'],
+    'az' => ['name' => 'Azərbaycan', 'flag' => '🇦🇿', 'dir' => 'ltr'],
     'ar' => ['name' => 'العربية', 'flag' => '🇸🇦', 'dir' => 'rtl']
 ];
 

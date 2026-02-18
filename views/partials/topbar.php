@@ -42,6 +42,10 @@ $currentLang = function_exists('getCurrentLang') ? getCurrentLang() : 'en';
                     <?php echo $currentLang === 'tr' ? 'bg-white dark:bg-slate-600 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'; ?>">
                     TR
                 </a>
+                <a href="?lang=az" class="px-2 py-1 rounded-md text-xs font-semibold uppercase transition-all
+                    <?php echo $currentLang === 'az' ? 'bg-white dark:bg-slate-600 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'; ?>">
+                    AZ
+                </a>
             </div>
 
             <!-- Dark Mode Toggle -->
