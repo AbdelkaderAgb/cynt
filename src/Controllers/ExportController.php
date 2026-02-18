@@ -11,6 +11,8 @@
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
+require_once __DIR__ . '/HotelController.php';
+
 class ExportController extends Controller
 {
     /**
