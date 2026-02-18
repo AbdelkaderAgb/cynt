@@ -109,27 +109,28 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
 
 <!-- New Hotel Voucher Modal -->
 <div id="newHotelModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6" x-data="hotelVoucherForm()">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6" x-data="hotelVoucherForm()">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-hotel text-teal-500 mr-2"></i>New Hotel Voucher</h2>
             <button onclick="document.getElementById('newHotelModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xl"><i class="fas fa-times"></i></button>
         </div>
 
-        <form method="POST" action="<?= url('hotel-voucher/store') ?>" class="space-y-5">
+        <form method="POST" action="<?= url('hotel-voucher/store') ?>" @submit.prevent="prepareSubmit($el)">
             <?= csrf_field() ?>
-            <!-- Company Info -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+
+            <!-- 1. Company Info -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5">
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-building text-blue-500 mr-1"></i> Company Information</h3>
-                <input type="hidden" name="company_id" id="hotel_company_id" value="">
+                <input type="hidden" name="company_id" :value="companyId">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="relative" x-data="hotelPartnerSearch()" @click.outside="open = false">
+                    <div class="relative" @click.outside="partnerOpen = false">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Company Name *</label>
-                        <input type="text" name="company_name" x-model="query" @input.debounce.300ms="search()" @focus="if(results.length) open=true"
+                        <input type="text" name="company_name" x-model="companyName" @input.debounce.300ms="searchPartner()" @focus="if(partnerResults.length) partnerOpen=true"
                                required autocomplete="off" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                         <p class="text-[10px] text-gray-400 mt-0.5">Type to search registered partners</p>
-                        <div x-show="open && results.length > 0" x-transition
+                        <div x-show="partnerOpen && partnerResults.length > 0" x-transition
                              class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                            <template x-for="r in results" :key="r.id">
+                            <template x-for="r in partnerResults" :key="r.id">
                                 <div @click="selectPartner(r)" class="px-3 py-2 cursor-pointer hover:bg-teal-50 dark:hover:bg-teal-900/20 border-b border-gray-100 dark:border-gray-600 last:border-0 transition">
                                     <div class="font-medium text-sm text-gray-800 dark:text-gray-200" x-text="r.company_name"></div>
                                     <div class="text-xs text-gray-400" x-text="(r.contact_person || '') + (r.phone ? ' · ' + r.phone : '')"></div>
@@ -139,18 +140,18 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Address</label>
-                        <input type="text" name="address" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <input type="text" name="address" x-model="companyAddress" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Telephone</label>
-                        <input type="text" name="telephone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <input type="text" name="telephone" x-model="companyPhone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                     </div>
                 </div>
             </div>
 
-            <!-- Hotel & Room Details -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4" x-data="hotelCascade()" x-init="init()">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-bed text-teal-500 mr-1"></i> Hotel & Room Details</h3>
+            <!-- 2. Hotel Selection + Dates -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-bed text-teal-500 mr-1"></i> Hotel & Stay</h3>
                 <input type="hidden" name="hotel_name" :value="selectedHotelName">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div>
@@ -175,31 +176,18 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                         </select>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" x-data="dateNightsCalc()">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Room Count</label>
-                        <input type="number" name="room_count" value="1" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_in_date') ?: 'Check-in Date' ?> *</label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_in_date') ?: 'Check-in' ?> *</label>
                         <input type="date" name="check_in" x-model="checkIn" @change="onCheckInChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_out_date') ?: 'Check-out Date' ?> *</label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_out_date') ?: 'Check-out' ?> *</label>
                         <input type="date" name="check_out" x-model="checkOut" @change="onCheckOutChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('nights') ?: 'Nights' ?> *</label>
-                        <input type="number" name="nights" x-model.number="nights" @change="onNightsChange()" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Room Type</label>
-                        <select name="room_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                            <option value="">-- Select --</option>
-                            <?php foreach ($roomTypes as $k => $lbl): ?>
-                            <option value="<?= $k ?>"><?= $lbl ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('nights') ?: 'Nights' ?></label>
+                        <input type="number" name="nights" x-model.number="nights" @change="onNightsChange()" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm bg-gray-50 dark:bg-gray-600" readonly>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Transfer Type</label>
@@ -209,58 +197,82 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Board Type</label>
-                        <select name="board_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                            <?php foreach ($boardTypes as $k => $lbl): ?>
-                            <option value="<?= $k ?>"><?= $lbl ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
                 </div>
             </div>
 
-            <!-- Guest & Passport -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-passport text-amber-500 mr-1"></i> Guest Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
-                        <input type="text" name="guest_name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500" placeholder="Main guest name">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
-                        <input type="text" name="passenger_passport" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500" placeholder="Passport number">
-                    </div>
+            <!-- 3. Rooms (dynamic, multiple) -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"><i class="fas fa-door-open text-indigo-500 mr-1"></i> Rooms</h3>
+                    <button type="button" @click="addRoom()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition">
+                        <i class="fas fa-plus text-[10px]"></i> Add Room
+                    </button>
                 </div>
+                <input type="hidden" name="rooms_json" :value="JSON.stringify(rooms)">
+                <input type="hidden" name="room_count" :value="rooms.length">
+                <input type="hidden" name="room_type" :value="rooms[0]?.type || ''">
+                <input type="hidden" name="board_type" :value="rooms[0]?.board || 'bed_breakfast'">
+                <div class="space-y-3">
+                    <template x-for="(room, ri) in rooms" :key="ri">
+                        <div class="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-gray-500 uppercase" x-text="'Room ' + (ri+1)"></span>
+                                <button type="button" @click="rooms.splice(ri, 1)" x-show="rooms.length > 1" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-trash"></i></button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Room Type</label>
+                                    <select x-model="room.type" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                        <option value="">-- Select --</option>
+                                        <?php foreach ($roomTypes as $k => $lbl): ?>
+                                        <option value="<?= $k ?>"><?= $lbl ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Board</label>
+                                    <select x-model="room.board" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                        <?php foreach ($boardTypes as $k => $lbl): ?>
+                                        <option value="<?= $k ?>"><?= $lbl ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Adults</label>
+                                    <input type="number" x-model.number="room.adults" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Children</label>
+                                    <input type="number" x-model.number="room.children" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <div class="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                    <span><strong x-text="totalPax()"></strong> total pax</span>
+                    <span><strong x-text="rooms.length"></strong> room(s)</span>
+                </div>
+                <input type="hidden" name="adults" :value="totalAdults()">
+                <input type="hidden" name="children" :value="totalChildren()">
+                <input type="hidden" name="infants" :value="0">
             </div>
 
-            <!-- Pax Counts -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-users text-purple-500 mr-1"></i> Pax Counts</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Adult</label>
-                        <input type="number" name="adults" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Child</label>
-                        <input type="number" name="children" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Infant</label>
-                        <input type="number" name="infants" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
+            <!-- 4. Guests (unified: name + age + passport) -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"><i class="fas fa-users text-purple-500 mr-1"></i> Guests</h3>
+                    <button type="button" @click="addGuest()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg text-xs font-semibold hover:bg-purple-100 transition">
+                        <i class="fas fa-plus text-[10px]"></i> Add Guest
+                    </button>
                 </div>
-            </div>
-
-            <!-- Customers (Dynamic Rows) -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-user-friends text-indigo-500 mr-1"></i> Customers</h3>
-                <div class="space-y-2" id="customersContainer">
-                    <template x-for="(customer, index) in customers" :key="index">
-                        <div class="flex gap-2 items-center">
-                            <select x-model="customer.title" class="w-24 px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                <input type="hidden" name="customers" :value="JSON.stringify(guests)">
+                <input type="hidden" name="guest_name" :value="guests.length ? ((guests[0].title || '') + ' ' + (guests[0].name || '')).trim() : ''">
+                <input type="hidden" name="passenger_passport" :value="guests.length ? (guests[0].passport || '') : ''">
+                <div class="space-y-2">
+                    <template x-for="(g, gi) in guests" :key="gi">
+                        <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2">
+                            <select x-model="g.title" class="w-20 px-1.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-xs">
                                 <option value="Mr">Mr</option>
                                 <option value="Mrs">Mrs</option>
                                 <option value="Ms">Ms</option>
@@ -269,31 +281,28 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                                 <option value="Child">Child</option>
                                 <option value="Infant">Infant</option>
                             </select>
-                            <input type="text" x-model="customer.name" placeholder="Full Name" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
-                            <button type="button" @click="customers.splice(index, 1)" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                            <input type="text" x-model="g.name" placeholder="Full Name *" class="flex-1 min-w-[120px] px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                            <input type="number" x-model="g.age" placeholder="Age" min="0" max="120" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-center">
+                            <input type="text" x-model="g.passport" placeholder="Passport No." class="w-32 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            <button type="button" @click="guests.splice(gi, 1)" x-show="guests.length > 1" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
                                 <i class="fas fa-trash-alt text-xs"></i>
                             </button>
                         </div>
                     </template>
                 </div>
-                <button type="button" @click="customers.push({title:'Mr', name:''})" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-200 transition">
-                    <i class="fas fa-plus text-xs"></i> Add Customer
-                </button>
-                <input type="hidden" name="customers" :value="JSON.stringify(customers)">
+                <p class="text-[10px] text-gray-400 mt-1.5">Age and passport are optional. First guest is used as the main guest name on the voucher.</p>
             </div>
 
-            <!-- Pricing removed — prices are managed via invoices/receipts only -->
-
-            <!-- Special Requests -->
-            <div>
+            <!-- 5. Special Requests -->
+            <div class="mb-5">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Special Requests</label>
                 <textarea name="special_requests" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></textarea>
             </div>
 
-            <!-- Link Additional Services (existing tours & transfers → Guest Program on PDF) -->
-            <div class="border-t border-gray-200 dark:border-gray-700 pt-4" x-data="linkServicesForm()">
+            <!-- 6. Link Additional Services -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mb-5" x-data="linkServicesForm()">
                 <label class="block text-xs font-medium text-gray-500 mb-2">Link Additional Services</label>
-                <p class="text-[10px] text-gray-400 mb-2">Search and link existing tours or transfers. They appear as Guest Program on the voucher (no prices).</p>
+                <p class="text-[10px] text-gray-400 mb-2">Search and link existing tours or transfers. They appear as Guest Program on the voucher.</p>
                 <div class="relative mb-2" @click.outside="serviceResultsOpen = false">
                     <input type="text" x-model="serviceQuery" @input.debounce.200ms="searchServices()" @focus="if(serviceResults.length) serviceResultsOpen = true"
                            placeholder="Search tours or transfers..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
@@ -303,7 +312,7 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                         </template>
                     </div>
                 </div>
-                <div class="space-y-1 min-h-[60px] rounded-lg border border-dashed border-gray-200 dark:border-gray-600 p-2" x-show="linkedList.length > 0">
+                <div class="space-y-1 min-h-[40px] rounded-lg border border-dashed border-gray-200 dark:border-gray-600 p-2" x-show="linkedList.length > 0">
                     <template x-for="(item, idx) in linkedList" :key="idx">
                         <div class="flex items-center justify-between py-1.5 px-2 bg-gray-50 dark:bg-gray-700/50 rounded text-sm">
                             <span class="flex-1 truncate" x-text="item.label"></span>
@@ -312,7 +321,7 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                     </template>
                 </div>
                 <input type="hidden" name="linked_services" :value="JSON.stringify(linkedList.map(x => ({type: x.type, id: x.id})))">
-                <textarea name="additional_services" rows="1" class="hidden" placeholder="Legacy free text"></textarea>
+                <textarea name="additional_services" rows="1" class="hidden"></textarea>
             </div>
 
             <!-- Actions -->
@@ -327,49 +336,114 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
 </div>
 
 <script>
-function dateNightsCalc() {
+function hotelVoucherForm() {
     return {
-        checkIn: '',
-        checkOut: '',
-        nights: 1,
+        // Company
+        companyId: '', companyName: '', companyAddress: '', companyPhone: '',
+        partnerResults: [], partnerOpen: false,
+        // Hotel cascade
+        allHotels: [], countries: [], cities: [], filteredHotels: [],
+        selectedCountry: '', selectedCity: '', selectedHotelId: '', selectedHotelName: '',
+        // Dates
+        checkIn: '', checkOut: '', nights: 1,
+        // Rooms
+        rooms: [{ type: 'DBL', board: 'bed_breakfast', adults: 2, children: 0 }],
+        // Guests
+        guests: [{ title: 'Mr', name: '', age: '', passport: '' }],
+
+        // --- Partner search ---
+        async searchPartner() {
+            if (this.companyName.length < 1) { this.partnerResults = []; this.partnerOpen = false; return; }
+            try {
+                const res = await fetch('<?= url('api/partners/search') ?>?q=' + encodeURIComponent(this.companyName));
+                this.partnerResults = await res.json();
+                this.partnerOpen = this.partnerResults.length > 0;
+            } catch(e) { this.partnerResults = []; }
+        },
+        selectPartner(r) {
+            this.companyName = r.company_name;
+            this.companyId = r.id;
+            this.partnerOpen = false;
+            if (r.phone) this.companyPhone = r.phone;
+            this.companyAddress = r.address || ((r.city || '') + (r.country ? ', ' + r.country : ''));
+        },
+
+        // --- Hotel cascade ---
+        async init() {
+            try {
+                const res = await fetch('<?= url('api/hotels/list') ?>');
+                this.allHotels = await res.json();
+                this.countries = [...new Set(this.allHotels.map(h => h.country).filter(Boolean))].sort();
+            } catch(e) { this.allHotels = []; }
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefillId = urlParams.get('hotel_id');
+            if (prefillId) {
+                const h = this.allHotels.find(x => x.id == prefillId);
+                if (h) {
+                    this.selectedCountry = h.country; this.onCountryChange();
+                    this.selectedCity = h.city; this.onCityChange();
+                    this.selectedHotelId = h.id; this.onHotelChange();
+                }
+            }
+        },
+        onCountryChange() {
+            this.cities = [...new Set(this.allHotels.filter(h => h.country === this.selectedCountry).map(h => h.city).filter(Boolean))].sort();
+            this.selectedCity = ''; this.filteredHotels = []; this.selectedHotelId = ''; this.selectedHotelName = '';
+        },
+        onCityChange() {
+            this.filteredHotels = this.allHotels.filter(h => h.country === this.selectedCountry && h.city === this.selectedCity);
+            this.selectedHotelId = ''; this.selectedHotelName = '';
+        },
+        onHotelChange() {
+            const h = this.allHotels.find(x => x.id == this.selectedHotelId);
+            this.selectedHotelName = h ? h.name : '';
+        },
+
+        // --- Date / nights ---
         onCheckInChange() {
             if (this.checkIn && this.checkOut) {
                 const diff = Math.round((new Date(this.checkOut) - new Date(this.checkIn)) / 86400000);
-                if (diff > 0) this.nights = diff;
-                else { this.nights = 1; this.checkOut = ''; }
+                if (diff > 0) this.nights = diff; else { this.nights = 1; this.checkOut = ''; }
             } else if (this.checkIn && this.nights > 0) {
-                const d = new Date(this.checkIn);
-                d.setDate(d.getDate() + this.nights);
+                const d = new Date(this.checkIn); d.setDate(d.getDate() + this.nights);
                 this.checkOut = d.toISOString().split('T')[0];
             }
         },
         onCheckOutChange() {
             if (this.checkIn && this.checkOut) {
                 const diff = Math.round((new Date(this.checkOut) - new Date(this.checkIn)) / 86400000);
-                if (diff > 0) this.nights = diff;
-                else { this.nights = 1; this.checkOut = ''; }
+                if (diff > 0) this.nights = diff; else { this.nights = 1; this.checkOut = ''; }
             }
         },
         onNightsChange() {
             if (this.checkIn && this.nights > 0) {
-                const d = new Date(this.checkIn);
-                d.setDate(d.getDate() + this.nights);
+                const d = new Date(this.checkIn); d.setDate(d.getDate() + this.nights);
                 this.checkOut = d.toISOString().split('T')[0];
             }
+        },
+
+        // --- Rooms ---
+        addRoom() {
+            this.rooms.push({ type: 'DBL', board: 'bed_breakfast', adults: 2, children: 0 });
+        },
+        totalAdults() { return this.rooms.reduce((s, r) => s + (r.adults || 0), 0); },
+        totalChildren() { return this.rooms.reduce((s, r) => s + (r.children || 0), 0); },
+        totalPax() { return this.totalAdults() + this.totalChildren(); },
+
+        // --- Guests ---
+        addGuest() {
+            this.guests.push({ title: 'Mr', name: '', age: '', passport: '' });
+        },
+
+        // --- Submit ---
+        prepareSubmit(form) {
+            form.submit();
         }
-    };
-}
-function hotelVoucherForm() {
-    return {
-        customers: [{title: 'Mr', name: ''}]
     };
 }
 function linkServicesForm() {
     return {
-        serviceQuery: '',
-        serviceResults: [],
-        serviceResultsOpen: false,
-        linkedList: [],
+        serviceQuery: '', serviceResults: [], serviceResultsOpen: false, linkedList: [],
         async searchServices() {
             if (this.serviceQuery.length < 2) { this.serviceResults = []; this.serviceResultsOpen = false; return; }
             try {
@@ -381,85 +455,9 @@ function linkServicesForm() {
         addService(r) {
             if (this.linkedList.some(x => x.type === r.type && x.id === r.id)) return;
             this.linkedList.push({ type: r.type, id: r.id, label: r.label });
-            this.serviceResultsOpen = false;
-            this.serviceQuery = '';
-            this.serviceResults = [];
+            this.serviceResultsOpen = false; this.serviceQuery = ''; this.serviceResults = [];
         },
-        removeService(idx) {
-            this.linkedList.splice(idx, 1);
-        }
-    };
-}
-function hotelPartnerSearch() {
-    return {
-        query: '', results: [], open: false,
-        async search() {
-            if (this.query.length < 1) { this.results = []; this.open = false; return; }
-            try {
-                const res = await fetch('<?= url('api/partners/search') ?>?q=' + encodeURIComponent(this.query));
-                this.results = await res.json();
-                this.open = this.results.length > 0;
-            } catch(e) { this.results = []; }
-        },
-        selectPartner(r) {
-            this.query = r.company_name;
-            this.open = false;
-            document.getElementById('hotel_company_id').value = r.id;
-            const tel = document.querySelector('[name="telephone"]');
-            const addr = document.querySelector('[name="address"]');
-            if (tel && r.phone) tel.value = r.phone;
-            if (addr) addr.value = r.address || ((r.city || '') + (r.country ? ', ' + r.country : ''));
-        }
-    };
-}
-function hotelCascade() {
-    return {
-        allHotels: [],
-        countries: [],
-        cities: [],
-        filteredHotels: [],
-        selectedCountry: '',
-        selectedCity: '',
-        selectedHotelId: '',
-        selectedHotelName: '',
-        async init() {
-            try {
-                const res = await fetch('<?= url('api/hotels/list') ?>');
-                this.allHotels = await res.json();
-                this.countries = [...new Set(this.allHotels.map(h => h.country).filter(Boolean))].sort();
-            } catch(e) { this.allHotels = []; }
-
-            // Auto-prefill from URL ?hotel_id=X (Book Now flow)
-            const urlParams = new URLSearchParams(window.location.search);
-            const prefillId = urlParams.get('hotel_id');
-            if (prefillId) {
-                const h = this.allHotels.find(x => x.id == prefillId);
-                if (h) {
-                    this.selectedCountry = h.country;
-                    this.onCountryChange();
-                    this.selectedCity = h.city;
-                    this.onCityChange();
-                    this.selectedHotelId = h.id;
-                    this.onHotelChange();
-                }
-            }
-        },
-        onCountryChange() {
-            this.cities = [...new Set(this.allHotels.filter(h => h.country === this.selectedCountry).map(h => h.city).filter(Boolean))].sort();
-            this.selectedCity = '';
-            this.filteredHotels = [];
-            this.selectedHotelId = '';
-            this.selectedHotelName = '';
-        },
-        onCityChange() {
-            this.filteredHotels = this.allHotels.filter(h => h.country === this.selectedCountry && h.city === this.selectedCity);
-            this.selectedHotelId = '';
-            this.selectedHotelName = '';
-        },
-        onHotelChange() {
-            const h = this.allHotels.find(x => x.id == this.selectedHotelId);
-            this.selectedHotelName = h ? h.name : '';
-        }
+        removeService(idx) { this.linkedList.splice(idx, 1); }
     };
 }
 </script>

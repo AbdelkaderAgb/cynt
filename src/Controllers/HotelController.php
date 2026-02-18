@@ -94,13 +94,15 @@ class HotelController extends Controller
 
         // Use explicit next ID to work even without AUTO_INCREMENT
         $nextId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM hotel_vouchers")->fetchColumn();
+        $roomsJson = $_POST['rooms_json'] ?? '';
+
         $stmt = $db->prepare("INSERT INTO hotel_vouchers
             (id, voucher_no, guest_name, passenger_passport, hotel_name, company_name, address, telephone,
              room_type, room_count, board_type, transfer_type,
              check_in, check_out, nights, total_pax, adults, children, infants,
              price_per_night, total_price, currency, customers,
-             special_requests, additional_services, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+             special_requests, additional_services, rooms_json, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $nextId,
             $voucherNo,
@@ -127,6 +129,7 @@ class HotelController extends Controller
             $customers,
             trim($_POST['special_requests'] ?? ''),
             $additionalServices,
+            $roomsJson,
             'pending',
         ]);
 
@@ -223,12 +226,14 @@ class HotelController extends Controller
         $additionalServices = $this->parseAdditionalServices($_POST['additional_services'] ?? '');
         $passengerPassport = trim($_POST['passenger_passport'] ?? '');
 
+        $roomsJson = $_POST['rooms_json'] ?? '';
+
         $stmt = $db->prepare("UPDATE hotel_vouchers SET
             guest_name = ?, passenger_passport = ?, hotel_name = ?, company_name = ?, address = ?, telephone = ?,
             room_type = ?, room_count = ?, board_type = ?, transfer_type = ?,
             check_in = ?, check_out = ?, nights = ?, total_pax = ?, adults = ?, children = ?, infants = ?,
             price_per_night = ?, total_price = ?, currency = ?, customers = ?,
-            special_requests = ?, additional_services = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+            special_requests = ?, additional_services = ?, rooms_json = ?, status = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?");
         $stmt->execute([
             $guestName,
@@ -254,6 +259,7 @@ class HotelController extends Controller
             $customers,
             trim($_POST['special_requests'] ?? ''),
             $additionalServices,
+            $roomsJson,
             $_POST['status'] ?? 'pending',
             $id,
         ]);
