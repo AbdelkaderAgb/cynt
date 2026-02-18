@@ -50,7 +50,7 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
     <!-- Hotel & Room Details -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-bed text-teal-500 mr-1"></i>Hotel & Room</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" x-data="dateNightsCalc('<?= $v['check_in'] ?>', '<?= $v['check_out'] ?? '' ?>', <?= (int)$v['nights'] ?>)">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Hotel Name *</label>
                 <input type="text" name="hotel_name" value="<?= e($v['hotel_name']) ?>" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
@@ -60,12 +60,16 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
                 <input type="number" name="room_count" value="<?= $v['room_count'] ?>" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Check-in *</label>
-                <input type="date" name="check_in" value="<?= $v['check_in'] ?>" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_in_date') ?: 'Check-in' ?> *</label>
+                <input type="date" name="check_in" x-model="checkIn" @change="onCheckInChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Nights *</label>
-                <input type="number" name="nights" value="<?= $v['nights'] ?>" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_out_date') ?: 'Check-out' ?> *</label>
+                <input type="date" name="check_out" x-model="checkOut" @change="onCheckOutChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('nights') ?: 'Nights' ?> *</label>
+                <input type="number" name="nights" x-model.number="nights" @change="onNightsChange()" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Room Type</label>
@@ -183,6 +187,45 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 </form>
 
 <script>
+function dateNightsCalc(initCheckIn, initCheckOut, initNights) {
+    return {
+        checkIn: initCheckIn || '',
+        checkOut: initCheckOut || '',
+        nights: initNights || 1,
+        init() {
+            if (this.checkIn && !this.checkOut && this.nights > 0) {
+                const d = new Date(this.checkIn);
+                d.setDate(d.getDate() + this.nights);
+                this.checkOut = d.toISOString().split('T')[0];
+            }
+        },
+        onCheckInChange() {
+            if (this.checkIn && this.checkOut) {
+                const diff = Math.round((new Date(this.checkOut) - new Date(this.checkIn)) / 86400000);
+                if (diff > 0) this.nights = diff;
+                else { this.nights = 1; this.checkOut = ''; }
+            } else if (this.checkIn && this.nights > 0) {
+                const d = new Date(this.checkIn);
+                d.setDate(d.getDate() + this.nights);
+                this.checkOut = d.toISOString().split('T')[0];
+            }
+        },
+        onCheckOutChange() {
+            if (this.checkIn && this.checkOut) {
+                const diff = Math.round((new Date(this.checkOut) - new Date(this.checkIn)) / 86400000);
+                if (diff > 0) this.nights = diff;
+                else { this.nights = 1; this.checkOut = ''; }
+            }
+        },
+        onNightsChange() {
+            if (this.checkIn && this.nights > 0) {
+                const d = new Date(this.checkIn);
+                d.setDate(d.getDate() + this.nights);
+                this.checkOut = d.toISOString().split('T')[0];
+            }
+        }
+    };
+}
 function hotelEditForm() {
     return {
         guests: <?= json_encode($customers) ?>

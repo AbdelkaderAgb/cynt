@@ -64,7 +64,11 @@ class HotelController extends Controller
         $roomType = (string)($_POST['room_type'] ?? '');
         $nights = (int)($_POST['nights'] ?? 1);
         $checkIn = $_POST['check_in'] ?? date('Y-m-d');
-        $checkOut = date('Y-m-d', strtotime($checkIn . " + $nights days"));
+        $checkOut = !empty($_POST['check_out']) ? $_POST['check_out'] : date('Y-m-d', strtotime($checkIn . " + $nights days"));
+        if ($checkIn && $checkOut && empty($_POST['nights'])) {
+            $diff = (int)((strtotime($checkOut) - strtotime($checkIn)) / 86400);
+            if ($diff > 0) $nights = $diff;
+        }
 
         $capacityError = $this->validateVoucherCapacity($db, $adults, $children, $roomCount, $roomType, (int)($_POST['hotel_id'] ?? 0), trim($_POST['hotel_name'] ?? ''));
         if ($capacityError !== null) {
@@ -194,7 +198,11 @@ class HotelController extends Controller
         $roomType = (string)($_POST['room_type'] ?? '');
         $nights = (int)($_POST['nights'] ?? 1);
         $checkIn = $_POST['check_in'] ?? date('Y-m-d');
-        $checkOut = date('Y-m-d', strtotime($checkIn . " + $nights days"));
+        $checkOut = !empty($_POST['check_out']) ? $_POST['check_out'] : date('Y-m-d', strtotime($checkIn . " + $nights days"));
+        if ($checkIn && $checkOut && empty($_POST['nights'])) {
+            $diff = (int)((strtotime($checkOut) - strtotime($checkIn)) / 86400);
+            if ($diff > 0) $nights = $diff;
+        }
 
         $capacityError = $this->validateVoucherCapacity($db, $adults, $children, $roomCount, $roomType, (int)($_POST['hotel_id'] ?? 0), trim($_POST['hotel_name'] ?? ''));
         if ($capacityError !== null) {

@@ -175,18 +175,22 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                         </select>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" x-data="dateNightsCalc()">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Room Count</label>
                         <input type="number" name="room_count" value="1" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Check-in Date *</label>
-                        <input type="date" name="check_in" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_in_date') ?: 'Check-in Date' ?> *</label>
+                        <input type="date" name="check_in" x-model="checkIn" @change="onCheckInChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Nights *</label>
-                        <input type="number" name="nights" value="1" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_out_date') ?: 'Check-out Date' ?> *</label>
+                        <input type="date" name="check_out" x-model="checkOut" @change="onCheckOutChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('nights') ?: 'Nights' ?> *</label>
+                        <input type="number" name="nights" x-model.number="nights" @change="onNightsChange()" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Room Type</label>
@@ -323,6 +327,38 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
 </div>
 
 <script>
+function dateNightsCalc() {
+    return {
+        checkIn: '',
+        checkOut: '',
+        nights: 1,
+        onCheckInChange() {
+            if (this.checkIn && this.checkOut) {
+                const diff = Math.round((new Date(this.checkOut) - new Date(this.checkIn)) / 86400000);
+                if (diff > 0) this.nights = diff;
+                else { this.nights = 1; this.checkOut = ''; }
+            } else if (this.checkIn && this.nights > 0) {
+                const d = new Date(this.checkIn);
+                d.setDate(d.getDate() + this.nights);
+                this.checkOut = d.toISOString().split('T')[0];
+            }
+        },
+        onCheckOutChange() {
+            if (this.checkIn && this.checkOut) {
+                const diff = Math.round((new Date(this.checkOut) - new Date(this.checkIn)) / 86400000);
+                if (diff > 0) this.nights = diff;
+                else { this.nights = 1; this.checkOut = ''; }
+            }
+        },
+        onNightsChange() {
+            if (this.checkIn && this.nights > 0) {
+                const d = new Date(this.checkIn);
+                d.setDate(d.getDate() + this.nights);
+                this.checkOut = d.toISOString().split('T')[0];
+            }
+        }
+    };
+}
 function hotelVoucherForm() {
     return {
         customers: [{title: 'Mr', name: ''}]
@@ -422,15 +458,7 @@ function hotelCascade() {
         },
         onHotelChange() {
             const h = this.allHotels.find(x => x.id == this.selectedHotelId);
-            if (h) {
-                this.selectedHotelName = h.name;
-                const tel = document.querySelector('[name="telephone"]');
-                const addr = document.querySelector('[name="address"]');
-                if (tel && h.phone) tel.value = h.phone;
-                if (addr && h.address) addr.value = h.address;
-            } else {
-                this.selectedHotelName = '';
-            }
+            this.selectedHotelName = h ? h.name : '';
         }
     };
 }
