@@ -51,6 +51,7 @@ ini_set('error_log', LOG_PATH . 'php-errors.log');
 // =============================================================================
 
 // MySQL configuration (uncomment and set DB_DRIVER to 'mysql' to use MySQL)
+// SWITCHED TO SQLITE FOR LOCAL TESTING — restore 'mysql' for production
 define('DB_DRIVER', 'mysql');
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'barqvkxs_cyn');

@@ -103,6 +103,7 @@ class ReceiptController extends Controller
     public function markPaid(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $id     = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
@@ -159,6 +160,7 @@ class ReceiptController extends Controller
     public function update(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $id     = (int)($_POST['id'] ?? 0);

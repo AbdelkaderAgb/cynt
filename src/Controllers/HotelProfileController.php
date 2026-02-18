@@ -242,6 +242,120 @@ class HotelProfileController extends Controller
     }
 
     /**
+     * API: Get board prices for a room
+     * GET /api/rooms/board-prices?room_id=X&board_type=BB
+     * Returns: { prices: { single: 100, double: 150, ... }, currency: 'USD' }
+     */
+    public function boardPricesApi(): void
+    {
+        Auth::requireAuth();
+        $roomId = (int)($_GET['room_id'] ?? 0);
+        $boardType = trim($_GET['board_type'] ?? '');
+
+        if (!$roomId) {
+            $this->json(['error' => 'room_id required'], 400);
+        }
+
+        // First check room_board_prices table
+        if ($boardType) {
+            $row = Database::fetchOne(
+                "SELECT price_single, price_double, price_triple, price_quad, price_child, currency
+                 FROM room_board_prices WHERE room_id = ? AND board_type = ?",
+                [$roomId, $boardType]
+            );
+            if ($row) {
+                $this->json([
+                    'source' => 'board_prices',
+                    'prices' => [
+                        'single' => (float)$row['price_single'],
+                        'double' => (float)$row['price_double'],
+                        'triple' => (float)$row['price_triple'],
+                        'quad'   => (float)$row['price_quad'],
+                        'child'  => (float)$row['price_child'],
+                    ],
+                    'currency' => $row['currency'] ?? 'USD',
+                ]);
+            }
+        }
+
+        // Fallback to hotel_rooms base prices
+        $room = Database::fetchOne(
+            "SELECT price_single, price_double, price_triple, price_quad, price_child, currency
+             FROM hotel_rooms WHERE id = ?",
+            [$roomId]
+        );
+        if (!$room) {
+            $this->json(['error' => 'Room not found'], 404);
+        }
+
+        $this->json([
+            'source' => 'room_base',
+            'prices' => [
+                'single' => (float)$room['price_single'],
+                'double' => (float)$room['price_double'],
+                'triple' => (float)$room['price_triple'],
+                'quad'   => (float)$room['price_quad'],
+                'child'  => (float)$room['price_child'],
+            ],
+            'currency' => $room['currency'] ?? 'USD',
+        ]);
+    }
+
+    /**
+     * API: Save board prices for a room (inline edit)
+     * POST /api/rooms/board-prices/save
+     */
+    public function boardPricesSave(): void
+    {
+        Auth::requireAuth();
+        $roomId = (int)($_POST['room_id'] ?? 0);
+        $boardType = trim($_POST['board_type'] ?? '');
+        if (!$roomId || !$boardType) {
+            $this->json(['error' => 'room_id and board_type required'], 400);
+        }
+
+        $data = [
+            'room_id'      => $roomId,
+            'board_type'   => $boardType,
+            'price_single' => (float)($_POST['price_single'] ?? 0),
+            'price_double' => (float)($_POST['price_double'] ?? 0),
+            'price_triple' => (float)($_POST['price_triple'] ?? 0),
+            'price_quad'   => (float)($_POST['price_quad'] ?? 0),
+            'price_child'  => (float)($_POST['price_child'] ?? 0),
+            'currency'     => $_POST['currency'] ?? 'USD',
+        ];
+
+        $existing = Database::fetchOne(
+            "SELECT id FROM room_board_prices WHERE room_id = ? AND board_type = ?",
+            [$roomId, $boardType]
+        );
+
+        if ($existing) {
+            Database::update('room_board_prices', $data, 'id = ?', [$existing['id']]);
+        } else {
+            Database::insert('room_board_prices', $data);
+        }
+
+        $this->json(['success' => true]);
+    }
+
+    /**
+     * API: List all hotels for cascading dropdowns
+     * GET /api/hotels/list
+     * Returns: [{id, name, city, country, stars, phone, address}]
+     */
+    public function listApi(): void
+    {
+        $hotels = Database::fetchAll(
+            "SELECT id, name, city, country, stars, phone, address 
+             FROM hotels 
+             WHERE status = 'active' 
+             ORDER BY country, city, name"
+        );
+        $this->json($hotels);
+    }
+
+    /**
      * Parse XLSX file using ZipArchive + SimpleXML (no external library)
      */
     private function parseXlsx(string $filePath): array

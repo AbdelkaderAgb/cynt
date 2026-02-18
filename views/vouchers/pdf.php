@@ -10,10 +10,12 @@ $stampPath = ROOT_PATH . '/stamp.png';
 $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
 $tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
 $stampBase64 = file_exists($stampPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath)) : '';
-$statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Completed','cancelled'=>'Cancelled'];
+$statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Completed','cancelled'=>'Cancelled','no_show'=>'No Show'];
+$pdfLang = $currentLang ?? 'en';
+$pdfDir = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 'ltr';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $pdfLang ?>" dir="<?= $pdfDir ?>">
 <head>
 <meta charset="UTF-8">
 <title>Transfer Voucher <?= htmlspecialchars($v['voucher_no']) ?></title>
@@ -45,16 +47,13 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Com
 
     .pax-box { border: 1px solid #ccc; padding: 8px 10px; margin-bottom: 14px; line-height: 1.6; }
 
-    .price-row { width: 100%; border: 2px solid #222; border-collapse: collapse; margin-bottom: 14px; }
-    .price-row td { padding: 10px 14px; border: 1px solid #222; }
-    .price-row .price-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: #555; font-weight: bold; }
-    .price-row .price-val { font-size: 20px; font-weight: bold; color: #111; }
 
     .stamp { display: inline-block; border: 2px solid; padding: 4px 16px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transform: rotate(-5deg); }
     .stamp-pending { border-color: #e65100; color: #e65100; }
     .stamp-confirmed { border-color: #1565c0; color: #1565c0; }
     .stamp-completed { border-color: #2e7d32; color: #2e7d32; }
     .stamp-cancelled { border-color: #c62828; color: #c62828; }
+    .stamp-no_show { border-color: #616161; color: #616161; }
 
     .notes { margin-top: 12px; padding: 8px 10px; border: 1px solid #ddd; background: #fafafa; font-size: 10px; }
     .notes-hd { font-size: 8px; text-transform: uppercase; letter-spacing: 0.6px; color: #777; font-weight: bold; margin-bottom: 3px; }
@@ -83,6 +82,25 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Com
         </table>
     </div>
 
+    <?php
+    // Parse transfer legs — fall back to main fields for old vouchers
+    $legs = json_decode($v['transfer_legs'] ?? '[]', true) ?: [];
+    if (empty($legs)) {
+        $legs = [[
+            'pickup_location' => $v['pickup_location'] ?? '',
+            'dropoff_location' => $v['dropoff_location'] ?? '',
+            'pickup_date' => $v['pickup_date'] ?? '',
+            'pickup_time' => $v['pickup_time'] ?? '',
+            'return_date' => $v['return_date'] ?? '',
+            'return_time' => $v['return_time'] ?? '',
+            'transfer_type' => $v['transfer_type'] ?? 'one_way',
+            'total_pax' => $v['total_pax'] ?? 1,
+            'flight_number' => $v['flight_number'] ?? '',
+            'price' => $v['price'] ?? 0,
+        ]];
+    }
+    ?>
+
     <!-- TRANSFER DETAILS -->
     <div class="section-title">Transfer Details</div>
     <table class="info-block">
@@ -98,43 +116,57 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Com
         </tr>
         <tr>
             <td>
-                <span class="lbl">Pickup Date &amp; Time</span>
-                <span class="val"><?= date('d.m.Y', strtotime($v['pickup_date'])) ?> — <?= $v['pickup_time'] ?></span>
+                <span class="lbl">Guest Name</span>
+                <span class="val"><?= htmlspecialchars($v['guest_name'] ?? '—') ?></span>
             </td>
             <td>
+                <span class="lbl">Passport No.</span>
+                <span class="val"><?= htmlspecialchars($v['passenger_passport'] ?? '—') ?></span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ROUTES (one per leg) -->
+    <?php foreach ($legs as $li => $leg): ?>
+    <div class="section-title"><?= count($legs) > 1 ? 'Transfer #' . ($li + 1) : 'Route' ?></div>
+    <table class="info-block">
+        <tr>
+            <td style="width:50%;">
+                <span class="lbl">Pickup Date &amp; Time</span>
+                <span class="val"><?= !empty($leg['pickup_date']) ? date('d.m.Y', strtotime($leg['pickup_date'])) : '—' ?> — <?= $leg['pickup_time'] ?? '' ?></span>
+            </td>
+            <td style="width:50%;">
                 <span class="lbl">Return Date &amp; Time</span>
-                <span class="val"><?= $v['return_date'] ? date('d.m.Y', strtotime($v['return_date'])) . ' — ' . $v['return_time'] : '—' ?></span>
+                <span class="val"><?= !empty($leg['return_date']) ? date('d.m.Y', strtotime($leg['return_date'])) . ' — ' . ($leg['return_time'] ?? '') : '—' ?></span>
             </td>
         </tr>
         <tr>
             <td>
                 <span class="lbl">Transfer Type</span>
-                <span class="val"><?= htmlspecialchars(ucfirst($v['transfer_type'] ?? '')) ?></span>
+                <span class="val"><?= htmlspecialchars(ucfirst($leg['transfer_type'] ?? 'one_way')) ?></span>
             </td>
             <td>
                 <span class="lbl">Flight Number</span>
-                <span class="val"><?= htmlspecialchars($v['flight_number'] ?: '—') ?></span>
+                <span class="val"><?= htmlspecialchars($leg['flight_number'] ?? '') ?: '—' ?></span>
             </td>
         </tr>
     </table>
-
-    <!-- ROUTE -->
-    <div class="section-title">Route</div>
     <div class="route-box">
         <table>
             <tr>
                 <td style="width:40%;">
                     <div class="lbl">Pickup Location</div>
-                    <div class="loc"><?= htmlspecialchars($v['pickup_location']) ?></div>
+                    <div class="loc"><?= htmlspecialchars($leg['pickup_location'] ?? '') ?></div>
                 </td>
                 <td style="width:20%;" class="arrow">→</td>
                 <td style="width:40%;">
                     <div class="lbl">Drop-off Location</div>
-                    <div class="loc"><?= htmlspecialchars($v['dropoff_location']) ?></div>
+                    <div class="loc"><?= htmlspecialchars($leg['dropoff_location'] ?? '') ?></div>
                 </td>
             </tr>
         </table>
     </div>
+    <?php endforeach; ?>
 
     <!-- PASSENGERS -->
     <?php if (!empty($v['passengers'])): ?>
@@ -144,24 +176,16 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Com
     </div>
     <?php endif; ?>
 
-    <!-- PRICING & STATUS -->
+    <!-- Vouchers do not include prices — pricing is shown only in invoices and receipts -->
+
+    <!-- STATUS -->
     <table style="width:100%; margin-bottom: 14px;">
         <tr>
-            <td style="width:30%; vertical-align:middle; text-align:center;">
+            <td style="width:50%; vertical-align:middle;">
                 <div style="font-size:8px; text-transform:uppercase; letter-spacing:0.6px; color:#777; font-weight:bold;">Total Passengers</div>
                 <div style="font-size:24px; font-weight:bold; color:#111;"><?= $v['total_pax'] ?></div>
             </td>
-            <td style="width:40%;">
-                <table class="price-row" style="width:100%;">
-                    <tr>
-                        <td>
-                            <div class="price-lbl">Total Price</div>
-                            <div class="price-val"><?= number_format($v['price'] ?? 0, 2) ?> <?= htmlspecialchars($v['currency'] ?? 'USD') ?></div>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width:30%; text-align:center; vertical-align:middle;">
+            <td style="width:50%; text-align:center; vertical-align:middle;">
                 <?php $st = $v['status'] ?? 'pending'; ?>
                 <span class="stamp stamp-<?= $st ?>"><?= htmlspecialchars($statusLabels[$st] ?? ucfirst($st)) ?></span>
             </td>

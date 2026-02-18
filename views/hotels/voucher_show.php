@@ -38,6 +38,9 @@ $customers = json_decode($v['customers'] ?? '[]', true) ?: [];
                 <div><p class="text-xs text-gray-400"><?= __('hotel_name') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['hotel_name']) ?></p></div>
                 <div><p class="text-xs text-gray-400"><?= __('room_type') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= $roomLabels[$v['room_type']] ?? $v['room_type'] ?></p></div>
                 <div><p class="text-xs text-gray-400"><?= __('board_type') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= $boardLabels[$v['board_type']] ?? $v['board_type'] ?></p></div>
+                <?php if (!empty($v['passenger_passport'])): ?>
+                <div><p class="text-xs text-gray-400"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passport' ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['passenger_passport']) ?></p></div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -110,21 +113,13 @@ $customers = json_decode($v['customers'] ?? '[]', true) ?: [];
                     <span class="text-sm text-gray-500"><?= __('total_pax') ?></span>
                     <span class="font-bold text-lg"><?= $v['total_pax'] ?></span>
                 </div>
-                <?php if ($v['price_per_night'] > 0): ?>
-                <div class="flex justify-between"><span class="text-sm text-gray-500"><?= __('price_per_night') ?></span><span class="font-medium"><?= number_format($v['price_per_night'], 2) ?> <?= e($v['currency']) ?></span></div>
-                <?php endif; ?>
-                <?php if ($v['total_price'] > 0): ?>
-                <div class="border-t border-gray-200 dark:border-gray-600 pt-3 flex justify-between">
-                    <span class="text-sm font-semibold text-gray-700"><?= __('total_amount') ?></span>
-                    <span class="font-bold text-lg text-emerald-600"><?= number_format($v['total_price'], 2) ?> <?= e($v['currency']) ?></span>
-                </div>
-                <?php endif; ?>
+                <!-- Pricing hidden — managed via invoices/receipts -->
             </div>
         </div>
 
         <?php if (!empty($v['special_requests'])): ?>
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3"><i class="fas fa-sticky-note text-amber-500 mr-1"></i><?= __('notes') ?></h3>
+            <h3 class="text-sm font-semibold text-amber-500 mr-1"></i><?= __('notes') ?></h3>
             <p class="text-gray-700 dark:text-gray-300 text-sm"><?= nl2br(e($v['special_requests'])) ?></p>
         </div>
         <?php endif; ?>

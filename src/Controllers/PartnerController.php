@@ -41,6 +41,8 @@ class PartnerController extends Controller
 
     public function store(): void
     {
+        $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Partner.php';
 
         $data = [
@@ -61,6 +63,15 @@ class PartnerController extends Controller
             'status'         => $_POST['status'] ?? 'active',
             'notes'          => trim($_POST['notes'] ?? ''),
         ];
+
+        if (empty($data['company_name'])) {
+            header('Location: ' . url('partners/create') . '?error=missing_name');
+            exit;
+        }
+        if (empty($data['email'])) {
+            header('Location: ' . url('partners/create') . '?error=missing_email');
+            exit;
+        }
 
         // Portal password
         $portalPassword = trim($_POST['portal_password'] ?? '');
@@ -173,6 +184,104 @@ class PartnerController extends Controller
     }
 
     // ========================================
+    // Statement of Account
+    // ========================================
+
+    /**
+     * Statement of account for a partner
+     * GET /partners/statement?id=X&date_from=Y&date_to=Z
+     */
+    public function statement(): void
+    {
+        $this->requireAuth();
+        require_once ROOT_PATH . '/src/Models/Partner.php';
+        $db = Database::getInstance()->getConnection();
+
+        $id       = (int)($_GET['id'] ?? 0);
+        $partner  = Partner::getById($id);
+        if (!$partner) { header('Location: ' . url('partners')); exit; }
+
+        $dateFrom = $_GET['date_from'] ?? date('Y-01-01');
+        $dateTo   = $_GET['date_to'] ?? date('Y-12-31');
+        $companyName = $partner['company_name'];
+
+        $transactions = [];
+
+        // Invoices = debits
+        $invStmt = $db->prepare(
+            "SELECT id, invoice_no, invoice_date, total_amount, currency, status 
+             FROM invoices 
+             WHERE (company_name = ? OR company_id = ?) AND invoice_date BETWEEN ? AND ?
+             ORDER BY invoice_date"
+        );
+        $invStmt->execute([$companyName, $id, $dateFrom, $dateTo]);
+        foreach ($invStmt->fetchAll() as $inv) {
+            $transactions[] = [
+                'date'        => $inv['invoice_date'],
+                'type'        => 'invoice',
+                'reference'   => $inv['invoice_no'],
+                'description' => 'Invoice — ' . $inv['currency'],
+                'debit'       => (float)$inv['total_amount'],
+                'credit'      => 0,
+            ];
+            // If paid, add as credit
+            if ($inv['status'] === 'paid') {
+                $transactions[] = [
+                    'date'        => $inv['invoice_date'],
+                    'type'        => 'payment',
+                    'reference'   => $inv['invoice_no'],
+                    'description' => 'Payment received',
+                    'debit'       => 0,
+                    'credit'      => (float)$inv['total_amount'],
+                ];
+            }
+        }
+
+        // Credit notes = credits
+        try {
+            $cnStmt = $db->prepare(
+                "SELECT cn.* FROM credit_notes cn 
+                 WHERE cn.partner_id = ? AND cn.created_at BETWEEN ? AND ?
+                 ORDER BY cn.created_at"
+            );
+            $cnStmt->execute([$id, $dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            foreach ($cnStmt->fetchAll() as $cn) {
+                $transactions[] = [
+                    'date'        => substr($cn['created_at'], 0, 10),
+                    'type'        => 'credit_note',
+                    'reference'   => $cn['credit_note_no'],
+                    'description' => 'Credit Note — ' . ($cn['reason'] ?: ''),
+                    'debit'       => 0,
+                    'credit'      => (float)$cn['amount'],
+                ];
+            }
+        } catch (\Exception $e) {}
+
+        // Sort by date
+        usort($transactions, fn($a, $b) => strcmp($a['date'], $b['date']));
+
+        // Calculate balance
+        $totalInvoiced = array_sum(array_column(array_filter($transactions, fn($t) => $t['type'] === 'invoice'), 'debit'));
+        $totalPaid     = array_sum(array_column(array_filter($transactions, fn($t) => $t['type'] === 'payment'), 'credit'));
+        $totalCredits  = array_sum(array_column(array_filter($transactions, fn($t) => $t['type'] === 'credit_note'), 'credit'));
+
+        $this->view('partners/statement', [
+            'partner'      => $partner,
+            'transactions' => $transactions,
+            'dateFrom'     => $dateFrom,
+            'dateTo'       => $dateTo,
+            'balance'      => [
+                'total_invoiced' => $totalInvoiced,
+                'total_paid'     => $totalPaid,
+                'total_credits'  => $totalCredits,
+                'outstanding'    => $totalInvoiced - $totalPaid - $totalCredits,
+            ],
+            'pageTitle'    => 'Statement — ' . $companyName,
+            'activePage'   => 'partners',
+        ]);
+    }
+
+    // ========================================
     // Admin: Partner Booking Requests
     // ========================================
 
@@ -199,6 +308,7 @@ class PartnerController extends Controller
     public function bookingRequestAction(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
 
         $id = (int)($_POST['id'] ?? 0);
@@ -264,6 +374,7 @@ class PartnerController extends Controller
     public function messageReply(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
 
         $partnerId = (int)($_POST['partner_id'] ?? 0);

@@ -34,6 +34,7 @@ foreach ($hotelRooms as $r) {
 <?php endif; ?>
 <div class="max-w-3xl" x-data="bookingForm()">
     <form method="POST" action="<?= url('portal/booking/store') ?>" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-5">
+        <?= csrf_field() ?>
 
         <!-- Request Type -->
         <div>

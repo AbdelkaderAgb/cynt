@@ -63,7 +63,7 @@ $statuses = ['pending' => __('pending'), 'confirmed' => __('confirmed'), 'comple
             <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4"><i class="fas fa-info-circle text-blue-500 mr-2"></i><?= __('details') ?></h3>
             <div class="space-y-3">
                 <div class="flex justify-between"><span class="text-gray-400 text-sm"><?= __('total_pax') ?></span><span class="font-bold text-lg text-blue-600"><?= $v['total_pax'] ?></span></div>
-                <div class="flex justify-between"><span class="text-gray-400 text-sm"><?= __('transfer_price') ?></span><span class="font-bold text-lg text-emerald-600"><?= number_format($v['price'] ?? 0, 2) ?> <?= $v['currency'] ?? 'USD' ?></span></div>
+                <!-- Pricing hidden -->
                 <div class="flex justify-between"><span class="text-gray-400 text-sm"><?= __('payment_status') ?></span><span class="text-sm font-medium"><?= $v['payment_status'] ?? 'unpaid' ?></span></div>
             </div>
         </div>

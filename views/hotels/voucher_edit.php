@@ -15,6 +15,7 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 </div>
 
 <form method="POST" action="<?= url('hotel-voucher/update') ?>" class="space-y-6" x-data="hotelEditForm()">
+    <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= $v['id'] ?>">
     <input type="hidden" name="company_id" id="hotel_company_id" value="<?= e($v['company_id'] ?? '') ?>">
 
@@ -101,6 +102,21 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
         </div>
     </div>
 
+    <!-- Guest & Passport -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-passport text-amber-500 mr-1"></i>Guest Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
+                <input type="text" name="guest_name" value="<?= e($v['guest_name'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500" placeholder="Main guest name">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
+                <input type="text" name="passenger_passport" value="<?= e($v['passenger_passport'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500" placeholder="Passport number">
+            </div>
+        </div>
+    </div>
+
     <!-- PAX -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-users text-purple-500 mr-1"></i>Guests</h3>
@@ -124,23 +140,7 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
         <button type="button" @click="guests.push({title:'Mr',name:''})" class="text-sm text-teal-600 hover:text-teal-700 font-medium"><i class="fas fa-plus mr-1"></i>Add Guest</button>
     </div>
 
-    <!-- Pricing -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-money-bill-wave text-emerald-500 mr-1"></i>Pricing</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Price per Night</label><input type="number" name="price_per_night" value="<?= $v['price_per_night'] ?>" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Total Price</label><input type="number" name="total_price" value="<?= $v['total_price'] ?>" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Currency</label>
-                <select name="currency" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    <option value="USD" <?= $v['currency']==='USD'?'selected':'' ?>>USD</option>
-                    <option value="EUR" <?= $v['currency']==='EUR'?'selected':'' ?>>EUR</option>
-                    <option value="TRY" <?= $v['currency']==='TRY'?'selected':'' ?>>TRY</option>
-                    <option value="GBP" <?= $v['currency']==='GBP'?'selected':'' ?>>GBP</option>
-                </select>
-            </div>
-        </div>
-    </div>
+    <!-- Pricing removed — prices are managed via invoices/receipts only -->
 
     <!-- Special Requests -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">

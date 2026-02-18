@@ -163,4 +163,110 @@ class Report
 
         return $summary;
     }
+
+    // =======================================
+    // Profitability Analytics
+    // =======================================
+
+    /**
+     * Profitability: revenue vs cost by service type
+     * Uses cost_price / selling_price columns on hotel_vouchers and tours
+     */
+    public static function getProfitability(string $startDate, string $endDate): array
+    {
+        $result = [
+            'byService' => [],
+            'byMonth'   => [],
+            'totals'    => ['revenue' => 0, 'cost' => 0, 'profit' => 0, 'margin' => 0],
+        ];
+
+        // Hotel profitability
+        try {
+            $row = Database::fetchOne(
+                "SELECT COALESCE(SUM(selling_price), 0) as revenue, COALESCE(SUM(cost_price), 0) as cost
+                 FROM hotel_vouchers 
+                 WHERE created_at BETWEEN ? AND ?",
+                [$startDate . ' 00:00:00', $endDate . ' 23:59:59']
+            );
+            $rev = (float)($row['revenue'] ?? 0);
+            $cost = (float)($row['cost'] ?? 0);
+            $result['byService'][] = [
+                'service' => 'Hotel',
+                'revenue' => $rev,
+                'cost'    => $cost,
+                'profit'  => $rev - $cost,
+                'margin'  => $rev > 0 ? round(($rev - $cost) / $rev * 100, 1) : 0,
+            ];
+        } catch (\Exception $e) {}
+
+        // Tour profitability
+        try {
+            $row = Database::fetchOne(
+                "SELECT COALESCE(SUM(selling_price), 0) as revenue, COALESCE(SUM(cost_price), 0) as cost
+                 FROM tours 
+                 WHERE created_at BETWEEN ? AND ?",
+                [$startDate . ' 00:00:00', $endDate . ' 23:59:59']
+            );
+            $rev = (float)($row['revenue'] ?? 0);
+            $cost = (float)($row['cost'] ?? 0);
+            $result['byService'][] = [
+                'service' => 'Tour',
+                'revenue' => $rev,
+                'cost'    => $cost,
+                'profit'  => $rev - $cost,
+                'margin'  => $rev > 0 ? round(($rev - $cost) / $rev * 100, 1) : 0,
+            ];
+        } catch (\Exception $e) {}
+
+        // Transfer profitability (from invoices)
+        try {
+            $row = Database::fetchOne(
+                "SELECT COALESCE(SUM(total_amount), 0) as revenue
+                 FROM invoices 
+                 WHERE invoice_date BETWEEN ? AND ?",
+                [$startDate, $endDate]
+            );
+            $rev = (float)($row['revenue'] ?? 0);
+            $result['byService'][] = [
+                'service' => 'Invoiced Services',
+                'revenue' => $rev,
+                'cost'    => 0,
+                'profit'  => $rev,
+                'margin'  => 100,
+            ];
+        } catch (\Exception $e) {}
+
+        // Monthly profitability (hotel + tour combined)
+        try {
+            $months = Database::fetchAll(
+                "SELECT DATE_FORMAT(created_at, '%Y-%m') as month,
+                        COALESCE(SUM(selling_price), 0) as revenue,
+                        COALESCE(SUM(cost_price), 0) as cost
+                 FROM hotel_vouchers
+                 WHERE created_at BETWEEN ? AND ?
+                 GROUP BY month
+                 ORDER BY month",
+                [$startDate . ' 00:00:00', $endDate . ' 23:59:59']
+            );
+            foreach ($months as $m) {
+                $result['byMonth'][$m['month']] = [
+                    'revenue' => (float)$m['revenue'],
+                    'cost'    => (float)$m['cost'],
+                    'profit'  => (float)$m['revenue'] - (float)$m['cost'],
+                ];
+            }
+        } catch (\Exception $e) {}
+
+        // Totals
+        foreach ($result['byService'] as $s) {
+            $result['totals']['revenue'] += $s['revenue'];
+            $result['totals']['cost'] += $s['cost'];
+        }
+        $result['totals']['profit'] = $result['totals']['revenue'] - $result['totals']['cost'];
+        $result['totals']['margin'] = $result['totals']['revenue'] > 0
+            ? round($result['totals']['profit'] / $result['totals']['revenue'] * 100, 1)
+            : 0;
+
+        return $result;
+    }
 }

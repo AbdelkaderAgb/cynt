@@ -11,6 +11,7 @@ $inv = $invoice;
 </div>
 
 <form method="POST" action="<?= url('invoices/store') ?>" class="space-y-6">
+    <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $inv['id'] ?>"><?php endif; ?>
     <input type="hidden" name="company_id" id="inv_company_id" value="<?= e($inv['company_id'] ?? '') ?>">
 

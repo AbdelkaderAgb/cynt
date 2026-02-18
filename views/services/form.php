@@ -20,6 +20,7 @@ $isEdit = $isEdit ?? false;
 </div>
 
 <form method="POST" action="<?= url('services/store') ?>" class="space-y-6 max-w-3xl">
+    <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $s['id'] ?>"><?php endif; ?>
 
     <!-- Service Type & Name -->

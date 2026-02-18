@@ -10,6 +10,7 @@
 </div>
 
 <form method="POST" action="<?= url('settings/email') ?>" class="space-y-6">
+    <?= csrf_field() ?>
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-server text-blue-500 mr-2"></i>SMTP Settings</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

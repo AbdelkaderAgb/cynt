@@ -92,8 +92,10 @@
 
         <!-- Actions -->
         <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+            <a href="<?= url('hotels/vouchers') ?>?hotel_id=<?= $h['id'] ?>" class="flex-1 text-center px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-semibold hover:bg-emerald-200 transition"><i class="fas fa-calendar-plus mr-1"></i>Book Now</a>
             <a href="<?= url('hotels/profiles/edit') ?>?id=<?= $h['id'] ?>" class="flex-1 text-center px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold hover:bg-indigo-200 transition"><i class="fas fa-edit mr-1"></i>Edit</a>
             <form method="POST" action="<?= url('hotels/profiles/delete') ?>" onsubmit="return confirm('Delete this hotel and all its rooms?')" class="flex-1">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= $h['id'] ?>">
                 <button class="w-full px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-xs font-semibold hover:bg-red-200 transition"><i class="fas fa-trash mr-1"></i>Delete</button>
             </form>
@@ -122,6 +124,7 @@
             <button onclick="document.getElementById('importModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
         </div>
         <form method="POST" action="<?= url('hotels/profiles/import') ?>" enctype="multipart/form-data" class="p-6">
+            <?= csrf_field() ?>
             <div class="mb-4">
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Upload an XLSX file with the following columns:</p>
                 <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-xs text-gray-500 dark:text-gray-400 font-mono leading-relaxed">

@@ -11,6 +11,7 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-2xl">
     <form method="POST" action="<?= url('receipts/update') ?>">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= $receipt['id'] ?>">
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">

@@ -307,3 +307,13 @@ Stack trace:
 #3 /home/barqvkxs/public_html/index.php(223): App::run()
 #4 {main}
   thrown in /home/barqvkxs/public_html/src/Controllers/HotelController.php on line 79
+[18-Feb-2026 04:00:17 Europe/Istanbul] PHP Fatal error:  Uncaught Exception: Database query failed. Please try again later. in /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/config/database.php:204
+Stack trace:
+#0 /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/config/database.php(229): Database->query('SELECT id, CONC...', Array)
+#1 /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/src/Models/Fleet.php(76): Database::fetchAll('SELECT id, CONC...')
+#2 /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/src/Controllers/VoucherController.php(42): Fleet::getActiveDrivers()
+#3 /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/src/Core/App.php(145): VoucherController->create()
+#4 /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/src/Core/App.php(87): App::dispatch('VoucherControll...', 'create')
+#5 /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/index.php(310): App::run()
+#6 {main}
+  thrown in /Users/cheickabdelghaderbeyaye/Desktop/assets (2)/config/database.php on line 204

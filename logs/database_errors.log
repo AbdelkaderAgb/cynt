@@ -434,3 +434,87 @@
 [2026-02-16 22:43:01] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotels/profiles/create
 [2026-02-16 22:43:18] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
 [2026-02-16 22:43:18] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:35:25] Database connection failed: SQLSTATE[HY000] [2002] No such file or directory | IP: ::1 | URL: /login
+[2026-02-18 03:35:31] Database connection failed: SQLSTATE[HY000] [2002] No such file or directory | IP: ::1 | URL: /login
+[2026-02-18 03:35:36] Database connection failed: SQLSTATE[HY000] [2002] No such file or directory | IP: ::1 | URL: /login
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status = 'pending' | IP: ::1 | URL: /dashboard
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status IN ('assigned','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such table: quotations | SQL: SELECT COUNT(*) as val FROM quotations WHERE status IN ('draft','sent') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such table: group_files | SQL: SELECT COUNT(*) as val FROM group_files WHERE status IN ('planning','confirmed','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such column: company_name | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: ::1 | URL: /dashboard
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 03:48:58] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 03:51:07] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:51:07] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:52:59] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /calendar
+[2026-02-18 03:52:59] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /calendar
+[2026-02-18 03:53:00] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /tour-voucher
+[2026-02-18 03:53:00] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /tour-voucher
+[2026-02-18 03:53:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /tour-voucher/create
+[2026-02-18 03:53:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /tour-voucher/create
+[2026-02-18 03:55:25] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:55:25] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:55:28] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:55:28] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:55:30] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:55:30] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status = 'pending' | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status IN ('assigned','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such table: quotations | SQL: SELECT COUNT(*) as val FROM quotations WHERE status IN ('draft','sent') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such table: group_files | SQL: SELECT COUNT(*) as val FROM group_files WHERE status IN ('planning','confirmed','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such column: company_name | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:16] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status = 'pending' | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status IN ('assigned','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such table: quotations | SQL: SELECT COUNT(*) as val FROM quotations WHERE status IN ('draft','sent') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such table: group_files | SQL: SELECT COUNT(*) as val FROM group_files WHERE status IN ('planning','confirmed','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such column: company_name | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 03:59:41] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 04:00:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /vouchers
+[2026-02-18 04:00:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /vouchers
+[2026-02-18 04:00:17] Query failed: SQLSTATE[HY000]: General error: 1 no such column: first_name | SQL: SELECT id, CONCAT(first_name,' ',last_name) as name, phone FROM drivers WHERE status='active' ORDER BY first_name | IP: ::1 | URL: /vouchers/create
+[2026-02-18 04:00:31] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:00:31] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status = 'pending' | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: missions | SQL: SELECT COUNT(*) as val FROM missions WHERE status IN ('assigned','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: quotations | SQL: SELECT COUNT(*) as val FROM quotations WHERE status IN ('draft','sent') | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: group_files | SQL: SELECT COUNT(*) as val FROM group_files WHERE status IN ('planning','confirmed','in_progress') | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such column: company_name | SQL: SELECT company_name, COUNT(*) as invoice_count,
+                        COALESCE(SUM(total_amount), 0) as total_revenue,
+                        currency
+                 FROM invoices
+                 WHERE status = 'paid'
+                 GROUP BY company_name, currency
+                 ORDER BY total_revenue DESC
+                 LIMIT ? | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:02] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /dashboard
+[2026-02-18 04:02:26] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:02:26] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:02:46] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:02:46] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:03:22] Query failed: SQLSTATE[HY000]: General error: 1 no such table: notifications | SQL: SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 | IP: ::1 | URL: /hotel-voucher
+[2026-02-18 04:03:22] Query failed: SQLSTATE[HY000]: General error: 1 no such table: partner_messages | SQL: SELECT COUNT(*) as c FROM partner_messages WHERE sender_type = 'partner' AND is_read = 0 | IP: ::1 | URL: /hotel-voucher

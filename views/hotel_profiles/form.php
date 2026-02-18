@@ -9,6 +9,7 @@ $h = $hotel;
 </div>
 
 <form method="POST" action="<?= url('hotels/profiles/store') ?>" class="space-y-6" id="hotelForm">
+    <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $h['id'] ?>"><?php endif; ?>
 
     <!-- Hotel Details Card -->

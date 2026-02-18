@@ -10,6 +10,7 @@
 </div>
 
 <form method="POST" action="<?= url('settings/update') ?>" class="space-y-6">
+    <?= csrf_field() ?>
     <?php foreach ($settings as $group => $items): ?>
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 capitalize"><i class="fas fa-folder text-blue-500 mr-2"></i><?= e($group) ?></h3>

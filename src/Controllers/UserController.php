@@ -54,6 +54,7 @@ class UserController extends Controller
     public function store(): void
     {
         Auth::requireAdmin();
+        $this->requireCsrf();
 
         $data = [
             'first_name' => trim($_POST['first_name'] ?? ''),
@@ -115,6 +116,7 @@ class UserController extends Controller
 
     public function updateProfile(): void
     {
+        $this->requireCsrf();
         $userId = $_SESSION['user_id'];
         $data = [
             'first_name' => trim($_POST['first_name'] ?? ''),

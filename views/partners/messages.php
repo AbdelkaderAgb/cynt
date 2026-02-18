@@ -61,6 +61,7 @@
 
     <!-- Reply Form with File Upload -->
     <form method="POST" action="<?= url('partner-messages/reply') ?>" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+        <?= csrf_field() ?>
         <input type="hidden" name="partner_id" value="<?= $partner['id'] ?>">
         <div class="flex gap-3 items-end">
             <div class="flex-1 space-y-2">

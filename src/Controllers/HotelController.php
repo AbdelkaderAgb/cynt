@@ -54,6 +54,7 @@ class HotelController extends Controller
     public function voucherStore(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
 
         $adults = (int)($_POST['adults'] ?? 0);
@@ -82,22 +83,25 @@ class HotelController extends Controller
             $guestName = trim($_POST['company_name'] ?? 'Guest');
         }
 
+        $passengerPassport = trim($_POST['passenger_passport'] ?? '');
+
         $voucherNo = 'HV-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
         $additionalServices = $this->parseAdditionalServices($_POST['additional_services'] ?? '');
 
         // Use explicit next ID to work even without AUTO_INCREMENT
         $nextId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM hotel_vouchers")->fetchColumn();
         $stmt = $db->prepare("INSERT INTO hotel_vouchers
-            (id, voucher_no, guest_name, hotel_name, company_name, address, telephone,
+            (id, voucher_no, guest_name, passenger_passport, hotel_name, company_name, address, telephone,
              room_type, room_count, board_type, transfer_type,
              check_in, check_out, nights, total_pax, adults, children, infants,
              price_per_night, total_price, currency, customers,
              special_requests, additional_services, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $nextId,
             $voucherNo,
             $guestName,
+            $passengerPassport,
             trim($_POST['hotel_name'] ?? ''),
             trim($_POST['company_name'] ?? ''),
             trim($_POST['address'] ?? ''),
@@ -178,6 +182,7 @@ class HotelController extends Controller
     public function voucherUpdate(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
         $id = (int)($_POST['id'] ?? 0);
         if (!$id) { header('Location: ' . url('hotel-voucher')); exit; }
@@ -208,9 +213,10 @@ class HotelController extends Controller
         }
 
         $additionalServices = $this->parseAdditionalServices($_POST['additional_services'] ?? '');
+        $passengerPassport = trim($_POST['passenger_passport'] ?? '');
 
         $stmt = $db->prepare("UPDATE hotel_vouchers SET
-            guest_name = ?, hotel_name = ?, company_name = ?, address = ?, telephone = ?,
+            guest_name = ?, passenger_passport = ?, hotel_name = ?, company_name = ?, address = ?, telephone = ?,
             room_type = ?, room_count = ?, board_type = ?, transfer_type = ?,
             check_in = ?, check_out = ?, nights = ?, total_pax = ?, adults = ?, children = ?, infants = ?,
             price_per_night = ?, total_price = ?, currency = ?, customers = ?,
@@ -218,6 +224,7 @@ class HotelController extends Controller
             WHERE id = ?");
         $stmt->execute([
             $guestName,
+            $passengerPassport,
             trim($_POST['hotel_name'] ?? ''),
             trim($_POST['company_name'] ?? ''),
             trim($_POST['address'] ?? ''),
@@ -394,6 +401,7 @@ class HotelController extends Controller
     public function invoiceStore(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $db = Database::getInstance()->getConnection();

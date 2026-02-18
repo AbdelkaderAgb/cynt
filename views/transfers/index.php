@@ -68,7 +68,7 @@ $statusColors = ['pending'=>'bg-amber-100 text-amber-700','confirmed'=>'bg-blue-
                 <?php foreach ($vouchers as $v): ?>
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                     <td class="px-4 py-3 font-mono font-semibold text-blue-600">
-                        <a href="<?= url('transfer-voucher/show') ?>?id=<?= $v['id'] ?>" class="hover:underline"><?= e($v['voucher_no']) ?></a>
+                        <a href="<?= url('transfers/show') ?>?id=<?= $v['id'] ?>" class="hover:underline"><?= e($v['voucher_no']) ?></a>
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">
                         <div><?= e($v['company_name']) ?></div>
@@ -86,9 +86,9 @@ $statusColors = ['pending'=>'bg-amber-100 text-amber-700','confirmed'=>'bg-blue-
                     <td class="px-4 py-3 text-center"><span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full <?= $statusColors[$v['status']] ?? 'bg-gray-100 text-gray-600' ?>"><?= $statusLabels[$v['status']] ?? $v['status'] ?></span></td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="<?= url('transfer-voucher/pdf') ?>?id=<?= $v['id'] ?>" target="_blank" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="PDF"><i class="fas fa-file-pdf"></i></a>
-                            <a href="<?= url('transfer-voucher/edit') ?>?id=<?= $v['id'] ?>" class="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Edit"><i class="fas fa-edit"></i></a>
-                            <a href="<?= url('transfer-voucher/delete') ?>?id=<?= $v['id'] ?>" onclick="return confirm('Delete transfer?')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete"><i class="fas fa-trash"></i></a>
+                            <a href="<?= url('transfers/pdf') ?>?id=<?= $v['id'] ?>" target="_blank" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="PDF"><i class="fas fa-file-pdf"></i></a>
+                            <a href="<?= url('transfers/edit') ?>?id=<?= $v['id'] ?>" class="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Edit"><i class="fas fa-edit"></i></a>
+                            <a href="<?= url('transfers/delete') ?>?id=<?= $v['id'] ?>" onclick="return confirm('Delete transfer?')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete"><i class="fas fa-trash"></i></a>
                         </div>
                     </td>
                 </tr>

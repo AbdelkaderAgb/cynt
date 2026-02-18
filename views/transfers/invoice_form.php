@@ -17,6 +17,7 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
     <form method="POST" action="<?= url('transfer-invoice/store') ?>" class="space-y-6">
+        <?= csrf_field() ?>
 
         <!-- Company & Route -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-5">

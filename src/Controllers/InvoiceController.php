@@ -46,6 +46,8 @@ class InvoiceController extends Controller
 
     public function store(): void
     {
+        $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $data = [

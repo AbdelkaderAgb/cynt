@@ -16,18 +16,24 @@ $user = $user ?? Auth::user();
 $pageTitle = $pageTitle ?? 'Dashboard';
 $currentLang = function_exists('getCurrentLang') ? getCurrentLang() : 'en';
 $notificationCount = function_exists('get_notification_count') ? get_notification_count() : 0;
+$currentLangInfo = function_exists('getCurrentLangInfo') ? getCurrentLangInfo() : ['dir' => 'ltr'];
+$isRtl = ($currentLangInfo['dir'] ?? 'ltr') === 'rtl';
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo e($currentLang); ?>" x-data="{ darkMode: localStorage.getItem('theme') === 'dark' }" :class="{ 'dark': darkMode }">
+<html lang="<?php echo e($currentLang); ?>" dir="<?php echo $isRtl ? 'rtl' : 'ltr'; ?>" x-data="{ darkMode: localStorage.getItem('theme') === 'dark' }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e($pageTitle); ?> - <?php echo e(COMPANY_NAME); ?></title>
 
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter + Amiri (Arabic) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+    <?php if ($isRtl): ?>
+    <link rel="stylesheet" href="<?php echo url('assets/css/rtl.css'); ?>">
+    <?php endif; ?>
 
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

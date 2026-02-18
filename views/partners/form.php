@@ -1,6 +1,7 @@
 <?php $p = $partner; ?>
 <div class="mb-6"><h1 class="text-2xl font-bold text-gray-800 dark:text-white"><?= $pageTitle ?></h1></div>
 <form method="POST" action="<?= url('partners/store') ?>" class="space-y-6">
+    <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $p['id'] ?>"><?php endif; ?>
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-building text-purple-500 mr-2"></i><?= __('company_info') ?></h3>

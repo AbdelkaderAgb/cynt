@@ -109,6 +109,7 @@ class ServiceController extends Controller
     public function store(): void
     {
         Auth::requireAuth();
+        $this->requireCsrf();
         
         $id = intval($_POST['id'] ?? 0);
         $data = [
@@ -145,6 +146,7 @@ class ServiceController extends Controller
     public function delete(): void
     {
         Auth::requireAuth();
+        $this->requireCsrf();
         $id = intval($_GET['id'] ?? intval($_POST['id'] ?? 0));
         
         if ($id > 0) {

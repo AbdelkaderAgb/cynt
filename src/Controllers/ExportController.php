@@ -14,6 +14,28 @@ use Dompdf\Options;
 class ExportController extends Controller
 {
     /**
+     * Resolve partner logo path if partner has logo_on_vouchers enabled.
+     * Looks up partner by partner_id or company_name.
+     */
+    private function resolvePartnerLogo(array $record): string
+    {
+        $partnerId = (int)($record['partner_id'] ?? $record['company_id'] ?? 0);
+        $companyName = $record['company_name'] ?? '';
+        $partner = null;
+
+        if ($partnerId > 0) {
+            $partner = Database::fetchOne("SELECT logo, logo_on_vouchers FROM partners WHERE id = ?", [$partnerId]);
+        } elseif ($companyName) {
+            $partner = Database::fetchOne("SELECT logo, logo_on_vouchers FROM partners WHERE company_name = ?", [$companyName]);
+        }
+
+        if ($partner && !empty($partner['logo_on_vouchers']) && !empty($partner['logo'])) {
+            return $partner['logo'];
+        }
+        return '';
+    }
+
+    /**
      * Generate and stream Invoice PDF
      */
     public function invoicePdf(): void
@@ -27,6 +49,7 @@ class ExportController extends Controller
 
         $html = $this->renderPdfTemplate('invoices/pdf', [
             'invoice'        => $invoice,
+            'partnerLogo'    => $this->resolvePartnerLogo($invoice),
             'companyName'    => COMPANY_NAME,
             'companyAddress' => COMPANY_ADDRESS,
             'companyPhone'   => COMPANY_PHONE,
@@ -179,11 +202,12 @@ class ExportController extends Controller
         $voucher = $stmt->fetch();
         if (!$voucher) { header('Location: ' . url('hotel-voucher')); exit; }
 
-        $guestProgram = HotelController::resolveGuestProgram($id);
+        $guestProgram = resolve_guest_program($id);
 
         $html = $this->renderPdfTemplate('hotels/voucher_pdf', [
             'voucher'        => $voucher,
             'guestProgram'   => $guestProgram,
+            'partnerLogo'    => $this->resolvePartnerLogo($voucher),
             'companyName'    => COMPANY_NAME,
             'companyAddress' => COMPANY_ADDRESS,
             'companyPhone'   => COMPANY_PHONE,
@@ -209,6 +233,7 @@ class ExportController extends Controller
 
         $html = $this->renderPdfTemplate('tours/voucher_pdf', [
             'tour'           => $tour,
+            'partnerLogo'    => $this->resolvePartnerLogo($tour),
             'companyName'    => COMPANY_NAME,
             'companyAddress' => COMPANY_ADDRESS,
             'companyPhone'   => COMPANY_PHONE,
@@ -216,6 +241,31 @@ class ExportController extends Controller
         ]);
 
         $filename = 'TourVoucher-' . ($tour['tour_code'] ?? $tour['id']) . '.pdf';
+        $this->streamPdf($html, $filename);
+    }
+
+    /**
+     * Generate and stream Transfer Voucher PDF
+     */
+    public function transferVoucherPdf(): void
+    {
+        $this->requireAuth();
+        require_once ROOT_PATH . '/src/Models/Voucher.php';
+
+        $id = (int)($_GET['id'] ?? 0);
+        $voucher = Voucher::getById($id);
+        if (!$voucher) { header('Location: ' . url('transfers')); exit; }
+
+        $html = $this->renderPdfTemplate('transfers/pdf', [
+            'voucher'        => $voucher,
+            'partnerLogo'    => $this->resolvePartnerLogo($voucher),
+            'companyName'    => COMPANY_NAME,
+            'companyAddress' => COMPANY_ADDRESS,
+            'companyPhone'   => COMPANY_PHONE,
+            'companyEmail'   => COMPANY_EMAIL,
+        ]);
+
+        $filename = 'TransferVoucher-' . ($voucher['voucher_no'] ?? $voucher['id']) . '.pdf';
         $this->streamPdf($html, $filename);
     }
 
@@ -258,11 +308,8 @@ class ExportController extends Controller
 
     private function generatePdfContent(string $html): string
     {
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
+        $dompdf = $this->createDompdf();
+        $html = $this->wrapArabicSupport($html);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -272,11 +319,8 @@ class ExportController extends Controller
 
     private function streamPdf(string $html, string $filename): void
     {
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
+        $dompdf = $this->createDompdf();
+        $html = $this->wrapArabicSupport($html);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -287,4 +331,120 @@ class ExportController extends Controller
         exit;
     }
 
+    private function createDompdf(): Dompdf
+    {
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isFontSubsettingEnabled', true);
+
+        // Allow custom fonts directory
+        $fontDir = APP_ROOT . '/assets/fonts';
+        if (is_dir($fontDir)) {
+            $options->set('fontDir', $fontDir);
+            $options->set('fontCache', APP_ROOT . '/storage/fonts');
+            if (!is_dir(APP_ROOT . '/storage/fonts')) {
+                @mkdir(APP_ROOT . '/storage/fonts', 0755, true);
+            }
+        }
+
+        return new Dompdf($options);
+    }
+
+    private function wrapArabicSupport(string $html): string
+    {
+        $currentLang = $_SESSION['language'] ?? 'en';
+        $isRtl = ($currentLang === 'ar');
+
+        if (!$isRtl) {
+            return $html;
+        }
+
+        // Inject RTL CSS and Arabic font-family at the top of <style> or before </head>
+        $rtlCss = '
+        <style>
+            body, td, th, p, div, span {
+                font-family: "DejaVu Sans", "Amiri", "Noto Sans Arabic", sans-serif;
+                direction: rtl;
+                text-align: right;
+            }
+            table { direction: rtl; }
+        </style>';
+
+        // Add dir="rtl" to html tag if present
+        $html = preg_replace('/<html([^>]*)>/', '<html$1 dir="rtl">', $html, 1);
+
+        // Inject RTL styles before </head> or at the start
+        if (stripos($html, '</head>') !== false) {
+            $html = str_ireplace('</head>', $rtlCss . '</head>', $html);
+        } else {
+            $html = $rtlCss . $html;
+        }
+
+        return $html;
+    }
+
+    /**
+     * ICS Calendar Export — export a transfer, tour, or hotel booking as .ics
+     */
+    public function icsExport(): void
+    {
+        $this->requireAuth();
+
+        $type = $_GET['type'] ?? '';
+        $id   = (int)($_GET['id'] ?? 0);
+
+        switch ($type) {
+            case 'transfer':
+                require_once ROOT_PATH . '/src/Models/Voucher.php';
+                $v = Voucher::getById($id);
+                if (!$v) { http_response_code(404); exit('Not found'); }
+                $ics = generate_ics(
+                    'Transfer: ' . ($v['pickup_location'] ?? '') . ' → ' . ($v['dropoff_location'] ?? ''),
+                    $v['pickup_date'] ?? date('Y-m-d'),
+                    $v['pickup_time'] ?? '',
+                    $v['pickup_date'] ?? '',
+                    '',
+                    $v['pickup_location'] ?? '',
+                    'Guest: ' . ($v['guest_name'] ?? '') . ' | Pax: ' . ($v['total_pax'] ?? 0) . ' | Flight: ' . ($v['flight_no'] ?? '-')
+                );
+                stream_ics($ics, 'transfer-' . ($v['voucher_no'] ?? $id) . '.ics');
+                break;
+
+            case 'tour':
+                $t = Database::fetchOne("SELECT * FROM tours WHERE id = ?", [$id]);
+                if (!$t) { http_response_code(404); exit('Not found'); }
+                $ics = generate_ics(
+                    'Tour: ' . ($t['tour_name'] ?? ''),
+                    $t['tour_date'] ?? date('Y-m-d'),
+                    $t['pickup_time'] ?? '',
+                    $t['tour_date'] ?? '',
+                    '',
+                    $t['pickup_location'] ?? '',
+                    'Guest: ' . ($t['guest_name'] ?? '') . ' | Pax: ' . ($t['total_pax'] ?? 0)
+                );
+                stream_ics($ics, 'tour-' . ($t['tour_code'] ?? $id) . '.ics');
+                break;
+
+            case 'hotel':
+                $h = Database::fetchOne("SELECT * FROM hotel_vouchers WHERE id = ?", [$id]);
+                if (!$h) { http_response_code(404); exit('Not found'); }
+                $ics = generate_ics(
+                    'Hotel: ' . ($h['hotel_name'] ?? '') . ' — ' . ($h['guest_name'] ?? ''),
+                    $h['check_in'] ?? date('Y-m-d'),
+                    '',
+                    $h['check_out'] ?? '',
+                    '',
+                    $h['hotel_name'] ?? '',
+                    'Room: ' . ($h['room_type'] ?? '') . ' | Board: ' . ($h['board_type'] ?? 'BB') . ' | Nights: ' . ($h['nights'] ?? 0)
+                );
+                stream_ics($ics, 'hotel-' . ($h['voucher_no'] ?? $id) . '.ics');
+                break;
+
+            default:
+                http_response_code(400);
+                exit('Invalid type. Use: transfer, tour, hotel');
+        }
+    }
 }

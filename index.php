@@ -19,6 +19,13 @@ ini_set('log_errors', '1');
 ini_set('error_log', BASE_PATH . '/logs/php-errors.log');
 error_reporting(E_ALL);
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+
 // Load configuration
 require_once BASE_PATH . '/config/config.php';
 
@@ -136,6 +143,44 @@ App::get('/tour-invoice', ['TourController', 'invoice']);
 App::get('/tour-invoice/create', ['TourController', 'invoiceCreate']);
 App::any('/tour-invoice/store', ['TourController', 'invoiceStore']);
 
+// Missions
+App::get('/missions', ['MissionController', 'index']);
+App::get('/missions/create', ['MissionController', 'create']);
+App::any('/missions/store', ['MissionController', 'store']);
+App::get('/missions/show', ['MissionController', 'show']);
+App::get('/missions/edit', ['MissionController', 'edit']);
+App::any('/missions/update', ['MissionController', 'update']);
+App::get('/missions/delete', ['MissionController', 'delete']);
+App::get('/missions/calendar', ['MissionController', 'calendar']);
+App::get('/missions/calendar-data', ['MissionController', 'calendarData']);
+App::any('/missions/quick-create', ['MissionController', 'quickCreate']);
+
+// Quotations
+App::get('/quotations', ['QuotationController', 'index']);
+App::get('/quotations/create', ['QuotationController', 'create']);
+App::any('/quotations/store', ['QuotationController', 'store']);
+App::get('/quotations/show', ['QuotationController', 'show']);
+App::get('/quotations/edit', ['QuotationController', 'edit']);
+App::any('/quotations/update', ['QuotationController', 'update']);
+App::get('/quotations/delete', ['QuotationController', 'delete']);
+App::get('/quotations/pdf', ['QuotationController', 'pdf']);
+App::any('/quotations/convert', ['QuotationController', 'convert']);
+
+// Group Files
+App::get('/group-files', ['GroupFileController', 'index']);
+App::get('/group-files/create', ['GroupFileController', 'create']);
+App::any('/group-files/store', ['GroupFileController', 'store']);
+App::get('/group-files/show', ['GroupFileController', 'show']);
+App::get('/group-files/edit', ['GroupFileController', 'edit']);
+App::any('/group-files/update', ['GroupFileController', 'update']);
+App::get('/group-files/delete', ['GroupFileController', 'delete']);
+App::get('/group-files/pdf', ['GroupFileController', 'pdf']);
+
+// Board Pricing API
+App::get('/api/rooms/board-prices', ['HotelProfileController', 'boardPricesApi']);
+App::get('/api/hotels/list',        ['HotelProfileController', 'listApi']);
+App::any('/api/rooms/board-prices/save', ['HotelProfileController', 'boardPricesSave']);
+
 // Receipts
 App::get('/receipts', ['ReceiptController', 'index']);
 App::get('/receipts/show', ['ReceiptController', 'show']);
@@ -217,6 +262,47 @@ App::get('/hotels/profiles/edit', ['HotelProfileController', 'edit']);
 App::any('/hotels/profiles/store', ['HotelProfileController', 'store']);
 App::any('/hotels/profiles/delete', ['HotelProfileController', 'delete']);
 App::any('/hotels/profiles/import', ['HotelProfileController', 'importXlsx']);
+
+// ============================================
+// Phase 2 — Core Tourism Operations
+// ============================================
+
+// Seasonal Pricing
+App::get('/hotels/seasons', ['SeasonalPricingController', 'index']);
+App::any('/hotels/seasons/store', ['SeasonalPricingController', 'store']);
+App::get('/hotels/seasons/delete', ['SeasonalPricingController', 'delete']);
+App::get('/api/seasons/rates', ['SeasonalPricingController', 'ratesApi']);
+App::get('/api/seasons/check', ['SeasonalPricingController', 'checkApi']);
+
+// Room Allotments
+App::get('/hotels/allotments', ['AllotmentController', 'index']);
+App::any('/hotels/allotments/store', ['AllotmentController', 'store']);
+App::get('/hotels/allotments/delete', ['AllotmentController', 'delete']);
+App::get('/api/allotments/check', ['AllotmentController', 'checkApi']);
+
+// Rooming List
+App::get('/hotels/rooming-list', ['RoomingListController', 'index']);
+App::any('/hotels/rooming-list/store', ['RoomingListController', 'store']);
+App::get('/hotels/rooming-list/export', ['RoomingListController', 'export']);
+
+// ============================================
+// Phase 3 — Financial & Quotation System
+// ============================================
+
+// Credit Notes
+App::get('/credit-notes', ['CreditNoteController', 'index']);
+App::get('/credit-notes/create', ['CreditNoteController', 'create']);
+App::any('/credit-notes/store', ['CreditNoteController', 'store']);
+App::get('/credit-notes/delete', ['CreditNoteController', 'delete']);
+
+// Tax Rates
+App::get('/settings/tax-rates', ['TaxController', 'index']);
+App::any('/settings/tax-rates/store', ['TaxController', 'store']);
+App::get('/settings/tax-rates/delete', ['TaxController', 'delete']);
+App::get('/api/tax/default', ['TaxController', 'defaultApi']);
+
+// Partner Statement of Account
+App::get('/partners/statement', ['PartnerController', 'statement']);
 
 // ============================================
 // Run the Application

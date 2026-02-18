@@ -12,6 +12,7 @@ $v = $voucher;
 </div>
 
 <form method="POST" action="<?= url('vouchers/store') ?>" class="space-y-6">
+    <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $v['id'] ?>"><?php endif; ?>
     <input type="hidden" name="company_id" id="company_id" value="<?= e($v['company_id'] ?? '') ?>">
 
@@ -37,9 +38,23 @@ $v = $voucher;
                     </template>
                 </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1"><?= __('hotel_name') ?></label>
-                <input type="text" name="hotel_name" value="<?= e($v['hotel_name'] ?? '') ?>" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500">
+            <div class="md:col-span-2" x-data="transferHotelCascade()" x-init="init()">
+                <label class="block text-sm font-medium text-gray-600 mb-1"><i class="fas fa-hotel text-teal-400 mr-1"></i><?= __('hotel_name') ?></label>
+                <input type="hidden" name="hotel_name" :value="selectedHotelName">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-1">
+                    <select x-model="selectedCountry" @change="onCountryChange()" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
+                        <option value="">-- Country --</option>
+                        <template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template>
+                    </select>
+                    <select x-model="selectedCity" @change="onCityChange()" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
+                        <option value="">-- City --</option>
+                        <template x-for="ci in cities" :key="ci"><option :value="ci" x-text="ci"></option></template>
+                    </select>
+                    <select x-model="selectedHotelId" @change="onHotelChange()" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
+                        <option value="">-- Hotel --</option>
+                        <template x-for="h in filteredHotels" :key="h.id"><option :value="h.id" x-text="h.name + ' ' + '★'.repeat(h.stars||0)"></option></template>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -121,18 +136,7 @@ $v = $voucher;
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1"><?= __('amount') ?></label>
-                <input type="number" name="price" value="<?= $v['price'] ?? 0 ?>" step="0.01" min="0" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1"><?= __('currency') ?></label>
-                <select name="currency" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700">
-                    <?php foreach (['USD','EUR','TRY','GBP','DZD','SAR','AED','RUB'] as $c): ?>
-                    <option value="<?= $c ?>" <?= ($v['currency'] ?? 'USD') === $c ? 'selected' : '' ?>><?= $c ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+            <!-- Pricing removed — prices are managed via invoices/receipts only -->
             <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1"><?= __('status') ?></label>
                 <select name="status" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700">
@@ -201,6 +205,42 @@ function partnerSearch() {
                 const el = document.querySelector(`[name="${name}"]`);
                 if (el && val) el.value = val;
             }
+        }
+    };
+}
+function transferHotelCascade() {
+    return {
+        allHotels: [], countries: [], cities: [], filteredHotels: [],
+        selectedCountry: '', selectedCity: '', selectedHotelId: '', selectedHotelName: '<?= e($v['hotel_name'] ?? '') ?>',
+        async init() {
+            try {
+                const res = await fetch('<?= url('api/hotels/list') ?>');
+                this.allHotels = await res.json();
+                this.countries = [...new Set(this.allHotels.map(h => h.country).filter(Boolean))].sort();
+            } catch(e) { this.allHotels = []; }
+            // If editing, try to auto-select the saved hotel
+            if (this.selectedHotelName) {
+                const h = this.allHotels.find(x => x.name === this.selectedHotelName);
+                if (h) {
+                    this.selectedCountry = h.country;
+                    this.onCountryChange();
+                    this.selectedCity = h.city;
+                    this.onCityChange();
+                    this.selectedHotelId = h.id;
+                }
+            }
+        },
+        onCountryChange() {
+            this.cities = [...new Set(this.allHotels.filter(h => h.country === this.selectedCountry).map(h => h.city).filter(Boolean))].sort();
+            this.selectedCity = ''; this.filteredHotels = []; this.selectedHotelId = ''; this.selectedHotelName = '';
+        },
+        onCityChange() {
+            this.filteredHotels = this.allHotels.filter(h => h.country === this.selectedCountry && h.city === this.selectedCity);
+            this.selectedHotelId = ''; this.selectedHotelName = '';
+        },
+        onHotelChange() {
+            const h = this.allHotels.find(x => x.id == this.selectedHotelId);
+            this.selectedHotelName = h ? h.name : '';
         }
     };
 }

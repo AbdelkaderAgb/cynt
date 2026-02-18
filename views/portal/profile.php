@@ -32,6 +32,7 @@
     <!-- Edit Form -->
     <div class="lg:col-span-2 space-y-4">
         <form method="POST" action="<?= url('portal/profile/update') ?>" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+            <?= csrf_field() ?>
             <h3 class="font-bold text-gray-800 dark:text-white mb-2">Contact Information</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

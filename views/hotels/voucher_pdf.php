@@ -10,14 +10,22 @@ $stampPath = ROOT_PATH . '/stamp.png';
 $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
 $tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
 $stampBase64 = file_exists($stampPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath)) : '';
+$partnerLogoBase64 = '';
+if (!empty($partnerLogo) && file_exists(ROOT_PATH . '/' . $partnerLogo)) {
+    $ext = strtolower(pathinfo($partnerLogo, PATHINFO_EXTENSION));
+    $mime = in_array($ext, ['png']) ? 'image/png' : (in_array($ext, ['gif']) ? 'image/gif' : 'image/jpeg');
+    $partnerLogoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents(ROOT_PATH . '/' . $partnerLogo));
+}
 $customers = json_decode($v['customers'] ?? '[]', true) ?: [];
 $roomTypes = ['SNG'=>'Single','DBL'=>'Double','TRP'=>'Triple','QUAD'=>'Quad','SUIT'=>'Suite','VILLA'=>'Villa','STUDIO'=>'Studio','APART'=>'Apart'];
-$boardTypes = ['room_only'=>'Room Only','bed_breakfast'=>'Bed & Breakfast','half_board'=>'Half Board','full_board'=>'Full Board','all_inclusive'=>'All Inclusive','ultra_all_inclusive'=>'Ultra All Inclusive'];
-$transferTypes = ['without'=>'Without Transfer','one_way'=>'One Way','round_trip'=>'Round Trip'];
-$statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Checked In','completed'=>'Completed','cancelled'=>'Cancelled'];
+$boardTypes = ['room_only'=>'Room Only','bed_breakfast'=>'Bed & Breakfast','half_board'=>'Half Board','full_board'=>'Full Board','all_inclusive'=>'All Inclusive'];
+$transferTypes = ['without'=>'Without Transfer','with_transfer'=>'With Transfer','airport_transfer'=>'Airport Transfer'];
+$statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Checked In','checked_out'=>'Checked Out','cancelled'=>'Cancelled','no_show'=>'No Show'];
+$pdfLang = $currentLang ?? 'en';
+$pdfDir = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 'ltr';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $pdfLang ?>" dir="<?= $pdfDir ?>">
 <head>
 <meta charset="UTF-8">
 <title>Hotel Voucher <?= htmlspecialchars($v['voucher_no']) ?></title>
@@ -49,8 +57,9 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Ch
     .stamp-pending { border-color: #e65100; color: #e65100; }
     .stamp-confirmed { border-color: #1565c0; color: #1565c0; }
     .stamp-checked_in { border-color: #00695c; color: #00695c; }
-    .stamp-completed { border-color: #2e7d32; color: #2e7d32; }
+    .stamp-checked_out { border-color: #2e7d32; color: #2e7d32; }
     .stamp-cancelled { border-color: #c62828; color: #c62828; }
+    .stamp-no_show { border-color: #616161; color: #616161; }
 
     .notes { margin-top: 12px; padding: 8px 10px; border: 1px solid #ddd; background: #fafafa; font-size: 10px; }
     .notes-hd { font-size: 8px; text-transform: uppercase; letter-spacing: 0.6px; color: #777; font-weight: bold; margin-bottom: 3px; }
@@ -71,6 +80,7 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Ch
             <tr>
                 <td class="logo-cell">
                     <?php if ($logoBase64): ?><img src="<?= $logoBase64 ?>" alt="Logo"><?php endif; ?>
+                    <?php if ($partnerLogoBase64): ?><img src="<?= $partnerLogoBase64 ?>" alt="Partner" style="height:40px; margin-left:10px; vertical-align:middle;"><?php endif; ?>
                 </td>
                 <td class="doc-cell">
                     <div class="doc-type">Hotel Voucher</div>
@@ -101,6 +111,16 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Ch
             <td>
                 <span class="lbl">Telephone</span>
                 <span class="val"><?= htmlspecialchars($v['telephone'] ?? '—') ?></span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="lbl">Guest Name</span>
+                <span class="val"><?= htmlspecialchars($v['guest_name'] ?? '—') ?></span>
+            </td>
+            <td>
+                <span class="lbl">Passport No.</span>
+                <span class="val"><?= htmlspecialchars($v['passenger_passport'] ?? '—') ?></span>
             </td>
         </tr>
     </table>
@@ -146,6 +166,53 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Ch
         </tr>
     </table>
 
+    <!-- TRANSFER INFO (if applicable) -->
+    <?php if (($v['transfer_type'] ?? 'without') !== 'without'): ?>
+    <div class="section-title">Transfer Information</div>
+    <table class="info-block">
+        <tr>
+            <td style="width:50%;">
+                <span class="lbl">Transfer Type</span>
+                <span class="val"><?= htmlspecialchars($transferTypes[$v['transfer_type']] ?? $v['transfer_type'] ?? '—') ?></span>
+            </td>
+            <td style="width:50%;">
+                <span class="lbl">Flight Number</span>
+                <span class="val"><?= htmlspecialchars($v['transfer_flight'] ?? '—') ?></span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="lbl">Pickup Location</span>
+                <span class="val"><?= htmlspecialchars($v['transfer_pickup'] ?? '—') ?></span>
+            </td>
+            <td>
+                <span class="lbl">Dropoff Location</span>
+                <span class="val"><?= htmlspecialchars($v['transfer_dropoff'] ?? '—') ?></span>
+            </td>
+        </tr>
+        <?php if (!empty($v['transfer_date']) || !empty($v['transfer_time'])): ?>
+        <tr>
+            <td>
+                <span class="lbl">Transfer Date</span>
+                <span class="val"><?= !empty($v['transfer_date']) ? date('d.m.Y', strtotime($v['transfer_date'])) : '—' ?></span>
+            </td>
+            <td>
+                <span class="lbl">Transfer Time</span>
+                <span class="val"><?= htmlspecialchars($v['transfer_time'] ?? '—') ?></span>
+            </td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($v['transfer_notes'])): ?>
+        <tr>
+            <td colspan="2">
+                <span class="lbl">Transfer Notes</span>
+                <span class="val"><?= htmlspecialchars($v['transfer_notes']) ?></span>
+            </td>
+        </tr>
+        <?php endif; ?>
+    </table>
+    <?php endif; ?>
+
     <!-- GUEST LIST -->
     <?php if (!empty($customers)): ?>
     <div class="section-title">Guest List</div>
@@ -173,7 +240,9 @@ $statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','checked_in'=>'Ch
     </table>
     <?php endif; ?>
 
-    <!-- STATUS (vouchers do not include prices) -->
+    <!-- Vouchers do not include prices — pricing is shown only in invoices and receipts -->
+
+    <!-- STATUS -->
     <table style="width:100%; margin-bottom: 14px;">
         <tr>
             <td style="width:50%; vertical-align:middle;">

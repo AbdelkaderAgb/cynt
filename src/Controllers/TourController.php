@@ -63,6 +63,7 @@ class TourController extends Controller
     public function voucherStore(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
 
         $adults = (int)($_POST['adults'] ?? 0);
@@ -81,18 +82,35 @@ class TourController extends Controller
         $tourDate = $firstTour['date'] ?? date('Y-m-d');
         $duration = $firstTour['duration'] ?? '';
 
+        $passengerPassport = trim($_POST['passenger_passport'] ?? '');
+        $guestName = trim($_POST['guest_name'] ?? '');
+
+        // Location fields
+        $city = trim($_POST['city'] ?? '');
+        $country = trim($_POST['country'] ?? 'Turkey');
+        $address = trim($_POST['address'] ?? '');
+        $meetingPoint = trim($_POST['meeting_point'] ?? '');
+        $meetingPointAddress = trim($_POST['meeting_point_address'] ?? '');
+        $durationHours = (float)($_POST['duration_hours'] ?? 0);
+        $includes = trim($_POST['includes'] ?? '');
+        $excludes = trim($_POST['excludes'] ?? '');
+
         // Use explicit next ID to work even without AUTO_INCREMENT
         $nextId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM tours")->fetchColumn();
         $stmt = $db->prepare("INSERT INTO tours
-            (id, tour_name, tour_code, description, tour_type, destination, pickup_location, dropoff_location,
+            (id, tour_name, guest_name, passenger_passport, tour_code, description, tour_type, destination, pickup_location, dropoff_location,
              tour_date, start_time, end_time, total_pax, price_per_person, price_child, price_per_infant, total_price, currency, status,
-             company_name, hotel_name, customer_phone, adults, children, infants, customers, tour_items)
-            VALUES (?, ?, ?, ?, 'daily', '', '', '',
+             company_name, hotel_name, customer_phone, adults, children, infants, customers, tour_items,
+             city, country, address, meeting_point, meeting_point_address, duration_hours, includes, excludes)
+            VALUES (?, ?, ?, ?, ?, ?, 'daily', '', '', '',
                     ?, '', '', ?, ?, ?, ?, ?, ?, 'pending',
+                    ?, ?, ?, ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $nextId,
             $tourName,
+            $guestName,
+            $passengerPassport,
             'TV-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
             $duration,
             $tourDate,
@@ -110,6 +128,14 @@ class TourController extends Controller
             $infants,
             $_POST['customers'] ?? '[]',
             $_POST['tour_items'] ?? '[]',
+            $city,
+            $country,
+            $address,
+            $meetingPoint,
+            $meetingPointAddress,
+            $durationHours,
+            $includes,
+            $excludes,
         ]);
 
         header('Location: ' . url('tour-voucher') . '?saved=1');
@@ -153,6 +179,7 @@ class TourController extends Controller
     public function voucherUpdate(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
         $id = (int)($_POST['id'] ?? 0);
         if (!$id) { header('Location: ' . url('tour-voucher')); exit; }
@@ -173,15 +200,33 @@ class TourController extends Controller
         $totalPrice = $adults * $priceAdult + $children * $priceChild + $infants * $priceInfant;
         $currency = trim($_POST['currency'] ?? 'USD');
 
+        $passengerPassport = trim($_POST['passenger_passport'] ?? '');
+        $guestName = trim($_POST['guest_name'] ?? '');
+
+        // Location fields
+        $city = trim($_POST['city'] ?? '');
+        $country = trim($_POST['country'] ?? 'Turkey');
+        $address = trim($_POST['address'] ?? '');
+        $meetingPoint = trim($_POST['meeting_point'] ?? '');
+        $meetingPointAddress = trim($_POST['meeting_point_address'] ?? '');
+        $durationHours = (float)($_POST['duration_hours'] ?? 0);
+        $includes = trim($_POST['includes'] ?? '');
+        $excludes = trim($_POST['excludes'] ?? '');
+
         $stmt = $db->prepare("UPDATE tours SET
-            tour_name = ?, description = ?, tour_date = ?,
+            tour_name = ?, guest_name = ?, passenger_passport = ?, description = ?, tour_date = ?,
             total_pax = ?, price_per_person = ?, price_child = ?, price_per_infant = ?, total_price = ?, currency = ?,
             company_name = ?, hotel_name = ?, customer_phone = ?,
             adults = ?, children = ?, infants = ?, customers = ?, tour_items = ?,
-            status = ?, updated_at = CURRENT_TIMESTAMP
+            status = ?,
+            city = ?, country = ?, address = ?, meeting_point = ?, meeting_point_address = ?,
+            duration_hours = ?, includes = ?, excludes = ?,
+            updated_at = CURRENT_TIMESTAMP
             WHERE id = ?");
         $stmt->execute([
             $tourName,
+            $guestName,
+            $passengerPassport,
             $duration,
             $tourDate,
             $adults + $children + $infants,
@@ -199,6 +244,14 @@ class TourController extends Controller
             $_POST['customers'] ?? '[]',
             $_POST['tour_items'] ?? '[]',
             $_POST['status'] ?? 'pending',
+            $city,
+            $country,
+            $address,
+            $meetingPoint,
+            $meetingPointAddress,
+            $durationHours,
+            $includes,
+            $excludes,
             $id,
         ]);
 
@@ -255,6 +308,7 @@ class TourController extends Controller
     public function invoiceStore(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $db = Database::getInstance()->getConnection();

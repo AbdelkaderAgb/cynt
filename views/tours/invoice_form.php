@@ -27,6 +27,7 @@
         fd.set('total_price', total);
         fetch($el.action, { method: 'POST', body: fd }).then(r => { if(r.redirected) window.location = r.url; else r.text().then(t => { document.open(); document.write(t); document.close(); }); });
     " class="space-y-6">
+        <?= csrf_field() ?>
 
         <!-- Company Info -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-4">

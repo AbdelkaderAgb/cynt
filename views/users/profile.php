@@ -5,6 +5,7 @@
     <div class="mb-6"><h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-user-circle text-blue-500 mr-2"></i>Profilim</h1></div>
 
     <form method="POST" action="<?= url('profile/update') ?>" class="space-y-6">
+        <?= csrf_field() ?>
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center gap-4 mb-6 pb-6 border-b">
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold"><?= strtoupper(mb_substr($u['first_name'],0,1) . mb_substr($u['last_name'],0,1)) ?></div>

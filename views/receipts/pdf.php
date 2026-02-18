@@ -10,10 +10,12 @@ $stampPath = ROOT_PATH . '/stamp.png';
 $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
 $tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
 $stampBase64 = file_exists($stampPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath)) : '';
-$payMethods = ['cash'=>'Cash','bank_transfer'=>'Bank Transfer','credit_card'=>'Credit Card','paypal'=>'PayPal','other'=>'Other'];
+$payMethods = ['cash'=>'Cash','bank_transfer'=>'Bank Transfer','credit_card'=>'Credit Card','paypal'=>'PayPal','check'=>'Check','other'=>'Other','card'=>'Credit Card','transfer'=>'Bank Transfer'];
+$pdfLang = $currentLang ?? 'en';
+$pdfDir = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 'ltr';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $pdfLang ?>" dir="<?= $pdfDir ?>">
 <head>
 <meta charset="UTF-8">
 <title>Receipt <?= htmlspecialchars($r['invoice_no']) ?></title>

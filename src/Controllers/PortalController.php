@@ -460,6 +460,7 @@ class PortalController extends Controller
 
     public function bookingRequestStore(): void
     {
+        $this->requireCsrf();
         $partner = $this->requirePartnerAuth();
         $db = Database::getInstance()->getConnection();
 
@@ -544,6 +545,7 @@ class PortalController extends Controller
 
     public function messageSend(): void
     {
+        $this->requireCsrf();
         $partner = $this->requirePartnerAuth();
         $db = Database::getInstance()->getConnection();
         $pid = (int)$partner['id'];
@@ -594,6 +596,7 @@ class PortalController extends Controller
 
     public function profileUpdate(): void
     {
+        $this->requireCsrf();
         $partner = $this->requirePartnerAuth();
         $db = Database::getInstance()->getConnection();
         $pid = (int)$partner['id'];

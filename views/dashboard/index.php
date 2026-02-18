@@ -98,6 +98,54 @@
     </div>
 </div>
 
+<!-- Operations Row -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+    <a href="<?= url('missions') ?>" class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm shadow-lg shadow-indigo-500/25 flex-shrink-0 group-hover:scale-110 transition-transform">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div>
+                <div class="text-[10px] sm:text-xs text-slate-400"><?= __('pending_missions') ?: 'Pending Missions' ?></div>
+                <div class="text-sm sm:text-lg font-bold text-slate-900 dark:text-white"><?= (int)($stats['pendingMissions'] ?? 0) ?></div>
+            </div>
+        </div>
+    </a>
+    <a href="<?= url('missions') ?>" class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white text-sm shadow-lg shadow-cyan-500/25 flex-shrink-0 group-hover:scale-110 transition-transform">
+                <i class="fas fa-running"></i>
+            </div>
+            <div>
+                <div class="text-[10px] sm:text-xs text-slate-400"><?= __('active_missions') ?: 'Active Missions' ?></div>
+                <div class="text-sm sm:text-lg font-bold text-slate-900 dark:text-white"><?= (int)($stats['activeMissions'] ?? 0) ?></div>
+            </div>
+        </div>
+    </a>
+    <a href="<?= url('quotations') ?>" class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-sm shadow-lg shadow-orange-500/25 flex-shrink-0 group-hover:scale-110 transition-transform">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div>
+                <div class="text-[10px] sm:text-xs text-slate-400"><?= __('open_quotations') ?: 'Open Quotations' ?></div>
+                <div class="text-sm sm:text-lg font-bold text-slate-900 dark:text-white"><?= (int)($stats['openQuotations'] ?? 0) ?></div>
+            </div>
+        </div>
+    </a>
+    <a href="<?= url('group-files') ?>" class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-sm shadow-lg shadow-violet-500/25 flex-shrink-0 group-hover:scale-110 transition-transform">
+                <i class="fas fa-folder-open"></i>
+            </div>
+            <div>
+                <div class="text-[10px] sm:text-xs text-slate-400"><?= __('active_group_files') ?: 'Active Groups' ?></div>
+                <div class="text-sm sm:text-lg font-bold text-slate-900 dark:text-white"><?= (int)($stats['activeGroupFiles'] ?? 0) ?></div>
+            </div>
+        </div>
+    </a>
+</div>
+
 <!-- Charts Row -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
     <!-- Monthly Trend Chart -->

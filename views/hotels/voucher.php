@@ -116,6 +116,7 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
         </div>
 
         <form method="POST" action="<?= url('hotel-voucher/store') ?>" class="space-y-5">
+            <?= csrf_field() ?>
             <!-- Company Info -->
             <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-building text-blue-500 mr-1"></i> Company Information</h3>
@@ -148,13 +149,33 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
             </div>
 
             <!-- Hotel & Room Details -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4" x-data="hotelCascade()" x-init="init()">
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-bed text-teal-500 mr-1"></i> Hotel & Room Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="hidden" name="hotel_name" :value="selectedHotelName">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Hotel Name *</label>
-                        <input type="text" name="hotel_name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-globe text-blue-400 mr-1"></i>Country *</label>
+                        <select x-model="selectedCountry" @change="onCountryChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                            <option value="">-- Select Country --</option>
+                            <template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template>
+                        </select>
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-city text-purple-400 mr-1"></i>City *</label>
+                        <select x-model="selectedCity" @change="onCityChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                            <option value="">-- Select City --</option>
+                            <template x-for="ci in cities" :key="ci"><option :value="ci" x-text="ci"></option></template>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-hotel text-teal-400 mr-1"></i>Hotel *</label>
+                        <select x-model="selectedHotelId" @change="onHotelChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                            <option value="">-- Select Hotel --</option>
+                            <template x-for="h in filteredHotels" :key="h.id"><option :value="h.id" x-text="h.name + ' ' + '★'.repeat(h.stars || 0)"></option></template>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Room Count</label>
                         <input type="number" name="room_count" value="1" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
@@ -191,6 +212,21 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                             <option value="<?= $k ?>"><?= $lbl ?></option>
                             <?php endforeach; ?>
                         </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guest & Passport -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-passport text-amber-500 mr-1"></i> Guest Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
+                        <input type="text" name="guest_name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500" placeholder="Main guest name">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
+                        <input type="text" name="passenger_passport" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500" placeholder="Passport number">
                     </div>
                 </div>
             </div>
@@ -242,28 +278,7 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 <input type="hidden" name="customers" :value="JSON.stringify(customers)">
             </div>
 
-            <!-- Pricing -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3"><i class="fas fa-money-bill-wave text-emerald-500 mr-1"></i> Pricing</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Price / Night</label>
-                        <input type="number" step="0.01" name="price_per_night" value="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Total Price</label>
-                        <input type="number" step="0.01" name="total_price" value="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Currency</label>
-                        <select name="currency" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                            <?php foreach (['USD','EUR','TRY','GBP','DZD','SAR','AED','RUB'] as $c): ?>
-                            <option value="<?= $c ?>"><?= $c ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            <!-- Pricing removed — prices are managed via invoices/receipts only -->
 
             <!-- Special Requests -->
             <div>
@@ -358,6 +373,64 @@ function hotelPartnerSearch() {
             const addr = document.querySelector('[name="address"]');
             if (tel && r.phone) tel.value = r.phone;
             if (addr) addr.value = r.address || ((r.city || '') + (r.country ? ', ' + r.country : ''));
+        }
+    };
+}
+function hotelCascade() {
+    return {
+        allHotels: [],
+        countries: [],
+        cities: [],
+        filteredHotels: [],
+        selectedCountry: '',
+        selectedCity: '',
+        selectedHotelId: '',
+        selectedHotelName: '',
+        async init() {
+            try {
+                const res = await fetch('<?= url('api/hotels/list') ?>');
+                this.allHotels = await res.json();
+                this.countries = [...new Set(this.allHotels.map(h => h.country).filter(Boolean))].sort();
+            } catch(e) { this.allHotels = []; }
+
+            // Auto-prefill from URL ?hotel_id=X (Book Now flow)
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefillId = urlParams.get('hotel_id');
+            if (prefillId) {
+                const h = this.allHotels.find(x => x.id == prefillId);
+                if (h) {
+                    this.selectedCountry = h.country;
+                    this.onCountryChange();
+                    this.selectedCity = h.city;
+                    this.onCityChange();
+                    this.selectedHotelId = h.id;
+                    this.onHotelChange();
+                }
+            }
+        },
+        onCountryChange() {
+            this.cities = [...new Set(this.allHotels.filter(h => h.country === this.selectedCountry).map(h => h.city).filter(Boolean))].sort();
+            this.selectedCity = '';
+            this.filteredHotels = [];
+            this.selectedHotelId = '';
+            this.selectedHotelName = '';
+        },
+        onCityChange() {
+            this.filteredHotels = this.allHotels.filter(h => h.country === this.selectedCountry && h.city === this.selectedCity);
+            this.selectedHotelId = '';
+            this.selectedHotelName = '';
+        },
+        onHotelChange() {
+            const h = this.allHotels.find(x => x.id == this.selectedHotelId);
+            if (h) {
+                this.selectedHotelName = h.name;
+                const tel = document.querySelector('[name="telephone"]');
+                const addr = document.querySelector('[name="address"]');
+                if (tel && h.phone) tel.value = h.phone;
+                if (addr && h.address) addr.value = h.address;
+            } else {
+                this.selectedHotelName = '';
+            }
         }
     };
 }

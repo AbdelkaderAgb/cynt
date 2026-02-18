@@ -18,6 +18,7 @@
 <!-- Form -->
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
     <form method="POST" action="<?= url('transfers/store') ?>" class="space-y-6">
+        <?= csrf_field() ?>
 
         <!-- Company & Hotel -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -48,6 +49,26 @@
             </div>
         </div>
 
+        <!-- Pickup/Dropoff City & Country -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('pickup_city') ?: 'Pickup City' ?></label>
+                <input type="text" name="pickup_city" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="e.g. Istanbul">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('pickup_country') ?: 'Pickup Country' ?></label>
+                <input type="text" name="pickup_country" value="Turkey" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="e.g. Turkey">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('dropoff_city') ?: 'Dropoff City' ?></label>
+                <input type="text" name="dropoff_city" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="e.g. Istanbul">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('dropoff_country') ?: 'Dropoff Country' ?></label>
+                <input type="text" name="dropoff_country" value="Turkey" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="e.g. Turkey">
+            </div>
+        </div>
+
         <!-- Date/Time -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <div>
@@ -69,7 +90,7 @@
         </div>
 
         <!-- Transfer Details -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Transfer Type</label>
                 <select name="transfer_type" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
@@ -82,10 +103,9 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Pax</label>
                 <input type="number" name="total_pax" value="1" min="1" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price</label>
-                <input type="number" name="price" step="0.01" value="0" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500">
-            </div>
+            <!-- Pricing removed — prices are managed via invoices/receipts only -->
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
                 <select name="currency" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
@@ -94,6 +114,32 @@
                     <option value="TRY">TRY</option>
                     <option value="GBP">GBP</option>
                 </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><i class="fas fa-clock text-blue-500 mr-1"></i><?= __('estimated_duration') ?: 'Est. Duration (min)' ?></label>
+                <input type="number" name="estimated_duration_min" value="0" min="0" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="e.g. 60">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><i class="fas fa-route text-green-500 mr-1"></i><?= __('distance') ?: 'Distance (km)' ?></label>
+                <input type="number" name="distance_km" step="0.1" value="0" min="0" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="e.g. 45">
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('description') ?: 'Description' ?></label>
+            <textarea name="description" rows="2" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Transfer description..."></textarea>
+        </div>
+
+        <!-- Guest & Passport -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
+                <input type="text" name="guest_name" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Main guest name">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
+                <input type="text" name="passenger_passport" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Passport number">
             </div>
         </div>
 

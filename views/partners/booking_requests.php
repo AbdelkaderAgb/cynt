@@ -69,6 +69,7 @@
                             <i class="fas fa-reply mr-1"></i>Respond
                         </button>
                         <form x-show="showAction" method="POST" action="<?= url('partner-requests/action') ?>" class="mt-3 space-y-3">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="id" value="<?= $req['id'] ?>">
                             <textarea name="admin_notes" rows="2" placeholder="Notes to partner..."
                                       class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm"></textarea>

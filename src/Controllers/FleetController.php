@@ -39,6 +39,8 @@ class FleetController extends Controller
 
     public function driverStore(): void
     {
+        $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $data = [
             'first_name'     => trim($_POST['first_name'] ?? ''),
@@ -51,6 +53,12 @@ class FleetController extends Controller
             'languages'      => trim($_POST['languages'] ?? ''),
             'status'         => $_POST['status'] ?? 'active',
         ];
+
+        if (empty($data['first_name']) || empty($data['last_name'])) {
+            header('Location: ' . url('drivers/form') . '?error=missing_name');
+            exit;
+        }
+
         Fleet::saveDriver($data, (int)($_POST['id'] ?? 0));
         header('Location: ' . url('drivers') . '?saved=1');
         exit;
@@ -100,6 +108,8 @@ class FleetController extends Controller
 
     public function vehicleStore(): void
     {
+        $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $data = [
             'plate_number'       => trim($_POST['plate_number'] ?? ''),
@@ -115,6 +125,12 @@ class FleetController extends Controller
             'driver_id'          => $_POST['driver_id'] ?: null,
             'status'             => $_POST['status'] ?? 'available',
         ];
+
+        if (empty($data['plate_number']) || empty($data['make'])) {
+             header('Location: ' . url('vehicles/form') . '?error=missing_info');
+             exit;
+        }
+
         Fleet::saveVehicle($data, (int)($_POST['id'] ?? 0));
         header('Location: ' . url('vehicles') . '?saved=1');
         exit;
@@ -163,6 +179,8 @@ class FleetController extends Controller
 
     public function guideStore(): void
     {
+        $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $data = [
             'first_name'      => trim($_POST['first_name'] ?? ''),
@@ -176,6 +194,11 @@ class FleetController extends Controller
             'currency'        => $_POST['currency'] ?? 'USD',
             'status'          => $_POST['status'] ?? 'active',
         ];
+
+        if (empty($data['first_name']) || empty($data['last_name'])) {
+            header('Location: ' . url('guides/form') . '?error=missing_name');
+            exit;
+        }
         Fleet::saveGuide($data, (int)($_POST['id'] ?? 0));
         header('Location: ' . url('guides') . '?saved=1');
         exit;

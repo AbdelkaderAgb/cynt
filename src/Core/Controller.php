@@ -20,6 +20,9 @@ class Controller
      */
     protected function view(string $view, array $data = [], ?string $layout = 'layouts/app'): void
     {
+        // Send security headers on every page render
+        $this->sendSecurityHeaders();
+
         $basePath = App::getBasePath();
         $viewFile = $basePath . '/views/' . $view . '.php';
 
@@ -45,6 +48,44 @@ class Controller
         } else {
             echo $content;
         }
+    }
+
+    /**
+     * Send security-related HTTP headers
+     * Called automatically on every view render
+     */
+    protected function sendSecurityHeaders(): void
+    {
+        if (headers_sent()) {
+            return;
+        }
+
+        // Prevent MIME-type sniffing
+        header('X-Content-Type-Options: nosniff');
+
+        // Prevent clickjacking — allow same-origin framing only
+        header('X-Frame-Options: SAMEORIGIN');
+
+        // Legacy XSS filter (still useful for older browsers)
+        header('X-XSS-Protection: 1; mode=block');
+
+        // Control referrer leakage
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+
+        // Restrict browser features the app doesn't need
+        header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+
+        // Content Security Policy — allow CDN resources (Tailwind, Alpine, FA, Fonts, Chart.js)
+        $csp = implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.tailwindcss.com",
+            "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:",
+            "img-src 'self' data: blob:",
+            "connect-src 'self'",
+            "frame-ancestors 'self'",
+        ]);
+        header('Content-Security-Policy: ' . $csp);
     }
 
     /**
@@ -111,5 +152,59 @@ class Controller
             echo '<h1>403 — Forbidden</h1>';
             exit;
         }
+    }
+
+    /**
+     * Validate CSRF token on POST requests
+     * Call at the start of any store/update/delete action
+     */
+    protected function requireCsrf(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $token = $_POST[CSRF_TOKEN_NAME] ?? '';
+            if (!validate_csrf_token($token)) {
+                http_response_code(403);
+                echo '<h1>403 — Invalid CSRF Token</h1>';
+                exit;
+            }
+        }
+    }
+
+    /**
+     * Sanitize and trim a POST string value
+     */
+    protected function postString(string $key, string $default = ''): string
+    {
+        return trim(htmlspecialchars($_POST[$key] ?? $default, ENT_QUOTES, 'UTF-8'));
+    }
+
+    /**
+     * Get a POST integer value (nullable)
+     */
+    protected function postInt(string $key, ?int $default = null): ?int
+    {
+        $val = $_POST[$key] ?? '';
+        if ($val === '' || $val === null) {
+            return $default;
+        }
+        return (int)$val;
+    }
+
+    /**
+     * Get a POST float value
+     */
+    protected function postFloat(string $key, float $default = 0.0): float
+    {
+        return (float)($_POST[$key] ?? $default);
+    }
+
+    /**
+     * Get a nullable foreign key from POST (driver_id, guide_id, etc.)
+     * Returns null if empty, int if set — enforces RULE 3
+     */
+    protected function postNullableId(string $key): ?int
+    {
+        $val = $_POST[$key] ?? '';
+        return !empty($val) ? (int)$val : null;
     }
 }

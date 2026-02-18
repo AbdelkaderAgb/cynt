@@ -24,28 +24,38 @@ class TransferController extends Controller
     public function store(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Voucher.php';
 
         $data = [
-            'company_name'    => trim($_POST['company_name'] ?? ''),
-            'hotel_name'      => trim($_POST['hotel_name'] ?? ''),
-            'pickup_location' => trim($_POST['pickup_location'] ?? ''),
-            'dropoff_location'=> trim($_POST['dropoff_location'] ?? ''),
-            'pickup_date'     => $_POST['pickup_date'] ?? '',
-            'pickup_time'     => $_POST['pickup_time'] ?? '',
-            'return_date'     => $_POST['return_date'] ?: null,
-            'return_time'     => $_POST['return_time'] ?: null,
-            'transfer_type'   => $_POST['transfer_type'] ?? 'one_way',
-            'total_pax'       => (int)($_POST['total_pax'] ?? 1),
-            'passengers'      => trim($_POST['passengers'] ?? ''),
-            'flight_number'   => trim($_POST['flight_number'] ?? ''),
-            'vehicle_id'      => $_POST['vehicle_id'] ?: null,
-            'driver_id'       => $_POST['driver_id'] ?: null,
-            'guide_id'        => $_POST['guide_id'] ?: null,
-            'price'           => (float)($_POST['price'] ?? 0),
-            'currency'        => $_POST['currency'] ?? 'USD',
-            'status'          => $_POST['status'] ?? 'pending',
-            'notes'           => trim($_POST['notes'] ?? ''),
+            'company_name'       => trim($_POST['company_name'] ?? ''),
+            'guest_name'         => trim($_POST['guest_name'] ?? ''),
+            'passenger_passport' => trim($_POST['passenger_passport'] ?? ''),
+            'hotel_name'         => trim($_POST['hotel_name'] ?? ''),
+            'pickup_location'    => trim($_POST['pickup_location'] ?? ''),
+            'dropoff_location'   => trim($_POST['dropoff_location'] ?? ''),
+            'pickup_city'        => trim($_POST['pickup_city'] ?? ''),
+            'pickup_country'     => trim($_POST['pickup_country'] ?? 'Turkey'),
+            'dropoff_city'       => trim($_POST['dropoff_city'] ?? ''),
+            'dropoff_country'    => trim($_POST['dropoff_country'] ?? 'Turkey'),
+            'pickup_date'        => $_POST['pickup_date'] ?? '',
+            'pickup_time'        => $_POST['pickup_time'] ?? '',
+            'return_date'        => $_POST['return_date'] ?: null,
+            'return_time'        => $_POST['return_time'] ?: null,
+            'transfer_type'      => $_POST['transfer_type'] ?? 'one_way',
+            'total_pax'          => (int)($_POST['total_pax'] ?? 1),
+            'passengers'         => trim($_POST['passengers'] ?? ''),
+            'flight_number'      => trim($_POST['flight_number'] ?? ''),
+            'vehicle_id'         => $_POST['vehicle_id'] ?: null,
+            'driver_id'          => $_POST['driver_id'] ?: null,
+            'guide_id'           => $_POST['guide_id'] ?: null,
+            'price'              => (float)($_POST['price'] ?? 0),
+            'currency'           => $_POST['currency'] ?? 'USD',
+            'status'             => $_POST['status'] ?? 'pending',
+            'notes'              => trim($_POST['notes'] ?? ''),
+            'estimated_duration_min' => (int)($_POST['estimated_duration_min'] ?? 0),
+            'distance_km'        => (float)($_POST['distance_km'] ?? 0),
+            'description'        => trim($_POST['description'] ?? ''),
         ];
 
         Voucher::create($data);
@@ -91,6 +101,7 @@ class TransferController extends Controller
     public function invoiceStore(): void
     {
         $this->requireAuth();
+        $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $db = Database::getInstance()->getConnection();

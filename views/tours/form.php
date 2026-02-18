@@ -18,6 +18,7 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6" x-data="tourVoucherForm()">
     <form method="POST" action="<?= url('tour-voucher/store') ?>" class="space-y-6">
+        <?= csrf_field() ?>
 
         <!-- Company & Contact -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-5">
@@ -46,15 +47,87 @@
                     <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Customer Phone</label>
                     <input type="text" name="customer_phone" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="+90 555 123 4567">
                 </div>
+                <div x-data="tourHotelCascade()" x-init="init()">
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><i class="fas fa-hotel text-teal-400 mr-1"></i>Hotel Name</label>
+                    <input type="hidden" name="hotel_name" :value="selectedHotelName">
+                    <div class="grid grid-cols-3 gap-2 mt-1">
+                        <select x-model="selectedCountry" @change="onCountryChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
+                            <option value="">Country</option>
+                            <template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template>
+                        </select>
+                        <select x-model="selectedCity" @change="onCityChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
+                            <option value="">City</option>
+                            <template x-for="ci in cities" :key="ci"><option :value="ci" x-text="ci"></option></template>
+                        </select>
+                        <select x-model="selectedHotelId" @change="onHotelChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
+                            <option value="">Hotel</option>
+                            <template x-for="h in filteredHotels" :key="h.id"><option :value="h.id" x-text="h.name + ' ' + '★'.repeat(h.stars||0)"></option></template>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest & Passport -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-5">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-passport text-amber-500 mr-1"></i> Guest Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Hotel Name</label>
-                    <input type="text" name="hotel_name" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Hotel name">
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
+                    <input type="text" name="guest_name" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Main guest name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
+                    <input type="text" name="passenger_passport" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Passport number">
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & Details -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-5">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> Location & Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><?= __('city') ?: 'City' ?></label>
+                    <input type="text" name="city" id="tour_city_field" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Auto-filled from hotel" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><?= __('country') ?: 'Country' ?></label>
+                    <input type="text" name="country" id="tour_country_field" value="Turkey" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Auto-filled from hotel" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><?= __('address') ?: 'Address' ?></label>
+                    <input type="text" name="address" id="tour_address_field" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Auto-filled from hotel">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><i class="fas fa-map-pin text-purple-500 mr-1"></i><?= __('meeting_point') ?: 'Meeting Point' ?></label>
+                    <input type="text" name="meeting_point" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Hotel Lobby">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><?= __('meeting_point_address') ?: 'Meeting Point Address' ?></label>
+                    <input type="text" name="meeting_point_address" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Full address of meeting point">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><i class="fas fa-clock text-blue-500 mr-1"></i><?= __('duration') ?: 'Duration (hours)' ?></label>
+                    <input type="number" name="duration_hours" step="0.5" min="0" value="0" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. 6">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><i class="fas fa-check-circle text-green-500 mr-1"></i><?= __('includes') ?: 'Includes' ?></label>
+                    <textarea name="includes" rows="3" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Transport, lunch, guide, entrance fees..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"><i class="fas fa-times-circle text-red-500 mr-1"></i><?= __('excludes') ?: 'Excludes' ?></label>
+                    <textarea name="excludes" rows="3" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Personal expenses, tips, drinks..."></textarea>
                 </div>
             </div>
         </div>
 
         <!-- Pax Counts -->
-        <div class="border-b border-gray-200 dark:border-gray-700 pb-5" x-data="{ adults: 0, children: 0, infants: 0, priceAdult: 0, priceChild: 0, priceInfant: 0 }">
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-5">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-users text-teal-500 mr-1"></i> Pax Counts</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -70,32 +143,7 @@
                     <input type="number" name="infants" x-model.number="infants" value="0" min="0" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">Tour price is per 1 pax; total = (adults × adult) + (children × child) + (infants × infant).</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Price per 1 pax (Adult)</label>
-                    <input type="number" name="price_per_person" x-model.number="priceAdult" value="0" step="0.01" min="0" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Price per 1 pax (Child)</label>
-                    <input type="number" name="price_child" x-model.number="priceChild" value="0" step="0.01" min="0" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Price per 1 pax (Infant)</label>
-                    <input type="number" name="price_per_infant" x-model.number="priceInfant" value="0" step="0.01" min="0" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Currency</label>
-                    <select name="currency" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm">
-                        <option value="USD">USD</option><option value="EUR">EUR</option><option value="TRY">TRY</option><option value="GBP">GBP</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <div class="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm">
-                        <span class="text-gray-500">Total:</span> <span x-text="(adults * priceAdult + children * priceChild + infants * priceInfant).toFixed(2)"></span>
-                    </div>
-                </div>
-            </div>
+            <!-- Pricing removed — prices are managed via invoices/receipts only -->
         </div>
 
         <!-- Tours (Dynamic Rows) -->
@@ -196,6 +244,41 @@ function tourPartnerSearch() {
             const addr = r.address || ((r.city || '') + (r.country ? ', ' + r.country : ''));
             const hotelField = document.querySelector('[name="hotel_name"]');
             // Don't overwrite hotel_name, just fill phone
+        }
+    };
+}
+function tourHotelCascade() {
+    return {
+        allHotels: [], countries: [], cities: [], filteredHotels: [],
+        selectedCountry: '', selectedCity: '', selectedHotelId: '', selectedHotelName: '',
+        async init() {
+            try {
+                const res = await fetch('<?= url('api/hotels/list') ?>');
+                this.allHotels = await res.json();
+                this.countries = [...new Set(this.allHotels.map(h => h.country).filter(Boolean))].sort();
+            } catch(e) { this.allHotels = []; }
+        },
+        onCountryChange() {
+            this.cities = [...new Set(this.allHotels.filter(h => h.country === this.selectedCountry).map(h => h.city).filter(Boolean))].sort();
+            this.selectedCity = ''; this.filteredHotels = []; this.selectedHotelId = ''; this.selectedHotelName = '';
+            document.getElementById('tour_city_field').value = '';
+            document.getElementById('tour_country_field').value = this.selectedCountry;
+        },
+        onCityChange() {
+            this.filteredHotels = this.allHotels.filter(h => h.country === this.selectedCountry && h.city === this.selectedCity);
+            this.selectedHotelId = ''; this.selectedHotelName = '';
+            document.getElementById('tour_city_field').value = this.selectedCity;
+        },
+        onHotelChange() {
+            const h = this.allHotels.find(x => x.id == this.selectedHotelId);
+            if (h) {
+                this.selectedHotelName = h.name;
+                document.getElementById('tour_city_field').value = h.city || '';
+                document.getElementById('tour_country_field').value = h.country || '';
+                document.getElementById('tour_address_field').value = h.address || '';
+            } else {
+                this.selectedHotelName = '';
+            }
         }
     };
 }

@@ -63,6 +63,7 @@
 
     <!-- New Message Form with File Upload -->
     <form method="POST" action="<?= url('portal/messages/send') ?>" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+        <?= csrf_field() ?>
         <div class="mb-3">
             <input type="text" name="subject" placeholder="Subject (optional)"
                    class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">

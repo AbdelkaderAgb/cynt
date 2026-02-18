@@ -24,6 +24,7 @@ class SettingsController extends Controller
     public function update(): void
     {
         Auth::requireAdmin();
+        $this->requireCsrf();
 
         foreach ($_POST as $key => $value) {
             if ($key === '_token') continue;
@@ -40,6 +41,7 @@ class SettingsController extends Controller
     public function email(): void
     {
         Auth::requireAdmin();
+        $this->requireCsrf();
 
         $config = Database::fetchOne("SELECT * FROM email_config LIMIT 1") ?? [];
 
@@ -54,6 +56,11 @@ class SettingsController extends Controller
                 'enable_notifications' => isset($_POST['enable_notifications']) ? 1 : 0,
                 'enable_reminders'     => isset($_POST['enable_reminders']) ? 1 : 0,
             ];
+
+            if (!filter_var($data['from_email'], FILTER_VALIDATE_EMAIL)) {
+                header('Location: ' . url('settings/email') . '?error=invalid_email');
+                exit;
+            }
 
             if (!empty($config['id'])) {
                 $sets = []; $params = [];

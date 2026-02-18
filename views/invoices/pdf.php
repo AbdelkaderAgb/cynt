@@ -10,11 +10,19 @@ $stampPath = ROOT_PATH . '/stamp.png';
 $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
 $tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
 $stampBase64 = file_exists($stampPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath)) : '';
-$payMethods = ['cash'=>'Cash','bank_transfer'=>'Bank Transfer','credit_card'=>'Credit Card','paypal'=>'PayPal','other'=>'Other'];
-$statusLabels = ['draft'=>'Draft','sent'=>'Sent','paid'=>'Paid','overdue'=>'Overdue','pending'=>'Pending'];
+$partnerLogoBase64 = '';
+if (!empty($partnerLogo) && file_exists(ROOT_PATH . '/' . $partnerLogo)) {
+    $ext = strtolower(pathinfo($partnerLogo, PATHINFO_EXTENSION));
+    $mime = in_array($ext, ['png']) ? 'image/png' : (in_array($ext, ['gif']) ? 'image/gif' : 'image/jpeg');
+    $partnerLogoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents(ROOT_PATH . '/' . $partnerLogo));
+}
+$payMethods = ['cash'=>'Cash','bank_transfer'=>'Bank Transfer','credit_card'=>'Credit Card','paypal'=>'PayPal','check'=>'Check','other'=>'Other','card'=>'Credit Card','transfer'=>'Bank Transfer'];
+$statusLabels = ['draft'=>'Draft','sent'=>'Sent','paid'=>'Paid','partial'=>'Partial','overdue'=>'Overdue','pending'=>'Pending','cancelled'=>'Cancelled'];
+$pdfLang = $currentLang ?? 'en';
+$pdfDir = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 'ltr';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $pdfLang ?>" dir="<?= $pdfDir ?>">
 <head>
 <meta charset="UTF-8">
 <title>Invoice <?= htmlspecialchars($inv['invoice_no']) ?></title>
@@ -83,6 +91,7 @@ $statusLabels = ['draft'=>'Draft','sent'=>'Sent','paid'=>'Paid','overdue'=>'Over
             <tr>
                 <td class="logo-cell">
                     <?php if ($logoBase64): ?><img src="<?= $logoBase64 ?>" alt="Logo"><?php endif; ?>
+                    <?php if ($partnerLogoBase64): ?><img src="<?= $partnerLogoBase64 ?>" alt="Partner" style="height:40px; margin-left:10px; vertical-align:middle;"><?php endif; ?>
                 </td>
                 <td class="doc-cell">
                     <div class="doc-type">Invoice</div>

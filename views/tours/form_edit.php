@@ -12,6 +12,7 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 </div>
 
 <form method="POST" action="<?= url('tour-voucher/update') ?>" class="space-y-6" x-data="tourEditForm()">
+    <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= $t['id'] ?>">
     <input type="hidden" name="company_id" id="tour_company_id" value="<?= e($t['company_id'] ?? '') ?>">
     <input type="hidden" name="tour_items" :value="JSON.stringify(tours)">
@@ -45,21 +46,72 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
         </div>
     </div>
 
-    <!-- PAX & Pricing (per 1 pax: total = adults×adult + children×child + infants×infant) -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6" x-data="{ adults: <?= (int)($t['adults'] ?? 0) ?>, children: <?= (int)($t['children'] ?? 0) ?>, infants: <?= (int)($t['infants'] ?? 0) ?>, priceAdult: <?= (float)($t['price_per_person'] ?? 0) ?>, priceChild: <?= (float)($t['price_child'] ?? 0) ?>, priceInfant: <?= (float)($t['price_per_infant'] ?? 0) ?> }">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-users text-purple-500 mr-1"></i>Passengers & Price per 1 pax</h3>
+    <!-- Guest & Passport -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-passport text-amber-500 mr-1"></i>Guest Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
+                <input type="text" name="guest_name" value="<?= e($t['guest_name'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Main guest name">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
+                <input type="text" name="passenger_passport" value="<?= e($t['passenger_passport'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Passport number">
+            </div>
+        </div>
+    </div>
+
+    <!-- Location & Details -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i>Location & Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('city') ?: 'City' ?></label>
+                <input type="text" name="city" value="<?= e($t['city'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Istanbul">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('country') ?: 'Country' ?></label>
+                <input type="text" name="country" value="<?= e($t['country'] ?? 'Turkey') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Turkey">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('address') ?: 'Address' ?></label>
+                <input type="text" name="address" value="<?= e($t['address'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Full address">
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-map-pin text-purple-500 mr-1"></i><?= __('meeting_point') ?: 'Meeting Point' ?></label>
+                <input type="text" name="meeting_point" value="<?= e($t['meeting_point'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Hotel Lobby">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('meeting_point_address') ?: 'Meeting Point Address' ?></label>
+                <input type="text" name="meeting_point_address" value="<?= e($t['meeting_point_address'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Full address of meeting point">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-clock text-blue-500 mr-1"></i><?= __('duration') ?: 'Duration (hours)' ?></label>
+                <input type="number" name="duration_hours" step="0.5" min="0" value="<?= (float)($t['duration_hours'] ?? 0) ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. 6">
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-check-circle text-green-500 mr-1"></i><?= __('includes') ?: 'Includes' ?></label>
+                <textarea name="includes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Transport, lunch, guide, entrance fees..."><?= e($t['includes'] ?? '') ?></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-times-circle text-red-500 mr-1"></i><?= __('excludes') ?: 'Excludes' ?></label>
+                <textarea name="excludes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Personal expenses, tips, drinks..."><?= e($t['excludes'] ?? '') ?></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-users text-purple-500 mr-1"></i>Passengers</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Adult</label><input type="number" name="adults" x-model.number="adults" value="<?= $t['adults'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Child</label><input type="number" name="children" x-model.number="children" value="<?= $t['children'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Infant</label><input type="number" name="infants" x-model.number="infants" value="<?= $t['infants'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
+            <div><label class="block text-xs font-medium text-gray-500 mb-1">Adult</label><input type="number" name="adults" value="<?= $t['adults'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
+            <div><label class="block text-xs font-medium text-gray-500 mb-1">Child</label><input type="number" name="children" value="<?= $t['children'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
+            <div><label class="block text-xs font-medium text-gray-500 mb-1">Infant</label><input type="number" name="infants" value="<?= $t['infants'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Price per 1 pax (Adult)</label><input type="number" name="price_per_person" x-model.number="priceAdult" value="<?= $t['price_per_person'] ?? 0 ?>" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Price per 1 pax (Child)</label><input type="number" name="price_child" x-model.number="priceChild" value="<?= $t['price_child'] ?? 0 ?>" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Price per 1 pax (Infant)</label><input type="number" name="price_per_infant" x-model.number="priceInfant" value="<?= $t['price_per_infant'] ?? 0 ?>" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Currency</label><select name="currency" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"><?php foreach (['USD','EUR','TRY','GBP'] as $c): ?><option value="<?= $c ?>" <?= ($t['currency'] ?? 'USD') === $c ? 'selected' : '' ?>><?= $c ?></option><?php endforeach; ?></select></div>
-            <div class="flex items-end"><div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm"><span class="text-gray-500">Total:</span> <span x-text="(adults * priceAdult + children * priceChild + infants * priceInfant).toFixed(2)"></span></div></div>
-        </div>
+        <!-- Pricing removed — prices are managed via invoices/receipts only -->
     </div>
 
     <!-- Tour Items -->

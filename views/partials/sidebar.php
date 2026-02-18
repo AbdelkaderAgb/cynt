@@ -136,6 +136,32 @@ $user = $user ?? Auth::user();
             <?php endforeach; ?>
         </div>
 
+        <!-- Operations Section -->
+        <div>
+            <div class="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 transition-all duration-300"
+                 :class="sidebarCollapsed ? 'opacity-0 h-0 mb-0 overflow-hidden' : ''">
+                <?php echo __('operations') ?: 'Operations'; ?>
+            </div>
+            <?php
+            $opsLinks = [
+                ['url' => '/missions', 'icon' => 'fa-tasks', 'label' => __('missions') ?: 'Missions', 'page' => 'missions'],
+                ['url' => '/quotations', 'icon' => 'fa-file-alt', 'label' => __('quotations') ?: 'Quotations', 'page' => 'quotations'],
+                ['url' => '/group-files', 'icon' => 'fa-folder-open', 'label' => __('group_files') ?: 'Group Files', 'page' => 'group-files'],
+            ];
+            foreach ($opsLinks as $link): ?>
+                <a href="<?php echo url($link['url']); ?>"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative group
+                          <?php echo $activePage === $link['page']
+                              ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'; ?>">
+                    <i class="fas <?php echo $link['icon']; ?> w-5 text-center flex-shrink-0 <?php echo $activePage === $link['page'] ? 'text-brand-500' : 'text-slate-400 group-hover:text-brand-500'; ?>"></i>
+                    <span class="whitespace-nowrap transition-all duration-300" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                        <?php echo e($link['label']); ?>
+                    </span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
         <!-- Finance Section -->
         <div>
             <div class="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 transition-all duration-300"

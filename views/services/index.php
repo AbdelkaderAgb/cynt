@@ -111,6 +111,7 @@ $unitLabels = ['per_person' => 'Per Person', 'per_night' => 'Per Night', 'per_ve
                                 <i class="fas fa-edit text-sm"></i>
                             </a>
                             <form method="POST" action="<?= url('services/delete') ?>" onsubmit="return confirm('Delete this service?')" class="inline">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="id" value="<?= $s['id'] ?>">
                                 <button type="submit" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition" title="Delete">
                                     <i class="fas fa-trash-alt text-sm"></i>

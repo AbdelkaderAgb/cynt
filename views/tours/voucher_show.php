@@ -36,6 +36,12 @@ $tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
                 <div><p class="text-xs text-gray-400"><?= __('phone') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['customer_phone'] ?: '—') ?></p></div>
                 <div><p class="text-xs text-gray-400"><?= __('tour_date') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= $t['tour_date'] ? date('d/m/Y', strtotime($t['tour_date'])) : '—' ?></p></div>
                 <div><p class="text-xs text-gray-400"><?= __('description') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['description'] ?: '—') ?></p></div>
+                <?php if (!empty($t['guest_name'])): ?>
+                <div><p class="text-xs text-gray-400"><?= __('guest_name') ?: 'Guest Name' ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['guest_name']) ?></p></div>
+                <?php endif; ?>
+                <?php if (!empty($t['passenger_passport'])): ?>
+                <div><p class="text-xs text-gray-400"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passport' ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['passenger_passport']) ?></p></div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -90,26 +96,7 @@ $tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
                     <span class="text-sm text-gray-500"><?= __('total_pax') ?></span>
                     <span class="font-bold text-lg"><?= $t['total_pax'] ?></span>
                 </div>
-                <?php if ($t['total_price'] > 0): ?>
-                <?php
-                $pad = (float)($t['price_per_person'] ?? 0);
-                $pch = (float)($t['price_child'] ?? 0);
-                $pin = (float)($t['price_per_infant'] ?? 0);
-                $showBreakdown = ($t['adults'] && $pad) || ($t['children'] && $pch) || ($t['infants'] && $pin);
-                ?>
-                <?php if ($showBreakdown): ?>
-                <div class="border-t border-gray-200 dark:border-gray-600 pt-3 space-y-1 text-sm">
-                    <div class="font-semibold text-gray-600 dark:text-gray-400 mb-1">Price breakdown</div>
-                    <?php if ($t['adults'] && $pad): ?><div class="flex justify-between"><span class="text-gray-500"><?= $t['adults'] ?> × <?= __('adult') ?> (<?= number_format($pad, 2) ?>)</span><span><?= number_format($t['adults'] * $pad, 2) ?></span></div><?php endif; ?>
-                    <?php if ($t['children'] && $pch): ?><div class="flex justify-between"><span class="text-gray-500"><?= $t['children'] ?> × <?= __('child') ?> (<?= number_format($pch, 2) ?>)</span><span><?= number_format($t['children'] * $pch, 2) ?></span></div><?php endif; ?>
-                    <?php if ($t['infants'] && $pin): ?><div class="flex justify-between"><span class="text-gray-500"><?= $t['infants'] ?> × <?= __('infant') ?> (<?= number_format($pin, 2) ?>)</span><span><?= number_format($t['infants'] * $pin, 2) ?></span></div><?php endif; ?>
-                </div>
-                <?php endif; ?>
-                <div class="border-t border-gray-200 dark:border-gray-600 pt-3 flex justify-between">
-                    <span class="text-sm font-semibold text-gray-700"><?= __('total_amount') ?></span>
-                    <span class="font-bold text-lg text-emerald-600"><?= number_format($t['total_price'], 2) ?> <?= e($t['currency']) ?></span>
-                </div>
-                <?php endif; ?>
+                <!-- Pricing hidden — managed via invoices/receipts -->
             </div>
         </div>
 

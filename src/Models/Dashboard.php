@@ -32,6 +32,10 @@ class Dashboard
             'totalPartners'     => 0,
             'totalVehicles'     => 0,
             'totalDrivers'      => 0,
+            'pendingMissions'   => 0,
+            'activeMissions'    => 0,
+            'openQuotations'    => 0,
+            'activeGroupFiles'  => 0,
         ];
 
         $queries = [
@@ -45,6 +49,10 @@ class Dashboard
             'totalPartners'   => ["SELECT COUNT(*) as val FROM partners WHERE status = 'active'", []],
             'totalVehicles'   => ["SELECT COUNT(*) as val FROM vehicles WHERE status = 'available'", []],
             'totalDrivers'    => ["SELECT COUNT(*) as val FROM drivers WHERE status = 'active'", []],
+            'pendingMissions' => ["SELECT COUNT(*) as val FROM missions WHERE status = 'pending'", []],
+            'activeMissions'  => ["SELECT COUNT(*) as val FROM missions WHERE status IN ('assigned','in_progress')", []],
+            'openQuotations'  => ["SELECT COUNT(*) as val FROM quotations WHERE status IN ('draft','sent')", []],
+            'activeGroupFiles'=> ["SELECT COUNT(*) as val FROM group_files WHERE status IN ('planning','confirmed','in_progress')", []],
         ];
 
         foreach ($queries as $key => [$sql, $params]) {

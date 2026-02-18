@@ -1,0 +1,272 @@
+/**
+ * CYN Tourism — RTL (Right-to-Left) Stylesheet
+ * Applied conditionally when Arabic language is active.
+ * Mirrors layout, sidebar, tables, forms, and typography.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   1. Base Typography
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] body {
+    font-family: 'Amiri', 'Inter', 'Tahoma', 'Arial', sans-serif;
+    direction: rtl;
+    text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2. Sidebar — Mirror to right side
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] aside {
+    left: auto;
+    right: 0;
+    border-left: 1px solid rgba(148, 163, 184, 0.15);
+    border-right: none;
+}
+
+html[dir="rtl"] aside .absolute.left-0 {
+    left: auto;
+    right: 0;
+}
+
+html[dir="rtl"] aside nav a {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] aside nav a i {
+    margin-left: 0.75rem;
+    margin-right: 0;
+}
+
+/* Active indicator on right side */
+html[dir="rtl"] aside nav a .absolute {
+    left: auto;
+    right: 0;
+    border-radius: 0.25rem 0 0 0.25rem;
+}
+
+/* Badge on left in RTL */
+html[dir="rtl"] aside nav a .ml-auto {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. Main Content Area — Offset from right
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .flex.min-h-screen > div:not(aside) {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4. Tables — Align text and padding
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] table {
+    direction: rtl;
+}
+
+html[dir="rtl"] th,
+html[dir="rtl"] td {
+    text-align: right;
+}
+
+html[dir="rtl"] th.text-right,
+html[dir="rtl"] td.text-right {
+    text-align: left;
+}
+
+html[dir="rtl"] th.text-center,
+html[dir="rtl"] td.text-center {
+    text-align: center;
+}
+
+/* Actions column stays at left in RTL */
+html[dir="rtl"] td:last-child,
+html[dir="rtl"] th:last-child {
+    text-align: left;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   5. Forms — Mirror labels, inputs, and icons
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] input,
+html[dir="rtl"] select,
+html[dir="rtl"] textarea {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="time"] {
+    text-align: left;
+    direction: ltr;
+}
+
+html[dir="rtl"] label {
+    text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   6. Flex & Grid Utilities — Reverse horizontal flow
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .flex.items-center.gap-2,
+html[dir="rtl"] .flex.items-center.gap-3,
+html[dir="rtl"] .flex.items-center.gap-1 {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .flex.items-center.justify-between {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .flex.items-center.justify-end {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+/* Don't reverse vertical flex */
+html[dir="rtl"] .flex.flex-col {
+    flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   7. Margins & Padding — Mirror directional spacing
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .ml-auto {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+html[dir="rtl"] .mr-auto {
+    margin-right: 0;
+    margin-left: auto;
+}
+
+html[dir="rtl"] .ml-1 { margin-left: 0; margin-right: 0.25rem; }
+html[dir="rtl"] .ml-2 { margin-left: 0; margin-right: 0.5rem; }
+html[dir="rtl"] .ml-3 { margin-left: 0; margin-right: 0.75rem; }
+html[dir="rtl"] .mr-1 { margin-right: 0; margin-left: 0.25rem; }
+html[dir="rtl"] .mr-2 { margin-right: 0; margin-left: 0.5rem; }
+html[dir="rtl"] .mr-3 { margin-right: 0; margin-left: 0.75rem; }
+
+html[dir="rtl"] .pl-8 {
+    padding-left: 0;
+    padding-right: 2rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   8. Icons — Keep FA icons LTR
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .fas,
+html[dir="rtl"] .far,
+html[dir="rtl"] .fab,
+html[dir="rtl"] .fa {
+    direction: ltr;
+    display: inline-block;
+}
+
+/* Flip directional icons */
+html[dir="rtl"] .fa-arrow-left {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] .fa-arrow-right {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] .fa-chevron-left {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] .fa-chevron-right {
+    transform: scaleX(-1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   9. Borders — Mirror directional borders
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .border-l {
+    border-left: none;
+    border-right-width: 1px;
+}
+
+html[dir="rtl"] .border-l-2 {
+    border-left: none;
+    border-right: 2px solid;
+    border-right-color: inherit;
+}
+
+html[dir="rtl"] .border-r {
+    border-right: none;
+    border-left-width: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   10. Timeline — Mirror the vertical line and dots
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .relative.pl-8.border-l-2 {
+    padding-left: 0;
+    padding-right: 2rem;
+    border-left: none;
+    border-right: 2px solid;
+}
+
+html[dir="rtl"] .relative .absolute.-left-\\[2\\.55rem\\] {
+    left: auto;
+    right: -2.55rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   11. Rounded Corners — Mirror directional rounding
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .rounded-r-full {
+    border-radius: 0 0 0 9999px;
+    border-top-left-radius: 9999px;
+}
+
+html[dir="rtl"] .rounded-l-full {
+    border-radius: 0 9999px 9999px 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   12. Topbar & Header — Mirror search/actions
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] header .flex.items-center {
+    flex-direction: row-reverse;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   13. Font Mono — Keep monospace LTR for codes/numbers
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .font-mono {
+    direction: ltr;
+    display: inline-block;
+    unicode-bidi: embed;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   14. Pagination — Mirror left/right
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .flex.gap-1 a {
+    direction: rtl;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   15. Toast & Notifications — Position from left in RTL
+   ═══════════════════════════════════════════════════════════ */
+html[dir="rtl"] .fixed.top-4.right-4,
+html[dir="rtl"] [class*="top-4"][class*="right-4"] {
+    right: auto;
+    left: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   16. Print — Maintain RTL in print
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+    html[dir="rtl"] body {
+        direction: rtl;
+        text-align: right;
+    }
+}
