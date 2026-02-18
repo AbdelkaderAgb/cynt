@@ -208,7 +208,7 @@ class ExportController extends Controller
         $voucher = $stmt->fetch();
         if (!$voucher) { header('Location: ' . url('hotel-voucher')); exit; }
 
-        $guestProgram = resolve_guest_program($id);
+        $guestProgram = HotelController::resolveGuestProgram($id);
 
         $html = $this->renderPdfTemplate('hotels/voucher_pdf', [
             'voucher'        => $voucher,
