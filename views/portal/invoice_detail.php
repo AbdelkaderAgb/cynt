@@ -64,7 +64,7 @@ $sc = $statusColors[$invoice['status']] ?? 'bg-gray-100 text-gray-600';
                                 <td class="px-4 py-3"><?= e($item['description'] ?? '') ?></td>
                                 <td class="px-4 py-3 text-center"><?= e($item['quantity'] ?? 1) ?></td>
                                 <td class="px-4 py-3 text-right"><?= number_format($item['unit_price'] ?? 0, 2) ?></td>
-                                <td class="px-4 py-3 text-right font-bold"><?= number_format($item['total'] ?? 0, 2) ?></td>
+                                <td class="px-4 py-3 text-right font-bold"><?= number_format($item['total_price'] ?? $item['total'] ?? 0, 2) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
