@@ -96,19 +96,22 @@ class HotelController extends Controller
         $nextId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM hotel_vouchers")->fetchColumn();
         $roomsJson = $_POST['rooms_json'] ?? '';
 
+        $hotelId = (int)($_POST['hotel_id'] ?? 0);
+
         $stmt = $db->prepare("INSERT INTO hotel_vouchers
-            (id, voucher_no, guest_name, passenger_passport, hotel_name, company_name, address, telephone,
+            (id, voucher_no, guest_name, passenger_passport, hotel_name, hotel_id, company_name, address, telephone,
              room_type, room_count, board_type, transfer_type,
              check_in, check_out, nights, total_pax, adults, children, infants,
              price_per_night, total_price, currency, customers,
              special_requests, additional_services, rooms_json, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $nextId,
             $voucherNo,
             $guestName,
             $passengerPassport,
             trim($_POST['hotel_name'] ?? ''),
+            $hotelId,
             trim($_POST['company_name'] ?? ''),
             trim($_POST['address'] ?? ''),
             trim($_POST['telephone'] ?? ''),
@@ -228,8 +231,10 @@ class HotelController extends Controller
 
         $roomsJson = $_POST['rooms_json'] ?? '';
 
+        $hotelId = (int)($_POST['hotel_id'] ?? 0);
+
         $stmt = $db->prepare("UPDATE hotel_vouchers SET
-            guest_name = ?, passenger_passport = ?, hotel_name = ?, company_name = ?, address = ?, telephone = ?,
+            guest_name = ?, passenger_passport = ?, hotel_name = ?, hotel_id = ?, company_name = ?, address = ?, telephone = ?,
             room_type = ?, room_count = ?, board_type = ?, transfer_type = ?,
             check_in = ?, check_out = ?, nights = ?, total_pax = ?, adults = ?, children = ?, infants = ?,
             price_per_night = ?, total_price = ?, currency = ?, customers = ?,
@@ -239,6 +244,7 @@ class HotelController extends Controller
             $guestName,
             $passengerPassport,
             trim($_POST['hotel_name'] ?? ''),
+            $hotelId,
             trim($_POST['company_name'] ?? ''),
             trim($_POST['address'] ?? ''),
             trim($_POST['telephone'] ?? ''),

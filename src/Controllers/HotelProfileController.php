@@ -356,6 +356,29 @@ class HotelProfileController extends Controller
     }
 
     /**
+     * API: Get rooms for a specific hotel
+     * GET /api/hotels/rooms?hotel_id=X
+     * Returns: [{id, room_type, board_type, capacity, max_adults, max_children}]
+     */
+    public function roomsApi(): void
+    {
+        Auth::requireAuth();
+        $hotelId = (int)($_GET['hotel_id'] ?? 0);
+        if (!$hotelId) {
+            $this->json([]);
+            return;
+        }
+        $rooms = Database::fetchAll(
+            "SELECT id, room_type, board_type, capacity, max_adults, max_children
+             FROM hotel_rooms
+             WHERE hotel_id = ?
+             ORDER BY room_type, board_type",
+            [$hotelId]
+        );
+        $this->json($rooms);
+    }
+
+    /**
      * Parse XLSX file using ZipArchive + SimpleXML (no external library)
      */
     private function parseXlsx(string $filePath): array

@@ -117,6 +117,7 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
 
         <form method="POST" action="<?= url('hotel-voucher/store') ?>" @submit.prevent="prepareSubmit($el)">
             <?= csrf_field() ?>
+            <input type="hidden" name="hotel_id" :value="selectedHotelId">
 
             <!-- 1. Company Info -->
             <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5">
@@ -212,6 +213,7 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 <input type="hidden" name="room_count" :value="rooms.length">
                 <input type="hidden" name="room_type" :value="rooms[0]?.type || ''">
                 <input type="hidden" name="board_type" :value="rooms[0]?.board || 'bed_breakfast'">
+                <p x-show="!selectedHotelId" class="text-xs text-amber-500 mb-2"><i class="fas fa-info-circle mr-1"></i>Select a hotel above to load available room types.</p>
                 <div class="space-y-3">
                     <template x-for="(room, ri) in rooms" :key="ri">
                         <div class="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
@@ -222,28 +224,29 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div>
                                     <label :for="'hv_room_type_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Room Type</label>
-                                    <select :id="'hv_room_type_' + ri" x-model="room.type" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <select :id="'hv_room_type_' + ri" x-model="room.type" @change="onRoomTypeChange(ri)" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                         <option value="">-- Select --</option>
-                                        <?php foreach ($roomTypes as $k => $lbl): ?>
-                                        <option value="<?= $k ?>"><?= $lbl ?></option>
-                                        <?php endforeach; ?>
+                                        <template x-for="rt in availableRoomTypes" :key="rt">
+                                            <option :value="rt" x-text="rt"></option>
+                                        </template>
                                     </select>
                                 </div>
                                 <div>
                                     <label :for="'hv_room_board_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Board</label>
                                     <select :id="'hv_room_board_' + ri" x-model="room.board" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                                        <?php foreach ($boardTypes as $k => $lbl): ?>
-                                        <option value="<?= $k ?>"><?= $lbl ?></option>
-                                        <?php endforeach; ?>
+                                        <option value="">-- Select --</option>
+                                        <template x-for="bt in boardsForType(room.type)" :key="bt">
+                                            <option :value="bt" x-text="boardLabel(bt)"></option>
+                                        </template>
                                     </select>
                                 </div>
                                 <div>
                                     <label :for="'hv_room_adults_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Adults</label>
-                                    <input type="number" :id="'hv_room_adults_' + ri" x-model.number="room.adults" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <input type="number" :id="'hv_room_adults_' + ri" x-model.number="room.adults" min="0" :max="maxAdults(room.type)" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                 </div>
                                 <div>
                                     <label :for="'hv_room_children_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Children</label>
-                                    <input type="number" :id="'hv_room_children_' + ri" x-model.number="room.children" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <input type="number" :id="'hv_room_children_' + ri" x-model.number="room.children" min="0" :max="maxChildren(room.type)" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                 </div>
                             </div>
                         </div>
@@ -340,6 +343,9 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
 </div>
 
 <script>
+const BOARD_LABELS = {BB:'Bed & Breakfast',HB:'Half Board',FB:'Full Board',AI:'All Inclusive',RO:'Room Only',UAI:'Ultra All Inclusive',
+    bed_breakfast:'Bed & Breakfast',half_board:'Half Board',full_board:'Full Board',all_inclusive:'All Inclusive',room_only:'Room Only',ultra_all_inclusive:'Ultra All Inclusive'};
+
 function hotelVoucherForm() {
     return {
         // Company
@@ -348,10 +354,13 @@ function hotelVoucherForm() {
         // Hotel cascade
         allHotels: [], countries: [], cities: [], filteredHotels: [],
         selectedCountry: '', selectedCity: '', selectedHotelId: '', selectedHotelName: '',
+        // Hotel rooms from DB
+        hotelRooms: [],
+        availableRoomTypes: [],
         // Dates
         checkIn: '', checkOut: '', nights: 1,
         // Rooms
-        rooms: [{ type: 'DBL', board: 'bed_breakfast', adults: 2, children: 0 }],
+        rooms: [{ type: '', board: '', adults: 2, children: 0 }],
         // Guests
         guests: [{ title: 'Mr', name: '', age: '', passport: '' }],
 
@@ -386,21 +395,67 @@ function hotelVoucherForm() {
                 if (h) {
                     this.selectedCountry = h.country; this.onCountryChange();
                     this.selectedCity = h.city; this.onCityChange();
-                    this.selectedHotelId = h.id; this.onHotelChange();
+                    this.selectedHotelId = h.id; await this.onHotelChange();
                 }
             }
         },
         onCountryChange() {
             this.cities = [...new Set(this.allHotels.filter(h => h.country === this.selectedCountry).map(h => h.city).filter(Boolean))].sort();
             this.selectedCity = ''; this.filteredHotels = []; this.selectedHotelId = ''; this.selectedHotelName = '';
+            this.hotelRooms = []; this.availableRoomTypes = [];
         },
         onCityChange() {
             this.filteredHotels = this.allHotels.filter(h => h.country === this.selectedCountry && h.city === this.selectedCity);
             this.selectedHotelId = ''; this.selectedHotelName = '';
+            this.hotelRooms = []; this.availableRoomTypes = [];
         },
-        onHotelChange() {
+        async onHotelChange() {
             const h = this.allHotels.find(x => x.id == this.selectedHotelId);
             this.selectedHotelName = h ? h.name : '';
+            await this.fetchHotelRooms();
+        },
+        async fetchHotelRooms() {
+            if (!this.selectedHotelId) { this.hotelRooms = []; this.availableRoomTypes = []; return; }
+            try {
+                const res = await fetch('<?= url('api/hotels/rooms') ?>?hotel_id=' + this.selectedHotelId);
+                this.hotelRooms = await res.json();
+            } catch(e) { this.hotelRooms = []; }
+            this.availableRoomTypes = [...new Set(this.hotelRooms.map(r => r.room_type))];
+            // Reset room selections to first available
+            if (this.availableRoomTypes.length) {
+                const firstType = this.availableRoomTypes[0];
+                const boards = this.boardsForType(firstType);
+                const firstBoard = boards.length ? boards[0] : '';
+                const match = this.hotelRooms.find(r => r.room_type === firstType);
+                this.rooms = [{ type: firstType, board: firstBoard, adults: parseInt(match?.max_adults) || 2, children: 0 }];
+            }
+        },
+
+        // --- Room helpers (DB-driven) ---
+        boardsForType(roomType) {
+            if (!roomType || !this.hotelRooms.length) return [];
+            return [...new Set(this.hotelRooms.filter(r => r.room_type === roomType).map(r => r.board_type))];
+        },
+        boardLabel(code) { return BOARD_LABELS[code] || code; },
+        maxAdults(roomType) {
+            const match = this.hotelRooms.find(r => r.room_type === roomType);
+            return match ? parseInt(match.max_adults) || 10 : 10;
+        },
+        maxChildren(roomType) {
+            const match = this.hotelRooms.find(r => r.room_type === roomType);
+            return match ? parseInt(match.max_children) || 10 : 10;
+        },
+        onRoomTypeChange(ri) {
+            const room = this.rooms[ri];
+            const boards = this.boardsForType(room.type);
+            if (boards.length && !boards.includes(room.board)) room.board = boards[0];
+            const match = this.hotelRooms.find(r => r.room_type === room.type);
+            if (match) {
+                const ma = parseInt(match.max_adults) || 2;
+                const mc = parseInt(match.max_children) || 0;
+                if (room.adults > ma) room.adults = ma;
+                if (room.children > mc) room.children = mc;
+            }
         },
 
         // --- Date / nights ---
@@ -428,7 +483,9 @@ function hotelVoucherForm() {
 
         // --- Rooms ---
         addRoom() {
-            this.rooms.push({ type: 'DBL', board: 'bed_breakfast', adults: 2, children: 0 });
+            const firstType = this.availableRoomTypes.length ? this.availableRoomTypes[0] : '';
+            const boards = this.boardsForType(firstType);
+            this.rooms.push({ type: firstType, board: boards.length ? boards[0] : '', adults: 2, children: 0 });
         },
         totalAdults() { return this.rooms.reduce((s, r) => s + (r.adults || 0), 0); },
         totalChildren() { return this.rooms.reduce((s, r) => s + (r.children || 0), 0); },

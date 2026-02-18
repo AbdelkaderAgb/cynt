@@ -33,6 +33,7 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 <form method="POST" action="<?= url('hotel-voucher/update') ?>" class="space-y-6" x-data="hotelEditForm()" @submit.prevent="prepareSubmit($el)">
     <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= $v['id'] ?>">
+    <input type="hidden" name="hotel_id" value="<?= e($v['hotel_id'] ?? '') ?>">
     <input type="hidden" name="company_id" :value="companyId">
 
     <!-- Company Info -->
@@ -116,6 +117,7 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
         <input type="hidden" name="room_count" :value="rooms.length">
         <input type="hidden" name="room_type" :value="rooms[0]?.type || ''">
         <input type="hidden" name="board_type" :value="rooms[0]?.board || 'bed_breakfast'">
+        <p x-show="!hotelRooms.length" class="text-xs text-amber-500 mb-2"><i class="fas fa-info-circle mr-1"></i>Room types loaded from hotel database.</p>
         <div class="space-y-3">
             <template x-for="(room, ri) in rooms" :key="ri">
                 <div class="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
@@ -126,28 +128,29 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
                             <label :for="'hve_room_type_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Room Type</label>
-                            <select :id="'hve_room_type_' + ri" x-model="room.type" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            <select :id="'hve_room_type_' + ri" x-model="room.type" @change="onRoomTypeChange(ri)" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                 <option value="">-- Select --</option>
-                                <?php foreach ($roomTypes as $k => $lbl): ?>
-                                <option value="<?= $k ?>"><?= $lbl ?></option>
-                                <?php endforeach; ?>
+                                <template x-for="rt in availableRoomTypes" :key="rt">
+                                    <option :value="rt" x-text="rt"></option>
+                                </template>
                             </select>
                         </div>
                         <div>
                             <label :for="'hve_room_board_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Board</label>
                             <select :id="'hve_room_board_' + ri" x-model="room.board" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                                <?php foreach ($boardTypes as $k => $lbl): ?>
-                                <option value="<?= $k ?>"><?= $lbl ?></option>
-                                <?php endforeach; ?>
+                                <option value="">-- Select --</option>
+                                <template x-for="bt in boardsForType(room.type)" :key="bt">
+                                    <option :value="bt" x-text="boardLabel(bt)"></option>
+                                </template>
                             </select>
                         </div>
                         <div>
                             <label :for="'hve_room_adults_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Adults</label>
-                            <input type="number" :id="'hve_room_adults_' + ri" x-model.number="room.adults" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            <input type="number" :id="'hve_room_adults_' + ri" x-model.number="room.adults" min="0" :max="maxAdults(room.type)" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                         </div>
                         <div>
                             <label :for="'hve_room_children_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Children</label>
-                            <input type="number" :id="'hve_room_children_' + ri" x-model.number="room.children" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            <input type="number" :id="'hve_room_children_' + ri" x-model.number="room.children" min="0" :max="maxChildren(room.type)" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                         </div>
                     </div>
                 </div>
@@ -238,6 +241,9 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 </form>
 
 <script>
+const BOARD_LABELS = {BB:'Bed & Breakfast',HB:'Half Board',FB:'Full Board',AI:'All Inclusive',RO:'Room Only',UAI:'Ultra All Inclusive',
+    bed_breakfast:'Bed & Breakfast',half_board:'Half Board',full_board:'Full Board',all_inclusive:'All Inclusive',room_only:'Room Only',ultra_all_inclusive:'Ultra All Inclusive'};
+
 function hotelEditForm() {
     return {
         // Company
@@ -250,15 +256,79 @@ function hotelEditForm() {
         checkIn: '<?= $v['check_in'] ?>',
         checkOut: '<?= $v['check_out'] ?? '' ?>',
         nights: <?= (int)$v['nights'] ?>,
+        // Hotel rooms from DB
+        hotelRooms: [],
+        availableRoomTypes: [],
         // Rooms
         rooms: <?= json_encode($roomsInit) ?>,
         // Guests
         guests: <?= json_encode($guestsInit) ?>,
 
-        init() {
+        async init() {
             if (this.checkIn && !this.checkOut && this.nights > 0) {
                 const d = new Date(this.checkIn); d.setDate(d.getDate() + this.nights);
                 this.checkOut = d.toISOString().split('T')[0];
+            }
+            // Resolve hotel_id from hotel_name to load rooms
+            await this.resolveAndFetchRooms();
+        },
+        async resolveAndFetchRooms() {
+            const hotelId = <?= (int)($v['hotel_id'] ?? 0) ?>;
+            if (hotelId > 0) {
+                await this.fetchHotelRooms(hotelId);
+                return;
+            }
+            // Fallback: search by hotel name in the hotels list
+            const hotelName = '<?= e($v['hotel_name'] ?? '') ?>';
+            if (!hotelName) return;
+            try {
+                const res = await fetch('<?= url('api/hotels/list') ?>');
+                const hotels = await res.json();
+                const match = hotels.find(h => h.name === hotelName);
+                if (match) await this.fetchHotelRooms(match.id);
+            } catch(e) {}
+        },
+        async fetchHotelRooms(hotelId) {
+            try {
+                const res = await fetch('<?= url('api/hotels/rooms') ?>?hotel_id=' + hotelId);
+                this.hotelRooms = await res.json();
+            } catch(e) { this.hotelRooms = []; }
+            this.availableRoomTypes = [...new Set(this.hotelRooms.map(r => r.room_type))];
+            // Ensure existing room selections are still valid (keep them if they match)
+            for (const room of this.rooms) {
+                if (room.type && !this.availableRoomTypes.includes(room.type)) {
+                    // Keep the saved type even if not in DB (manual override)
+                    if (!this.availableRoomTypes.includes(room.type)) {
+                        this.availableRoomTypes.push(room.type);
+                    }
+                }
+            }
+        },
+
+        // --- Room helpers (DB-driven) ---
+        boardsForType(roomType) {
+            if (!roomType || !this.hotelRooms.length) return [];
+            return [...new Set(this.hotelRooms.filter(r => r.room_type === roomType).map(r => r.board_type))];
+        },
+        boardLabel(code) { return BOARD_LABELS[code] || code; },
+        maxAdults(roomType) {
+            const match = this.hotelRooms.find(r => r.room_type === roomType);
+            return match ? parseInt(match.max_adults) || 10 : 10;
+        },
+        maxChildren(roomType) {
+            const match = this.hotelRooms.find(r => r.room_type === roomType);
+            return match ? parseInt(match.max_children) || 10 : 10;
+        },
+        onRoomTypeChange(ri) {
+            const room = this.rooms[ri];
+            const boards = this.boardsForType(room.type);
+            if (boards.length && !boards.includes(room.board)) room.board = boards[0];
+            const match = this.hotelRooms.find(r => r.room_type === room.type);
+            if (match) {
+                const ma = parseInt(match.max_adults) || 2;
+                const mc = parseInt(match.max_children) || 0;
+                if (room.adults > ma) room.adults = ma;
+                if (room.children > mc) room.children = mc;
             }
         },
 
@@ -297,7 +367,11 @@ function hotelEditForm() {
         },
 
         // Rooms
-        addRoom() { this.rooms.push({ type: 'DBL', board: 'bed_breakfast', adults: 2, children: 0 }); },
+        addRoom() {
+            const firstType = this.availableRoomTypes.length ? this.availableRoomTypes[0] : '';
+            const boards = this.boardsForType(firstType);
+            this.rooms.push({ type: firstType, board: boards.length ? boards[0] : '', adults: 2, children: 0 });
+        },
         totalAdults() { return this.rooms.reduce((s, r) => s + (r.adults || 0), 0); },
         totalChildren() { return this.rooms.reduce((s, r) => s + (r.children || 0), 0); },
         totalPax() { return this.totalAdults() + this.totalChildren(); },

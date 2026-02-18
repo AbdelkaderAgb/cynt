@@ -179,6 +179,7 @@ App::get('/group-files/pdf', ['GroupFileController', 'pdf']);
 // Board Pricing API
 App::get('/api/rooms/board-prices', ['HotelProfileController', 'boardPricesApi']);
 App::get('/api/hotels/list',        ['HotelProfileController', 'listApi']);
+App::get('/api/hotels/rooms',       ['HotelProfileController', 'roomsApi']);
 App::any('/api/rooms/board-prices/save', ['HotelProfileController', 'boardPricesSave']);
 
 // Receipts
