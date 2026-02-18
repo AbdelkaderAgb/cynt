@@ -124,9 +124,9 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 <input type="hidden" name="company_id" :value="companyId">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="relative" @click.outside="partnerOpen = false">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Company Name *</label>
-                        <input type="text" name="company_name" x-model="companyName" @input.debounce.300ms="searchPartner()" @focus="if(partnerResults.length) partnerOpen=true"
-                               required autocomplete="off" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label for="hv_company_name" class="block text-xs font-medium text-gray-500 mb-1">Company Name *</label>
+                        <input type="text" id="hv_company_name" name="company_name" x-model="companyName" @input.debounce.300ms="searchPartner()" @focus="if(partnerResults.length) partnerOpen=true"
+                               required autocomplete="organization" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                         <p class="text-[10px] text-gray-400 mt-0.5">Type to search registered partners</p>
                         <div x-show="partnerOpen && partnerResults.length > 0" x-transition
                              class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -139,12 +139,12 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Address</label>
-                        <input type="text" name="address" x-model="companyAddress" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label for="hv_address" class="block text-xs font-medium text-gray-500 mb-1">Address</label>
+                        <input type="text" id="hv_address" name="address" x-model="companyAddress" autocomplete="street-address" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Telephone</label>
-                        <input type="text" name="telephone" x-model="companyPhone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label for="hv_telephone" class="block text-xs font-medium text-gray-500 mb-1">Telephone</label>
+                        <input type="text" id="hv_telephone" name="telephone" x-model="companyPhone" autocomplete="tel" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                     </div>
                 </div>
             </div>
@@ -155,22 +155,22 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 <input type="hidden" name="hotel_name" :value="selectedHotelName">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-globe text-blue-400 mr-1"></i>Country *</label>
-                        <select x-model="selectedCountry" @change="onCountryChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label for="hv_country" class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-globe text-blue-400 mr-1"></i>Country *</label>
+                        <select id="hv_country" x-model="selectedCountry" @change="onCountryChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                             <option value="">-- Select Country --</option>
                             <template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-city text-purple-400 mr-1"></i>City *</label>
-                        <select x-model="selectedCity" @change="onCityChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label for="hv_city" class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-city text-purple-400 mr-1"></i>City *</label>
+                        <select id="hv_city" x-model="selectedCity" @change="onCityChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                             <option value="">-- Select City --</option>
                             <template x-for="ci in cities" :key="ci"><option :value="ci" x-text="ci"></option></template>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-hotel text-teal-400 mr-1"></i>Hotel *</label>
-                        <select x-model="selectedHotelId" @change="onHotelChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                        <label for="hv_hotel" class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-hotel text-teal-400 mr-1"></i>Hotel *</label>
+                        <select id="hv_hotel" x-model="selectedHotelId" @change="onHotelChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
                             <option value="">-- Select Hotel --</option>
                             <template x-for="h in filteredHotels" :key="h.id"><option :value="h.id" x-text="h.name + ' ' + '★'.repeat(h.stars || 0)"></option></template>
                         </select>
@@ -178,20 +178,20 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_in_date') ?: 'Check-in' ?> *</label>
-                        <input type="date" name="check_in" x-model="checkIn" @change="onCheckInChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <label for="hv_check_in" class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_in_date') ?: 'Check-in' ?> *</label>
+                        <input type="date" id="hv_check_in" name="check_in" x-model="checkIn" @change="onCheckInChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_out_date') ?: 'Check-out' ?> *</label>
-                        <input type="date" name="check_out" x-model="checkOut" @change="onCheckOutChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <label for="hv_check_out" class="block text-xs font-medium text-gray-500 mb-1"><?= __('check_out_date') ?: 'Check-out' ?> *</label>
+                        <input type="date" id="hv_check_out" name="check_out" x-model="checkOut" @change="onCheckOutChange()" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('nights') ?: 'Nights' ?></label>
-                        <input type="number" name="nights" x-model.number="nights" @change="onNightsChange()" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm bg-gray-50 dark:bg-gray-600" readonly>
+                        <label for="hv_nights" class="block text-xs font-medium text-gray-500 mb-1"><?= __('nights') ?: 'Nights' ?></label>
+                        <input type="number" id="hv_nights" name="nights" x-model.number="nights" @change="onNightsChange()" min="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm bg-gray-50 dark:bg-gray-600" readonly>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Transfer Type</label>
-                        <select name="transfer_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <label for="hv_transfer_type" class="block text-xs font-medium text-gray-500 mb-1">Transfer Type</label>
+                        <select id="hv_transfer_type" name="transfer_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                             <?php foreach ($transferTypes as $k => $lbl): ?>
                             <option value="<?= $k ?>"><?= $lbl ?></option>
                             <?php endforeach; ?>
@@ -221,8 +221,8 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div>
-                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Room Type</label>
-                                    <select x-model="room.type" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <label :for="'hv_room_type_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Room Type</label>
+                                    <select :id="'hv_room_type_' + ri" x-model="room.type" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                         <option value="">-- Select --</option>
                                         <?php foreach ($roomTypes as $k => $lbl): ?>
                                         <option value="<?= $k ?>"><?= $lbl ?></option>
@@ -230,20 +230,20 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Board</label>
-                                    <select x-model="room.board" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <label :for="'hv_room_board_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Board</label>
+                                    <select :id="'hv_room_board_' + ri" x-model="room.board" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                         <?php foreach ($boardTypes as $k => $lbl): ?>
                                         <option value="<?= $k ?>"><?= $lbl ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Adults</label>
-                                    <input type="number" x-model.number="room.adults" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <label :for="'hv_room_adults_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Adults</label>
+                                    <input type="number" :id="'hv_room_adults_' + ri" x-model.number="room.adults" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-medium text-gray-400 mb-0.5">Children</label>
-                                    <input type="number" x-model.number="room.children" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                                    <label :for="'hv_room_children_' + ri" class="block text-[10px] font-medium text-gray-400 mb-0.5">Children</label>
+                                    <input type="number" :id="'hv_room_children_' + ri" x-model.number="room.children" min="0" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                                 </div>
                             </div>
                         </div>
@@ -272,7 +272,8 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 <div class="space-y-2">
                     <template x-for="(g, gi) in guests" :key="gi">
                         <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2">
-                            <select x-model="g.title" class="w-20 px-1.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-xs">
+                            <label :for="'hv_guest_title_' + gi" class="sr-only" x-text="'Guest ' + (gi+1) + ' Title'"></label>
+                            <select :id="'hv_guest_title_' + gi" x-model="g.title" class="w-20 px-1.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-xs">
                                 <option value="Mr">Mr</option>
                                 <option value="Mrs">Mrs</option>
                                 <option value="Ms">Ms</option>
@@ -281,9 +282,12 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                                 <option value="Child">Child</option>
                                 <option value="Infant">Infant</option>
                             </select>
-                            <input type="text" x-model="g.name" placeholder="Full Name *" class="flex-1 min-w-[120px] px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
-                            <input type="number" x-model="g.age" placeholder="Age" min="0" max="120" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-center">
-                            <input type="text" x-model="g.passport" placeholder="Passport No." class="w-32 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            <label :for="'hv_guest_name_' + gi" class="sr-only" x-text="'Guest ' + (gi+1) + ' Name'"></label>
+                            <input type="text" :id="'hv_guest_name_' + gi" x-model="g.name" placeholder="Full Name *" autocomplete="name" class="flex-1 min-w-[120px] px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-teal-500">
+                            <label :for="'hv_guest_age_' + gi" class="sr-only" x-text="'Guest ' + (gi+1) + ' Age'"></label>
+                            <input type="number" :id="'hv_guest_age_' + gi" x-model="g.age" placeholder="Age" min="0" max="120" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-center">
+                            <label :for="'hv_guest_passport_' + gi" class="sr-only" x-text="'Guest ' + (gi+1) + ' Passport'"></label>
+                            <input type="text" :id="'hv_guest_passport_' + gi" x-model="g.passport" placeholder="Passport No." class="w-32 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                             <button type="button" @click="guests.splice(gi, 1)" x-show="guests.length > 1" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
                                 <i class="fas fa-trash-alt text-xs"></i>
                             </button>
@@ -295,8 +299,8 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
 
             <!-- 5. Special Requests -->
             <div class="mb-5">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Special Requests</label>
-                <textarea name="special_requests" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></textarea>
+                <label for="hv_special_requests" class="block text-xs font-medium text-gray-500 mb-1">Special Requests</label>
+                <textarea id="hv_special_requests" name="special_requests" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></textarea>
             </div>
 
             <!-- 6. Link Additional Services -->
@@ -304,8 +308,8 @@ $transferTypes = ['without' => 'Without Transfer', 'one_way' => 'One Way', 'roun
                 <label class="block text-xs font-medium text-gray-500 mb-2">Link Additional Services</label>
                 <p class="text-[10px] text-gray-400 mb-2">Search and link existing tours or transfers. They appear as Guest Program on the voucher.</p>
                 <div class="relative mb-2" @click.outside="serviceResultsOpen = false">
-                    <input type="text" x-model="serviceQuery" @input.debounce.200ms="searchServices()" @focus="if(serviceResults.length) serviceResultsOpen = true"
-                           placeholder="Search tours or transfers..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                    <input type="text" id="hv_service_search" x-model="serviceQuery" @input.debounce.200ms="searchServices()" @focus="if(serviceResults.length) serviceResultsOpen = true"
+                           placeholder="Search tours or transfers..." autocomplete="off" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     <div x-show="serviceResultsOpen && serviceResults.length > 0" x-transition class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                         <template x-for="r in serviceResults" :key="r.type + '-' + r.id">
                             <div @click="addService(r)" class="px-3 py-2 cursor-pointer hover:bg-teal-50 dark:hover:bg-teal-900/20 border-b border-gray-100 dark:border-gray-600 last:border-0 text-sm" x-text="r.label"></div>
