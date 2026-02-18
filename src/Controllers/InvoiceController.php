@@ -118,23 +118,52 @@ class InvoiceController extends Controller
 
         if (empty($items)) return;
 
-        $stmt = $db->prepare(
-            "INSERT INTO invoice_items (invoice_id, item_type, item_id, service_id, description, quantity, unit_price, total_price, unit_type)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        );
+        // Check if new columns exist (from migration_pricing_system.sql)
+        $hasNewCols = false;
+        try {
+            $colCheck = $db->query("SELECT service_id FROM invoice_items LIMIT 0");
+            $hasNewCols = ($colCheck !== false);
+        } catch (\Exception $e) {
+            $hasNewCols = false;
+        }
 
-        foreach ($items as $item) {
-            $stmt->execute([
-                $invoiceId,
-                $item['item_type'] ?? 'other',
-                (int)($item['item_id'] ?? 0),
-                (int)($item['service_id'] ?? 0) ?: null,
-                $item['description'] ?? '',
-                max(1, (int)($item['quantity'] ?? 1)),
-                (float)($item['unit_price'] ?? 0),
-                (float)($item['total_price'] ?? 0),
-                $item['unit_type'] ?? 'flat',
-            ]);
+        if ($hasNewCols) {
+            $stmt = $db->prepare(
+                "INSERT INTO invoice_items (invoice_id, item_type, item_id, service_id, description, quantity, unit_price, total_price, unit_type)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+
+            foreach ($items as $item) {
+                $stmt->execute([
+                    $invoiceId,
+                    $item['item_type'] ?? 'other',
+                    (int)($item['item_id'] ?? 0),
+                    (int)($item['service_id'] ?? 0) ?: null,
+                    $item['description'] ?? '',
+                    max(1, (int)($item['quantity'] ?? 1)),
+                    (float)($item['unit_price'] ?? 0),
+                    (float)($item['total_price'] ?? 0),
+                    $item['unit_type'] ?? 'flat',
+                ]);
+            }
+        } else {
+            // Fallback: use only base schema columns
+            $stmt = $db->prepare(
+                "INSERT INTO invoice_items (invoice_id, item_type, item_id, description, quantity, unit_price, total_price)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+            );
+
+            foreach ($items as $item) {
+                $stmt->execute([
+                    $invoiceId,
+                    $item['item_type'] ?? 'other',
+                    (int)($item['item_id'] ?? 0),
+                    $item['description'] ?? '',
+                    max(1, (int)($item['quantity'] ?? 1)),
+                    (float)($item['unit_price'] ?? 0),
+                    (float)($item['total_price'] ?? 0),
+                ]);
+            }
         }
     }
 

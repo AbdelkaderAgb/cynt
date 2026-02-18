@@ -125,29 +125,43 @@ class ServiceController extends Controller
         $id = intval($_POST['id'] ?? 0);
         $serviceType = $_POST['service_type'] ?? 'tour';
         
+        // Base columns (always exist)
         $data = [
-            'service_type'    => $serviceType,
-            'name'            => trim($_POST['name'] ?? ''),
-            'description'     => trim($_POST['description'] ?? ''),
-            'price'           => floatval($_POST['price'] ?? 0),
-            'price_adult'     => floatval($_POST['price_adult'] ?? 0),
-            'price_child'     => floatval($_POST['price_child'] ?? 0),
-            'price_infant'    => floatval($_POST['price_infant'] ?? 0),
-            'currency'        => $_POST['currency'] ?? 'USD',
-            'unit'            => $_POST['unit'] ?? 'per_person',
-            'details'         => trim($_POST['details'] ?? ''),
-            'destination'     => trim($_POST['destination'] ?? ''),
-            'duration'        => trim($_POST['duration'] ?? ''),
-            'vehicle_type'    => trim($_POST['vehicle_type'] ?? ''),
-            'max_pax'         => intval($_POST['max_pax'] ?? 0),
-            'pickup_location' => trim($_POST['pickup_location'] ?? ''),
-            'dropoff_location'=> trim($_POST['dropoff_location'] ?? ''),
-            'status'          => $_POST['status'] ?? 'active',
+            'service_type' => $serviceType,
+            'name'         => trim($_POST['name'] ?? ''),
+            'description'  => trim($_POST['description'] ?? ''),
+            'price'        => floatval($_POST['price'] ?? 0),
+            'currency'     => $_POST['currency'] ?? 'USD',
+            'unit'         => $_POST['unit'] ?? 'per_person',
+            'details'      => trim($_POST['details'] ?? ''),
+            'status'       => $_POST['status'] ?? 'active',
         ];
 
-        // Sync price field: for tours use price_adult as main price
-        if ($serviceType === 'tour' && $data['price_adult'] > 0 && $data['price'] == 0) {
-            $data['price'] = $data['price_adult'];
+        // Check if new columns exist (from migration_pricing_system.sql)
+        $hasNewCols = false;
+        try {
+            $db = Database::getInstance()->getConnection();
+            $colCheck = $db->query("SELECT price_adult FROM services LIMIT 0");
+            $hasNewCols = ($colCheck !== false);
+        } catch (\Exception $e) {
+            $hasNewCols = false;
+        }
+
+        if ($hasNewCols) {
+            $data['price_adult']     = floatval($_POST['price_adult'] ?? 0);
+            $data['price_child']     = floatval($_POST['price_child'] ?? 0);
+            $data['price_infant']    = floatval($_POST['price_infant'] ?? 0);
+            $data['destination']     = trim($_POST['destination'] ?? '');
+            $data['duration']        = trim($_POST['duration'] ?? '');
+            $data['vehicle_type']    = trim($_POST['vehicle_type'] ?? '');
+            $data['max_pax']         = intval($_POST['max_pax'] ?? 0);
+            $data['pickup_location'] = trim($_POST['pickup_location'] ?? '');
+            $data['dropoff_location']= trim($_POST['dropoff_location'] ?? '');
+
+            // Sync price field: for tours use price_adult as main price
+            if ($serviceType === 'tour' && $data['price_adult'] > 0 && $data['price'] == 0) {
+                $data['price'] = $data['price_adult'];
+            }
         }
         
         if ($id > 0) {
@@ -208,18 +222,37 @@ class ServiceController extends Controller
             $where[] = 'service_type = ?';
             $params[] = $type;
         }
-        if ($q) {
-            $where[] = '(name LIKE ? OR description LIKE ? OR destination LIKE ?)';
-            $params[] = "%{$q}%";
-            $params[] = "%{$q}%";
-            $params[] = "%{$q}%";
+
+        // Check if new columns exist (from migration_pricing_system.sql)
+        $hasNewCols = false;
+        try {
+            $db = Database::getInstance()->getConnection();
+            $colCheck = $db->query("SELECT price_adult FROM services LIMIT 0");
+            $hasNewCols = ($colCheck !== false);
+        } catch (\Exception $e) {
+            $hasNewCols = false;
+        }
+
+        if ($hasNewCols) {
+            if ($q) {
+                $where[] = '(name LIKE ? OR description LIKE ? OR destination LIKE ?)';
+                $params[] = "%{$q}%";
+                $params[] = "%{$q}%";
+                $params[] = "%{$q}%";
+            }
+            $cols = 'id, service_type, name, description, price, price_adult, price_child, price_infant, currency, unit, destination, duration, vehicle_type, max_pax, pickup_location, dropoff_location';
+        } else {
+            if ($q) {
+                $where[] = '(name LIKE ? OR description LIKE ?)';
+                $params[] = "%{$q}%";
+                $params[] = "%{$q}%";
+            }
+            $cols = 'id, service_type, name, description, price, currency, unit';
         }
         
         $whereStr = implode(' AND ', $where);
         $services = Database::fetchAll(
-            "SELECT id, service_type, name, description, price, price_adult, price_child, price_infant,
-                    currency, unit, destination, duration, vehicle_type, max_pax, pickup_location, dropoff_location
-             FROM services WHERE {$whereStr} ORDER BY name ASC LIMIT 50",
+            "SELECT {$cols} FROM services WHERE {$whereStr} ORDER BY name ASC LIMIT 50",
             $params
         );
         
