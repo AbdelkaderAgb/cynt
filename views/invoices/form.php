@@ -9,7 +9,7 @@ $existingItems = $invoiceItems ?? [];
 
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><?= $pageTitle ?></h1>
-    <p class="text-sm text-gray-500 mt-1">Select services from the pricing catalog or add custom line items</p>
+    <p class="text-sm text-gray-500 mt-1"><?= __('pricing_catalog') ?: 'Select services from the pricing catalog or add custom line items' ?></p>
 </div>
 
 <form method="POST" action="<?= url('invoices/store') ?>" class="space-y-6" x-data="invoiceBuilder()" @submit="prepareSubmit()">
@@ -84,13 +84,13 @@ $existingItems = $invoiceItems ?? [];
     <!-- Line Items -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200"><i class="fas fa-list text-blue-500 mr-2"></i>Line Items</h3>
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200"><i class="fas fa-list text-blue-500 mr-2"></i><?= __('line_items') ?: 'Line Items' ?></h3>
             <div class="flex gap-2">
-                <button type="button" @click="openServicePicker()" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition">
-                    <i class="fas fa-search-dollar"></i> Add from Catalog
+                <button type="button" @click="openServicePicker()" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition shadow-sm">
+                    <i class="fas fa-search-dollar"></i> <?= __('add_from_catalog') ?: 'Add from Catalog' ?>
                 </button>
-                <button type="button" @click="addManualItem()" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-xl text-sm font-semibold hover:bg-gray-700 transition">
-                    <i class="fas fa-plus"></i> Add Manual
+                <button type="button" @click="addManualItem()" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-xl text-sm font-semibold hover:bg-gray-700 transition shadow-sm">
+                    <i class="fas fa-plus"></i> <?= __('add_manual') ?: 'Add Manual' ?>
                 </button>
             </div>
         </div>
@@ -98,15 +98,15 @@ $existingItems = $invoiceItems ?? [];
         <!-- Items Table -->
         <div class="overflow-x-auto">
             <table class="w-full text-sm" x-show="items.length > 0">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-                        <th class="text-left px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-2/5">Description</th>
-                        <th class="text-center px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-16">Qty</th>
-                        <th class="text-right px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-28">Unit Price</th>
-                        <th class="text-right px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-28">Total</th>
-                        <th class="text-center px-3 py-2 w-12"></th>
-                    </tr>
-                </thead>
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                    <th class="text-left px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-2/5"><?= __('description') ?></th>
+                    <th class="text-center px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-16"><?= __('quantity') ?: 'Qty' ?></th>
+                    <th class="text-right px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-28"><?= __('unit_price') ?: 'Unit Price' ?></th>
+                    <th class="text-right px-3 py-2 font-semibold text-gray-600 dark:text-gray-300 w-28"><?= __('line_total') ?: 'Total' ?></th>
+                    <th class="text-center px-3 py-2 w-12"></th>
+                </tr>
+            </thead>
                 <tbody>
                     <template x-for="(item, idx) in items" :key="idx">
                         <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/20">
@@ -138,7 +138,7 @@ $existingItems = $invoiceItems ?? [];
 
         <div x-show="items.length === 0" class="py-8 text-center text-gray-400">
             <i class="fas fa-receipt text-3xl mb-2 opacity-30"></i>
-            <p class="text-sm">No line items yet. Add from the pricing catalog or create a manual entry.</p>
+            <p class="text-sm"><?= __('no_items_yet') ?: 'No line items yet. Add from the pricing catalog or create a manual entry.' ?></p>
         </div>
 
         <!-- Totals -->
@@ -194,7 +194,7 @@ $existingItems = $invoiceItems ?? [];
     <div x-show="pickerOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="pickerOpen = false">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col" @click.stop>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white"><i class="fas fa-search-dollar text-emerald-500 mr-2"></i>Select from Pricing Catalog</h3>
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white"><i class="fas fa-search-dollar text-emerald-500 mr-2"></i><?= __('service_picker') ?: 'Select from Pricing Catalog' ?></h3>
                 <button type="button" @click="pickerOpen = false" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg"><i class="fas fa-times"></i></button>
             </div>
 

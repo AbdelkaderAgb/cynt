@@ -48,15 +48,15 @@ function sendToPortal(id) {
         <!-- Line Items -->
         <?php if (!empty($invoiceItems)): ?>
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4"><i class="fas fa-list text-blue-500 mr-2"></i>Line Items</h3>
+            <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4"><i class="fas fa-list text-blue-500 mr-2"></i><?= __('line_items') ?: 'Line Items' ?></h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-                            <th class="text-left px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">Description</th>
-                            <th class="text-center px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">Qty</th>
-                            <th class="text-right px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">Unit Price</th>
-                            <th class="text-right px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">Total</th>
+                            <th class="text-left px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('description') ?></th>
+                            <th class="text-center px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('quantity') ?: 'Qty' ?></th>
+                            <th class="text-right px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('unit_price') ?: 'Unit Price' ?></th>
+                            <th class="text-right px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('line_total') ?: 'Total' ?></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
