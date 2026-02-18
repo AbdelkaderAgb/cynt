@@ -133,10 +133,30 @@ $pdfDir = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 
         </tr>
     </table>
 
+    <!-- LINE ITEMS -->
+    <?php if (!empty($invoiceItems)): ?>
+    <div class="section-title" style="font-size:10px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; color:#333; border-bottom:1px solid #999; padding-bottom:3px; margin:16px 0 8px 0;">Items</div>
+    <table class="fin-table">
+        <thead>
+            <tr><th>Description</th><th class="r" style="width:10%;">Qty</th><th class="r" style="width:20%;">Unit Price</th><th class="r" style="width:20%;">Total (<?= htmlspecialchars($inv['currency'] ?? 'USD') ?>)</th></tr>
+        </thead>
+        <tbody>
+            <?php foreach ($invoiceItems as $item): ?>
+            <tr>
+                <td><?= htmlspecialchars($item['description'] ?? '') ?></td>
+                <td class="r"><?= (int)($item['quantity'] ?? 1) ?></td>
+                <td class="r"><?= number_format((float)($item['unit_price'] ?? 0), 2) ?></td>
+                <td class="r"><?= number_format((float)($item['total_price'] ?? 0), 2) ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
+
     <!-- FINANCIAL SUMMARY -->
     <table class="fin-table">
         <thead>
-            <tr><th>Description</th><th class="r" style="width:35%;">Amount (<?= htmlspecialchars($inv['currency'] ?? 'USD') ?>)</th></tr>
+            <tr><th>Summary</th><th class="r" style="width:35%;">Amount (<?= htmlspecialchars($inv['currency'] ?? 'USD') ?>)</th></tr>
         </thead>
         <tbody>
             <tr>

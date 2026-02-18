@@ -34,17 +34,53 @@ function sendToPortal(id) {
 }
 </script>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><p class="text-xs text-gray-400 mb-1"><?= __('company_name') ?></p><p class="font-semibold"><?= e($inv['company_name']) ?></p></div>
-            <div><p class="text-xs text-gray-400 mb-1"><?= __('date') ?></p><p class="font-semibold"><?= isset($inv['invoice_date']) ? date('d/m/Y', strtotime($inv['invoice_date'])) : '—' ?></p></div>
-            <div><p class="text-xs text-gray-400 mb-1"><?= __('due_date') ?></p><p class="font-semibold"><?= isset($inv['due_date']) ? date('d/m/Y', strtotime($inv['due_date'])) : '—' ?></p></div>
-            <div><p class="text-xs text-gray-400 mb-1"><?= __('payment_method') ?></p><p class="font-semibold"><?= e($inv['payment_method'] ?: '—') ?></p></div>
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><p class="text-xs text-gray-400 mb-1"><?= __('company_name') ?></p><p class="font-semibold"><?= e($inv['company_name']) ?></p></div>
+                <div><p class="text-xs text-gray-400 mb-1"><?= __('date') ?></p><p class="font-semibold"><?= isset($inv['invoice_date']) ? date('d/m/Y', strtotime($inv['invoice_date'])) : '—' ?></p></div>
+                <div><p class="text-xs text-gray-400 mb-1"><?= __('due_date') ?></p><p class="font-semibold"><?= isset($inv['due_date']) ? date('d/m/Y', strtotime($inv['due_date'])) : '—' ?></p></div>
+                <div><p class="text-xs text-gray-400 mb-1"><?= __('payment_method') ?></p><p class="font-semibold"><?= e($inv['payment_method'] ?: '—') ?></p></div>
+            </div>
+            <?php if (!empty($inv['notes'])): ?><div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"><p class="text-xs text-gray-400 mb-1"><?= __('notes') ?></p><p class="text-gray-600 dark:text-gray-300"><?= nl2br(e($inv['notes'])) ?></p></div><?php endif; ?>
         </div>
-        <?php if (!empty($inv['notes'])): ?><div class="mt-4 p-4 bg-gray-50 rounded-xl"><p class="text-xs text-gray-400 mb-1"><?= __('notes') ?></p><p class="text-gray-600"><?= nl2br(e($inv['notes'])) ?></p></div><?php endif; ?>
+
+        <!-- Line Items -->
+        <?php if (!empty($invoiceItems)): ?>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4"><i class="fas fa-list text-blue-500 mr-2"></i><?= __('line_items') ?: 'Line Items' ?></h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                            <th class="text-left px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('description') ?></th>
+                            <th class="text-center px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('quantity') ?: 'Qty' ?></th>
+                            <th class="text-right px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('unit_price') ?: 'Unit Price' ?></th>
+                            <th class="text-right px-4 py-2 font-semibold text-gray-600 dark:text-gray-300"><?= __('line_total') ?: 'Total' ?></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <?php foreach ($invoiceItems as $item): ?>
+                        <tr>
+                            <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                                <?= e($item['description'] ?? '') ?>
+                                <?php if (!empty($item['service_id'])): ?>
+                                <span class="text-[10px] text-emerald-500 ml-1"><i class="fas fa-link"></i> <?= e($item['item_type'] ?? '') ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-4 py-3 text-center text-gray-600 dark:text-gray-300"><?= (int)($item['quantity'] ?? 1) ?></td>
+                            <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-300"><?= number_format((float)($item['unit_price'] ?? 0), 2) ?></td>
+                            <td class="px-4 py-3 text-right font-bold text-gray-800 dark:text-gray-200"><?= number_format((float)($item['total_price'] ?? 0), 2) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="font-semibold text-gray-700 mb-4"><?= __('total_amount') ?: 'Financial Summary' ?></h3>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4"><?= __('total_amount') ?: 'Financial Summary' ?></h3>
         <div class="space-y-3">
             <div class="flex justify-between"><span class="text-gray-400 text-sm"><?= __('subtotal') ?></span><span class="font-medium"><?= number_format($inv['subtotal'] ?? 0, 2) ?></span></div>
             <div class="flex justify-between"><span class="text-gray-400 text-sm"><?= __('tax') ?> (<?= $inv['tax_rate'] ?? 0 ?>%)</span><span class="font-medium"><?= number_format($inv['tax_amount'] ?? 0, 2) ?></span></div>

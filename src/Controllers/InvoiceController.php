@@ -1,6 +1,7 @@
 <?php
 /**
  * CYN Tourism — InvoiceController
+ * Enhanced with line-item management and PricingCalculator integration
  */
 class InvoiceController extends Controller
 {
@@ -26,7 +27,7 @@ class InvoiceController extends Controller
             'pages'      => $result['pages'],
             'filters'    => $filters,
             'summary'    => $summary,
-            'pageTitle'  => 'Fatura Yönetimi',
+            'pageTitle'  => 'Fatura Yonetimi',
             'activePage' => 'invoices',
         ]);
     }
@@ -36,11 +37,12 @@ class InvoiceController extends Controller
         require_once ROOT_PATH . '/src/Models/Partner.php';
 
         $this->view('invoices/form', [
-            'invoice'    => [],
-            'partners'   => Partner::getActive(),
-            'isEdit'     => false,
-            'pageTitle'  => 'Yeni Fatura',
-            'activePage' => 'invoices',
+            'invoice'      => [],
+            'invoiceItems' => [],
+            'partners'     => Partner::getActive(),
+            'isEdit'       => false,
+            'pageTitle'    => 'Yeni Fatura',
+            'activePage'   => 'invoices',
         ]);
     }
 
@@ -49,32 +51,131 @@ class InvoiceController extends Controller
         $this->requireAuth();
         $this->requireCsrf();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
+        require_once ROOT_PATH . '/src/Core/PricingCalculator.php';
+
+        $id = (int)($_POST['id'] ?? 0);
+
+        // Parse line items from JSON
+        $itemsJson = $_POST['items_json'] ?? '[]';
+        $lineItems = json_decode($itemsJson, true) ?: [];
+
+        // Server-side total calculation using PricingCalculator
+        $taxRate  = (float)($_POST['tax_rate'] ?? 0);
+        $discount = (float)($_POST['discount'] ?? 0);
+
+        // Build items for calculator
+        $calcItems = [];
+        foreach ($lineItems as $item) {
+            $calcItems[] = [
+                'unit_price'  => (float)($item['unit_price'] ?? 0),
+                'quantity'    => max(1, (int)($item['quantity'] ?? 1)),
+                'total_price' => (float)($item['total_price'] ?? 0),
+                'unit_type'   => $item['unit_type'] ?? 'flat',
+            ];
+        }
+
+        $totals = PricingCalculator::calculateInvoiceTotals($calcItems, $taxRate, $discount);
 
         $data = [
             'company_name'   => trim($_POST['company_name'] ?? ''),
+            'company_id'     => (int)($_POST['company_id'] ?? 0),
             'invoice_date'   => $_POST['invoice_date'] ?? date('Y-m-d'),
             'due_date'       => $_POST['due_date'] ?? date('Y-m-d', strtotime('+30 days')),
-            'subtotal'       => (float)($_POST['subtotal'] ?? 0),
-            'tax_rate'       => (float)($_POST['tax_rate'] ?? 0),
-            'tax_amount'     => (float)($_POST['tax_amount'] ?? 0),
-            'discount'       => (float)($_POST['discount'] ?? 0),
-            'total_amount'   => (float)($_POST['total_amount'] ?? 0),
+            'subtotal'       => $totals['subtotal'],
+            'tax_rate'       => $taxRate,
+            'tax_amount'     => $totals['tax_amount'],
+            'discount'       => $totals['discount'],
+            'total_amount'   => $totals['total'],
             'currency'       => $_POST['currency'] ?? 'USD',
             'status'         => $_POST['status'] ?? 'draft',
-            'payment_method' => $_POST['payment_method'] ?: null,
+            'payment_method' => $_POST['payment_method'] ?: '',
             'notes'          => trim($_POST['notes'] ?? ''),
             'terms'          => trim($_POST['terms'] ?? ''),
         ];
 
-        $id = ($_POST['id'] ?? 0);
         if ($id) {
-            Invoice::update((int)$id, $data);
+            Invoice::update($id, $data);
         } else {
-            Invoice::create($data);
+            $id = Invoice::create($data);
         }
+
+        // Save line items
+        $this->saveLineItems($id, $lineItems);
 
         header('Location: ' . url('invoices') . '?saved=1');
         exit;
+    }
+
+    /**
+     * Save line items for an invoice — delete old, insert new
+     */
+    private function saveLineItems(int $invoiceId, array $items): void
+    {
+        $db = Database::getInstance()->getConnection();
+
+        // Delete existing items
+        $db->prepare("DELETE FROM invoice_items WHERE invoice_id = ?")->execute([$invoiceId]);
+
+        if (empty($items)) return;
+
+        // Check if new columns exist (from migration_pricing_system.sql)
+        $hasNewCols = false;
+        try {
+            $colCheck = $db->query("SELECT service_id FROM invoice_items LIMIT 0");
+            $hasNewCols = ($colCheck !== false);
+        } catch (\Exception $e) {
+            $hasNewCols = false;
+        }
+
+        if ($hasNewCols) {
+            $stmt = $db->prepare(
+                "INSERT INTO invoice_items (invoice_id, item_type, item_id, service_id, description, quantity, unit_price, total_price, unit_type)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+
+            foreach ($items as $item) {
+                $stmt->execute([
+                    $invoiceId,
+                    $item['item_type'] ?? 'other',
+                    (int)($item['item_id'] ?? 0),
+                    (int)($item['service_id'] ?? 0) ?: null,
+                    $item['description'] ?? '',
+                    max(1, (int)($item['quantity'] ?? 1)),
+                    (float)($item['unit_price'] ?? 0),
+                    (float)($item['total_price'] ?? 0),
+                    $item['unit_type'] ?? 'flat',
+                ]);
+            }
+        } else {
+            // Fallback: use only base schema columns
+            $stmt = $db->prepare(
+                "INSERT INTO invoice_items (invoice_id, item_type, item_id, description, quantity, unit_price, total_price)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+            );
+
+            foreach ($items as $item) {
+                $stmt->execute([
+                    $invoiceId,
+                    $item['item_type'] ?? 'other',
+                    (int)($item['item_id'] ?? 0),
+                    $item['description'] ?? '',
+                    max(1, (int)($item['quantity'] ?? 1)),
+                    (float)($item['unit_price'] ?? 0),
+                    (float)($item['total_price'] ?? 0),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Load line items for an invoice
+     */
+    private function getLineItems(int $invoiceId): array
+    {
+        return Database::fetchAll(
+            "SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC",
+            [$invoiceId]
+        );
     }
 
     public function show(): void
@@ -86,10 +187,13 @@ class InvoiceController extends Controller
 
         if (!$invoice) { header('Location: ' . url('invoices')); exit; }
 
+        $items = $this->getLineItems($id);
+
         $this->view('invoices/show', [
-            'invoice'    => $invoice,
-            'pageTitle'  => 'Fatura: ' . $invoice['invoice_no'],
-            'activePage' => 'invoices',
+            'invoice'      => $invoice,
+            'invoiceItems' => $items,
+            'pageTitle'    => 'Fatura: ' . $invoice['invoice_no'],
+            'activePage'   => 'invoices',
         ]);
     }
 
@@ -103,12 +207,15 @@ class InvoiceController extends Controller
 
         if (!$invoice) { header('Location: ' . url('invoices')); exit; }
 
+        $items = $this->getLineItems($id);
+
         $this->view('invoices/form', [
-            'invoice'    => $invoice,
-            'partners'   => Partner::getActive(),
-            'isEdit'     => true,
-            'pageTitle'  => 'Düzenle: ' . $invoice['invoice_no'],
-            'activePage' => 'invoices',
+            'invoice'      => $invoice,
+            'invoiceItems' => $items,
+            'partners'     => Partner::getActive(),
+            'isEdit'       => true,
+            'pageTitle'    => 'Duzenle: ' . $invoice['invoice_no'],
+            'activePage'   => 'invoices',
         ]);
     }
 
@@ -141,7 +248,6 @@ class InvoiceController extends Controller
         $db = Database::getInstance()->getConnection();
         $id = (int)($_GET['id'] ?? 0);
 
-        // Get the invoice
         $stmt = $db->prepare("SELECT * FROM invoices WHERE id = ?");
         $stmt->execute([$id]);
         $invoice = $stmt->fetch();
@@ -151,7 +257,6 @@ class InvoiceController extends Controller
             return;
         }
 
-        // Find partner by company_name
         $pStmt = $db->prepare("SELECT id FROM partners WHERE company_name = ? LIMIT 1");
         $pStmt->execute([$invoice['company_name']]);
         $partner = $pStmt->fetch();
@@ -161,7 +266,6 @@ class InvoiceController extends Controller
             return;
         }
 
-        // Set partner_id on the invoice
         $upStmt = $db->prepare("UPDATE invoices SET partner_id = ? WHERE id = ?");
         $upStmt->execute([$partner['id'], $id]);
 

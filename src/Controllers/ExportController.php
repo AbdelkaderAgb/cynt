@@ -47,8 +47,13 @@ class ExportController extends Controller
         $invoice = Invoice::getById($id);
         if (!$invoice) { header('Location: ' . url('invoices')); exit; }
 
+        $invoiceItems = Database::fetchAll(
+            "SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC", [$id]
+        );
+
         $html = $this->renderPdfTemplate('invoices/pdf', [
             'invoice'        => $invoice,
+            'invoiceItems'   => $invoiceItems,
             'partnerLogo'    => $this->resolvePartnerLogo($invoice),
             'companyName'    => COMPANY_NAME,
             'companyAddress' => COMPANY_ADDRESS,
@@ -107,8 +112,9 @@ class ExportController extends Controller
             require_once ROOT_PATH . '/src/Models/Invoice.php';
             $record = Invoice::getById($id);
             if (!$record) { $this->jsonResponse(['success' => false, 'message' => 'Invoice not found']); return; }
+            $emailItems = Database::fetchAll("SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC", [$id]);
             $html = $this->renderPdfTemplate('invoices/pdf', [
-                'invoice' => $record, 'companyName' => COMPANY_NAME,
+                'invoice' => $record, 'invoiceItems' => $emailItems, 'companyName' => COMPANY_NAME,
                 'companyAddress' => COMPANY_ADDRESS, 'companyPhone' => COMPANY_PHONE, 'companyEmail' => COMPANY_EMAIL,
             ]);
             $filename = 'Invoice-' . $record['invoice_no'] . '.pdf';

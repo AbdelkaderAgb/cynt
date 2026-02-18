@@ -64,6 +64,7 @@ $statusColors = ['draft' => 'bg-gray-100 text-gray-600', 'sent' => 'bg-blue-100 
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"><?= __('invoice_no') ?></th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"><?= __('company_name') ?></th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Type</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"><?= __('date') ?></th>
                     <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase"><?= __('amount') ?></th>
                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase"><?= __('status') ?></th>
@@ -71,12 +72,24 @@ $statusColors = ['draft' => 'bg-gray-100 text-gray-600', 'sent' => 'bg-blue-100 
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                <?php
+                $typeColors = ['general' => 'bg-gray-100 text-gray-600', 'hotel' => 'bg-teal-100 text-teal-700', 'tour' => 'bg-purple-100 text-purple-700', 'transfer' => 'bg-blue-100 text-blue-700'];
+                $typeIcons = ['general' => 'fa-file', 'hotel' => 'fa-hotel', 'tour' => 'fa-map-marked-alt', 'transfer' => 'fa-shuttle-van'];
+                ?>
                 <?php if (empty($invoices)): ?>
-                <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400"><i class="fas fa-file-invoice text-4xl mb-3 block"></i><?= __('no_data_found') ?></td></tr>
-                <?php else: foreach ($invoices as $inv): $sc = $statusColors[$inv['status']] ?? 'bg-gray-100 text-gray-600'; ?>
+                <tr><td colspan="7" class="px-4 py-12 text-center text-gray-400"><i class="fas fa-file-invoice text-4xl mb-3 block"></i><?= __('no_data_found') ?></td></tr>
+                <?php else: foreach ($invoices as $inv): $sc = $statusColors[$inv['status']] ?? 'bg-gray-100 text-gray-600'; $invType = $inv['type'] ?? 'general'; ?>
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
-                    <td class="px-4 py-3 font-mono font-semibold text-emerald-600"><?= e($inv['invoice_no']) ?></td>
+                    <td class="px-4 py-3 font-mono font-semibold text-emerald-600">
+                        <a href="<?= url('invoices/show') ?>?id=<?= $inv['id'] ?>" class="hover:underline"><?= e($inv['invoice_no']) ?></a>
+                    </td>
                     <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200"><?= e($inv['company_name']) ?></td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold <?= $typeColors[$invType] ?? $typeColors['general'] ?>">
+                            <i class="fas <?= $typeIcons[$invType] ?? $typeIcons['general'] ?>"></i>
+                            <?= ucfirst($invType) ?>
+                        </span>
+                    </td>
                     <td class="px-4 py-3 text-gray-500"><?= isset($inv['invoice_date']) ? date('d/m/Y', strtotime($inv['invoice_date'])) : date('d/m/Y', strtotime($inv['created_at'])) ?></td>
                     <td class="px-4 py-3 text-right font-semibold"><?= number_format($inv['total_amount'] ?? 0, 2) ?> <?= $inv['currency'] ?? 'USD' ?></td>
                     <td class="px-4 py-3 text-center"><span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full <?= $sc ?>"><?= $statusMap[$inv['status']] ?? $inv['status'] ?></span></td>

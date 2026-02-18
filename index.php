@@ -254,6 +254,8 @@ App::get('/services/edit', ['ServiceController', 'edit']);
 App::any('/services/store', ['ServiceController', 'store']);
 App::any('/services/delete', ['ServiceController', 'delete']);
 App::get('/api/services/search', ['ServiceController', 'searchApi']);
+App::any('/services/import-tours', ['ServiceController', 'importTours']);
+App::any('/services/import-transfers', ['ServiceController', 'importTransfers']);
 
 // Hotel Profiles & Room Pricing
 App::get('/hotels/profiles', ['HotelProfileController', 'index']);
