@@ -252,12 +252,11 @@ foreach ($hotelRooms as $r) {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Board Type</label>
-                        <select name="board_type" class="w-full px-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">
-                            <option value="room_only">Room Only</option>
-                            <option value="bed_breakfast" selected>Bed & Breakfast</option>
-                            <option value="half_board">Half Board</option>
-                            <option value="full_board">Full Board</option>
-                            <option value="all_inclusive">All Inclusive</option>
+                        <select name="board_type" x-model="selectedBoard" class="w-full px-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm">
+                            <option value="">-- Select --</option>
+                            <template x-for="bt in availableBoardTypes" :key="bt">
+                                <option :value="bt" x-text="boardLabel(bt)"></option>
+                            </template>
                         </select>
                     </div>
                     <div>
@@ -365,7 +364,9 @@ function bookingForm() {
         selectedHotelId: '',
         selectedRoomIdx: '',
         selectedRoom: null,
+        selectedBoard: '',
         availableRooms: [],
+        availableBoardTypes: [],
         filteredHotels: allHotels,
 
         checkIn: '',
@@ -389,11 +390,19 @@ function bookingForm() {
             this.selectedHotelId = '';
             this.selectedRoomIdx = '';
             this.selectedRoom = null;
+            this.selectedBoard = '';
             this.availableRooms = [];
+            this.availableBoardTypes = [];
             this.filteredHotels = allHotels;
             this.estimatedTotal = 0;
             this.pricePerNight = 0;
             this.childrenCost = 0;
+        },
+
+        boardLabel(code) {
+            const labels = {BB:'Bed & Breakfast',HB:'Half Board',FB:'Full Board',AI:'All Inclusive',RO:'Room Only',UAI:'Ultra All Inclusive',
+                bed_breakfast:'Bed & Breakfast',half_board:'Half Board',full_board:'Full Board',all_inclusive:'All Inclusive',room_only:'Room Only',ultra_all_inclusive:'Ultra All Inclusive'};
+            return labels[code] || code;
         },
 
         filterHotels() {
@@ -408,6 +417,8 @@ function bookingForm() {
                 if (!still) {
                     this.selectedHotelId = '';
                     this.availableRooms = [];
+                    this.availableBoardTypes = [];
+                    this.selectedBoard = '';
                     this.selectedRoom = null;
                     this.selectedRoomIdx = '';
                     this.estimatedTotal = 0;
@@ -425,6 +436,8 @@ function bookingForm() {
                 return;
             }
             this.availableRooms = roomsByHotel[hid] || [];
+            this.availableBoardTypes = [...new Set(this.availableRooms.map(r => r.board_type).filter(Boolean))];
+            this.selectedBoard = this.availableBoardTypes.length ? this.availableBoardTypes[0] : '';
             this.selectedRoom = null;
             this.selectedRoomIdx = '';
             this.estimatedTotal = 0;
