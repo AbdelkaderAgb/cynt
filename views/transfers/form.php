@@ -22,14 +22,19 @@
 
         <!-- Company & Hotel -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
-                <select name="company_name" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500">
-                    <option value="">Select Company</option>
-                    <?php foreach ($partners ?? [] as $p): ?>
-                    <option value="<?= e($p['company_name']) ?>"><?= e($p['company_name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
+            <div class="relative" x-data="transferPartnerSearch()" @click.outside="open = false">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('company_name') ?: 'Company' ?> *</label>
+                <input type="text" name="company_name" x-model="query" @input.debounce.300ms="search()" @focus="if(results.length) open=true"
+                       required autocomplete="off" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500" placeholder="<?= __('search_partner') ?: 'Search or type company name' ?>">
+                <div x-show="open && results.length > 0" x-transition
+                     class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    <template x-for="r in results" :key="r.id">
+                        <div @click="selectPartner(r)" class="px-4 py-2.5 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b border-gray-100 dark:border-gray-600 last:border-0 transition">
+                            <div class="font-medium text-sm text-gray-800 dark:text-gray-200" x-text="r.company_name"></div>
+                            <div class="text-xs text-gray-400" x-text="(r.contact_person || '') + (r.phone ? ' - ' + r.phone : '')"></div>
+                        </div>
+                    </template>
+                </div>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hotel</label>
@@ -201,3 +206,27 @@
         </div>
     </form>
 </div>
+
+<script>
+function transferPartnerSearch() {
+    return {
+        query: '', results: [], open: false,
+        async search() {
+            if (this.query.length < 1) { this.results = []; this.open = false; return; }
+            try {
+                const res = await fetch('<?= url('api/partners/search') ?>?q=' + encodeURIComponent(this.query));
+                this.results = await res.json();
+                this.open = this.results.length > 0;
+            } catch(e) { this.results = []; }
+        },
+        selectPartner(r) {
+            this.query = r.company_name;
+            this.open = false;
+            const hotel = document.querySelector('[name="hotel_name"]');
+            if (hotel && !hotel.value && r.company_name) {
+                // Don't overwrite hotel, just fill company
+            }
+        }
+    };
+}
+</script>

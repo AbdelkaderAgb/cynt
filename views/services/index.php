@@ -28,10 +28,20 @@ $unitLabels = ['per_person' => 'Per Person', 'per_night' => 'Per Night', 'per_ve
 </div>
 <?php endif; ?>
 
+<!-- Workflow Tip -->
+<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl flex items-start gap-3" x-data="{show:true}" x-show="show">
+    <i class="fas fa-lightbulb text-blue-500 mt-0.5"></i>
+    <div class="flex-1">
+        <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">How pricing works</p>
+        <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">Register tour and transfer prices here (or import from XLSX). When creating invoices, click "Add from Catalog" to select these prices automatically. Hotel pricing is managed via <a href="<?= url('hotels/profiles') ?>" class="underline font-semibold">Hotel Profiles</a> with room types and seasonal rates.</p>
+    </div>
+    <button @click="show = false" class="text-blue-400 hover:text-blue-600 flex-shrink-0"><i class="fas fa-times"></i></button>
+</div>
+
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
     <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tags text-brand-500 mr-2"></i>Services & Pricing</h1>
-        <p class="text-sm text-gray-500 mt-1"><?= number_format($total) ?> services found — register prices here, then select them on invoices</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tags text-brand-500 mr-2"></i><?= __('services_pricing') ?: 'Services & Pricing' ?></h1>
+        <p class="text-sm text-gray-500 mt-1"><?= number_format($total) ?> <?= __('entries') ?: 'services found' ?></p>
     </div>
     <div class="flex gap-2 flex-wrap" x-data="{importOpen: false}">
         <a href="<?= url('services/create?type=tour') ?>" class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-semibold shadow-lg hover:bg-purple-700 transition text-sm">
