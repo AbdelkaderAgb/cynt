@@ -11,12 +11,15 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 $tourItemsRaw = json_decode($t['tour_items'] ?? '[]', true) ?: [];
 $tourItemsPrepared = array_map(function($item) {
     return [
-        'name'     => $item['name']     ?? '',
-        'date'     => $item['date']     ?? '',
-        'duration' => $item['duration'] ?? '',
-        'adults'   => (int)($item['adults']   ?? 1),
-        'children' => (int)($item['children'] ?? 0),
-        'infants'  => (int)($item['infants']  ?? 0),
+        'name'        => $item['name']        ?? '',
+        'date'        => $item['date']        ?? '',
+        'duration'    => $item['duration']    ?? '',
+        'adults'      => (int)($item['adults']   ?? 1),
+        'children'    => (int)($item['children'] ?? 0),
+        'infants'     => (int)($item['infants']  ?? 0),
+        'price_adult' => (float)($item['price_adult'] ?? $item['price_per_person'] ?? 0),
+        'price_child' => (float)($item['price_child'] ?? 0),
+        'price_infant'=> (float)($item['price_infant'] ?? $item['price_per_infant'] ?? 0),
     ];
 }, $tourItemsRaw);
 ?>
@@ -221,13 +224,16 @@ function tourEditForm() {
         get totalInfants()  { return this.tourItems.reduce((s,r) => s + (+r.infants  || 0), 0); },
         get tourItemsJson() {
             return JSON.stringify(this.tourItems.map(r => ({
-                name:     r.name,
-                date:     r.date,
-                duration: r.duration,
-                pax:      (+r.adults||0) + (+r.children||0) + (+r.infants||0),
-                adults:   r.adults,
-                children: r.children,
-                infants:  r.infants,
+                name:         r.name,
+                date:         r.date,
+                duration:     r.duration,
+                pax:          (+r.adults||0) + (+r.children||0) + (+r.infants||0),
+                adults:       r.adults,
+                children:     r.children,
+                infants:      r.infants,
+                price_adult:  r.price_adult  || 0,
+                price_child:  r.price_child  || 0,
+                price_infant: r.price_infant || 0,
             })));
         },
 

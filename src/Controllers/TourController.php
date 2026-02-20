@@ -173,10 +173,22 @@ class TourController extends Controller
         $tourDate = $firstTour['date'] ?? date('Y-m-d');
         $duration = $firstTour['duration'] ?? '';
 
-        $priceAdult = (float)($_POST['price_per_person'] ?? 0);
-        $priceChild = (float)($_POST['price_child'] ?? 0);
-        $priceInfant = (float)($_POST['price_per_infant'] ?? 0);
-        $totalPrice = $adults * $priceAdult + $children * $priceChild + $infants * $priceInfant;
+        $existing = Database::fetchOne("SELECT * FROM tours WHERE id = ?", [$id]);
+
+        $priceAdult  = strlen($_POST['price_per_person'] ?? '') > 0
+            ? (float)$_POST['price_per_person']
+            : (float)($existing['price_per_person'] ?? 0);
+        $priceChild  = strlen($_POST['price_child'] ?? '') > 0
+            ? (float)$_POST['price_child']
+            : (float)($existing['price_child'] ?? 0);
+        $priceInfant = strlen($_POST['price_per_infant'] ?? '') > 0
+            ? (float)$_POST['price_per_infant']
+            : (float)($existing['price_per_infant'] ?? 0);
+        $totalPrice  = $adults * $priceAdult + $children * $priceChild + $infants * $priceInfant;
+
+        if ($totalPrice == 0 && ($existing['total_price'] ?? 0) > 0) {
+            $totalPrice = (float)$existing['total_price'];
+        }
         $currency = trim($_POST['currency'] ?? 'USD');
 
         $passengerPassport = trim($_POST['passenger_passport'] ?? '');
@@ -263,13 +275,32 @@ class TourController extends Controller
         if ($voucherId > 0) {
             $t = Database::fetchOne("SELECT * FROM tours WHERE id = ?", [$voucherId]);
             if ($t) {
+                $partnerPhone   = '';
+                $partnerAddress = '';
+                $partnerContact = '';
+                if (!empty($t['company_id'])) {
+                    $partner = Database::fetchOne(
+                        "SELECT phone, address, contact_person FROM partners WHERE id = ?",
+                        [(int)$t['company_id']]
+                    );
+                    if ($partner) {
+                        $partnerPhone   = $partner['phone']          ?? '';
+                        $partnerAddress = $partner['address']        ?? '';
+                        $partnerContact = $partner['contact_person'] ?? '';
+                    }
+                }
+
                 $prefill = [
-                    'company_name' => $t['company_name'] ?? '',
-                    'company_id'   => $t['company_id']   ?? 0,
-                    'currency'     => $t['currency']      ?? 'USD',
-                    'tour_name'    => $t['tour_name']     ?? '',
-                    'tour_date'    => $t['tour_date']     ?? '',
-                    'total_pax'    => $t['total_pax']     ?? 1,
+                    'voucher_id'         => $voucherId,
+                    'company_name'       => $t['company_name']       ?? '',
+                    'company_id'         => $t['company_id']         ?? 0,
+                    'currency'           => $t['currency']           ?? 'USD',
+                    'guest_name'         => $t['guest_name']         ?? '',
+                    'passenger_passport' => $t['passenger_passport'] ?? '',
+                    'company_phone'      => $partnerPhone,
+                    'company_address'    => $partnerAddress,
+                    'company_contact'    => $partnerContact,
+                    'tour_items'         => json_decode($t['tour_items'] ?? '[]', true) ?: [],
                 ];
             }
         }
@@ -293,10 +324,21 @@ class TourController extends Controller
         $tours = json_decode($_POST['tours'] ?? '[]', true) ?: [];
         $totalPrice = (float)($_POST['total_price'] ?? 0);
 
+        $guestName  = trim($_POST['guest_name'] ?? '');
+        $guestPass  = trim($_POST['passenger_passport'] ?? '');
+        $guestsJson = '[]';
+        if ($guestName !== '') {
+            $guestsJson = json_encode([['name' => $guestName, 'passport' => $guestPass]]);
+        }
+
+        $voucherIdPost = (int)($_POST['voucher_id'] ?? 0);
+        $tourItemsJson = $_POST['tours'] ?? '[]';
+
         $nextInvId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM invoices")->fetchColumn();
         $stmt = $db->prepare("INSERT INTO invoices
-            (id, invoice_no, company_name, invoice_date, due_date, subtotal, total_amount, currency, status, notes, type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, 'tour')");
+            (id, invoice_no, company_name, invoice_date, due_date, subtotal, total_amount, currency, status, notes, type,
+             guests_json, tour_items_json, voucher_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, 'tour', ?, ?, ?)");
         $stmt->execute([
             $nextInvId,
             $invoiceNo,
@@ -307,6 +349,9 @@ class TourController extends Controller
             $totalPrice,
             $_POST['currency'] ?? 'USD',
             trim($_POST['notes'] ?? ''),
+            $guestsJson,
+            $tourItemsJson,
+            $voucherIdPost,
         ]);
 
         $invoiceId = $nextInvId;
@@ -317,8 +362,11 @@ class TourController extends Controller
             if (!empty($tour['date'])) $desc .= ' (' . $tour['date'] . ')';
             if (!empty($tour['duration'])) $desc .= ' - ' . $tour['duration'];
 
-            $qty = max(1, (int)($tour['pax'] ?? 1));
-            $itemTotal = (float)($tour['price'] ?? 0);
+            $tAdl = (int)($tour['adults']   ?? 0);
+            $tChd = (int)($tour['children'] ?? 0);
+            $tInf = (int)($tour['infants']  ?? 0);
+            $qty  = max(1, ($tAdl + $tChd + $tInf) ?: (int)($tour['pax'] ?? 1));
+            $itemTotal = (float)($tour['total'] ?? $tour['price'] ?? 0);
             $unitPrice = $qty > 0 ? round($itemTotal / $qty, 4) : $itemTotal;
 
             $nextItemId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM invoice_items")->fetchColumn();
@@ -338,6 +386,11 @@ class TourController extends Controller
         if (!empty($_POST['partner_id'])) {
             try {
                 $db->prepare("UPDATE invoices SET partner_id = ? WHERE id = ?")->execute([(int)$_POST['partner_id'], $invoiceId]);
+                $partner = Database::fetchOne("SELECT phone, address, contact_person FROM partners WHERE id = ?", [(int)$_POST['partner_id']]);
+                if ($partner) {
+                    $db->prepare("UPDATE invoices SET partner_phone = ?, partner_address = ?, partner_contact = ? WHERE id = ?")
+                       ->execute([$partner['phone'] ?? '', $partner['address'] ?? '', $partner['contact_person'] ?? '', $invoiceId]);
+                }
             } catch (\Exception $e) {
                 // column may not exist in older schema — safe to ignore
             }

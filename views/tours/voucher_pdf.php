@@ -78,6 +78,12 @@ body { font-family:"DejaVu Sans",Arial,Helvetica,sans-serif; font-size:10.5px; c
 .sig-name { font-size:10px; font-weight:bold; color:#0d1b2a; margin-top:2px; }
 .footer { margin-top:28px; padding-top:8px; border-top:1px solid #d4d4d4; text-align:center; font-size:8.5px; color:#5a6272; }
 .footer img { height:22px; vertical-align:middle; margin-left:8px; }
+/* ── Passenger manifest ── */
+.pax-tbl { width:100%; border-collapse:collapse; margin-top:8px; }
+.pax-tbl th { padding:7px 9px; background:#0d1b2a; color:#fff; font-size:7.5px; text-transform:uppercase; letter-spacing:1px; font-weight:bold; border:1px solid #0d1b2a; text-align:left; }
+.pax-tbl td { padding:7px 9px; border:1px solid #d4d4d4; font-size:10px; }
+.pax-tbl tr:nth-child(even) td { background:#f7f7f7; }
+.lead-badge { display:inline-block; font-size:6.5px; font-weight:bold; letter-spacing:.8px; text-transform:uppercase; padding:1px 5px; border-radius:2px; background:#fef9c3; color:#854d0e; margin-left:5px; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -93,6 +99,13 @@ body { font-family:"DejaVu Sans",Arial,Helvetica,sans-serif; font-size:10.5px; c
             <td class="hd-right" style="width:50%;">
                 <div class="hd-doctype">Tour Voucher</div>
                 <div class="hd-issued">Official Tour Document · <?= htmlspecialchars($companyName ?? '') ?></div>
+                <?php if (!empty($companyPhone) || !empty($companyAddress)): ?>
+                <div style="font-size:8.5px; color:#5a6272; margin-top:3px;">
+                    <?= htmlspecialchars($companyPhone ?? '') ?>
+                    <?php if (!empty($companyPhone) && !empty($companyAddress)): ?> &nbsp;·&nbsp; <?php endif; ?>
+                    <?= htmlspecialchars($companyAddress ?? '') ?>
+                </div>
+                <?php endif; ?>
             </td>
         </tr>
     </table>
@@ -158,6 +171,13 @@ body { font-family:"DejaVu Sans",Arial,Helvetica,sans-serif; font-size:10.5px; c
         </td>
         <td></td>
     </tr>
+    <tr>
+        <td>
+            <span class="lbl">Company Phone</span>
+            <span class="val-sm"><?= htmlspecialchars(!empty($t['customer_phone']) ? $t['customer_phone'] : '—') ?></span>
+        </td>
+        <td></td>
+    </tr>
 </table>
 
 <!-- INCLUDES / EXCLUDES -->
@@ -208,7 +228,51 @@ body { font-family:"DejaVu Sans",Arial,Helvetica,sans-serif; font-size:10.5px; c
 </table>
 <?php endif; ?>
 
-
+<?php
+// Build unified passenger list
+$passengerList = [];
+$guestName = trim($t['guest_name'] ?? '');
+$guestPass = trim($t['passenger_passport'] ?? '');
+if ($guestName !== '') {
+    $passengerList[] = ['name' => $guestName, 'passport' => $guestPass];
+}
+// Add additional passengers from customers JSON (if any stored there)
+foreach ($customers as $c) {
+    if (!empty($c['name']) && $c['name'] !== $guestName) {
+        $passengerList[] = ['name' => $c['name'], 'passport' => $c['passport'] ?? ''];
+    }
+}
+?>
+<?php if (!empty($passengerList)): ?>
+<div class="sec">Passenger Manifest
+    <span style="font-weight:normal; font-size:7px; letter-spacing:0; color:#5a6272; margin-left:8px;"><?= count($passengerList) ?> passenger<?= count($passengerList) > 1 ? 's' : '' ?></span>
+</div>
+<table class="pax-tbl">
+    <thead>
+        <tr>
+            <th style="width:28px; text-align:center;">#</th>
+            <th style="width:52%;">Full Name</th>
+            <th>Passport / ID No.</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($passengerList as $pi => $p): ?>
+        <tr>
+            <td style="text-align:center; font-size:9px; color:#5a6272; font-weight:bold;"><?= $pi + 1 ?></td>
+            <td>
+                <?= htmlspecialchars($p['name']) ?>
+                <?php if ($pi === 0): ?><span class="lead-badge">Lead</span><?php endif; ?>
+            </td>
+            <td style="font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:.5px;">
+                <?= !empty($p['passport'])
+                    ? htmlspecialchars($p['passport'])
+                    : '<span style="color:#5a6272; font-style:italic;">—</span>' ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+<?php endif; ?>
 
 <!-- NOTES -->
 <?php if (!empty($t['notes'])): ?>

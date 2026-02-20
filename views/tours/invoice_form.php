@@ -20,9 +20,12 @@ $prefill = $prefill ?? [];
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
      x-data="tourInvoiceForm()"
-     x-init="if(window.__tourInvPrefill){currency=window.__tourInvPrefill.currency||currency;if(window.__tourInvPrefill.tour_name&&tours.length===1&&!tours[0].name){tours[0].name=window.__tourInvPrefill.tour_name;tours[0].date=window.__tourInvPrefill.tour_date||'';tours[0].adults=parseInt(window.__tourInvPrefill.total_pax)||1;calcTourTotal(0);}}">
+     x-init="if(window.__tourInvPrefill){currency=window.__tourInvPrefill.currency||currency;const items=window.__tourInvPrefill.tour_items||[];if(items.length>0){tours=items.map(t=>({name:t.name||'',date:t.date||'',adults:parseInt(t.adults)||0,children:parseInt(t.children)||0,infants:parseInt(t.infants)||0,price_adult:parseFloat(t.price_adult||t.price_per_person||0),price_child:parseFloat(t.price_child||0),price_infant:parseFloat(t.price_infant||t.price_per_infant||0),total:0}));tours.forEach((t,i)=>calcTourTotal(i));}else if(window.__tourInvPrefill.tour_name){tours[0].name=window.__tourInvPrefill.tour_name;tours[0].date=window.__tourInvPrefill.tour_date||'';tours[0].adults=parseInt(window.__tourInvPrefill.total_pax)||1;calcTourTotal(0);}}">
     <form method="POST" action="<?= url('tour-invoice/store') ?>" @submit.prevent="submitForm($el)" class="space-y-6">
         <?= csrf_field() ?>
+        <input type="hidden" name="voucher_id" value="<?= isset($prefill['voucher_id']) ? (int)$prefill['voucher_id'] : 0 ?>">
+        <input type="hidden" name="guest_name" value="<?= isset($prefill['guest_name']) ? htmlspecialchars($prefill['guest_name']) : '' ?>">
+        <input type="hidden" name="passenger_passport" value="<?= isset($prefill['passenger_passport']) ? htmlspecialchars($prefill['passenger_passport']) : '' ?>">
 
         <!-- Company Info -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-4">

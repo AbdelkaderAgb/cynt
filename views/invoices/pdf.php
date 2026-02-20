@@ -40,11 +40,35 @@ $curr    = htmlspecialchars($inv['currency'] ?? 'USD');
 
 $isTransfer = ($inv['type'] ?? '') === 'transfer';
 $isHotel    = ($inv['type'] ?? '') === 'hotel';
+$isTour     = ($inv['type'] ?? '') === 'tour';
 
 /* ── Hotel JSON data ── */
 $hotelsData = [];
 if ($isHotel) {
     $hotelsData = json_decode($inv['hotels_json'] ?? '[]', true) ?: [];
+}
+
+/* ── Tour JSON data ── */
+$tourItemsInv = [];
+if ($isTour) {
+    $tourItemsInv = json_decode($inv['tour_items_json'] ?? '[]', true) ?: [];
+    // Fallback: reconstruct basic rows from invoice_items if tour_items_json is empty
+    if (empty($tourItemsInv) && !empty($invoiceItems)) {
+        foreach ($invoiceItems as $ii) {
+            $tourItemsInv[] = [
+                'name'        => $ii['description'] ?? '',
+                'date'        => '',
+                'duration'    => '',
+                'adults'      => (int)($ii['quantity'] ?? 1),
+                'children'    => 0,
+                'infants'     => 0,
+                'price_adult' => (float)($ii['unit_price'] ?? 0),
+                'price_child' => 0,
+                'price_infant'=> 0,
+                'total'       => (float)($ii['total_price'] ?? 0),
+            ];
+        }
+    }
 }
 
 /* ── Transfer JSON data (read directly — reliable even when $invoiceStops not passed) ── */
@@ -56,7 +80,7 @@ if ($isTransfer) {
         fn($s) => !empty($s['from']) || !empty($s['to'])
     ));
 }
-/* guests_json applies to transfer AND hotel invoices */
+/* guests_json applies to transfer, hotel, AND tour invoices */
 $guests = array_values(array_filter(
     json_decode($inv['guests_json'] ?? '[]', true) ?: [],
     fn($g) => !empty($g['name'])
@@ -115,7 +139,7 @@ $balance    = (float)($inv['total_amount'] ?? 0) - (float)($inv['paid_amount'] ?
 <html lang="<?= $pdfLang ?>" dir="<?= $pdfDir ?>">
 <head>
 <meta charset="UTF-8">
-<title><?= $isTransfer ? 'Transfer Invoice' : ($isHotel ? 'Hotel Invoice' : 'Invoice') ?> · <?= htmlspecialchars($inv['invoice_no']) ?></title>
+<title><?= $isTour ? 'Tour Invoice' : ($isTransfer ? 'Transfer Invoice' : ($isHotel ? 'Hotel Invoice' : 'Invoice')) ?> · <?= htmlspecialchars($inv['invoice_no']) ?></title>
 <style>
 /* hard-coded hex — no CSS variables, ensures PDF renderer compatibility */
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -251,7 +275,7 @@ body { font-family:"DejaVu Sans",Arial,Helvetica,sans-serif; font-size:10px; col
 
             </td>
             <td style="vertical-align:top; text-align:right; width:50%;">
-                <div class="hd-doctype"><?= $isTransfer ? 'Transfer Invoice' : ($isHotel ? 'Hotel Invoice' : 'Invoice') ?></div>
+                <div class="hd-doctype"><?= $isTour ? 'Tour Invoice' : ($isTransfer ? 'Transfer Invoice' : ($isHotel ? 'Hotel Invoice' : 'Invoice')) ?></div>
                 <div class="hd-sub">Official Tax Document</div>
             </td>
         </tr>
@@ -576,8 +600,60 @@ if ($hasContact):
 </div>
 <?php endforeach; ?>
 
+<?php elseif ($isTour): ?>
+<!-- ════════ 4c. TOUR ITINERARY ════════ -->
+<?php
+$tourTotalPax = array_sum(array_map(
+    fn($ti) => (int)($ti['adults']??0) + (int)($ti['children']??0) + (int)($ti['infants']??0),
+    $tourItemsInv
+));
+?>
+<div class="sec">Tour Itinerary
+    <span class="sec-note"><?= count($tourItemsInv) ?> tour<?= count($tourItemsInv) !== 1 ? 's' : '' ?> &nbsp;·&nbsp; <?= $tourTotalPax ?> pax &nbsp;·&nbsp; prices in <?= $curr ?></span>
+</div>
+<table class="items-tbl">
+    <thead>
+        <tr>
+            <th style="text-align:left; width:22%;">Tour Name</th>
+            <th style="text-align:left; width:10%;">Date</th>
+            <th style="text-align:left; width:10%;">Duration</th>
+            <th class="r" style="width:5%;">ADL</th>
+            <th class="r" style="width:12%;">Adult Price</th>
+            <th class="r" style="width:5%;">CHD</th>
+            <th class="r" style="width:12%;">Child Price</th>
+            <th class="r" style="width:5%;">INF</th>
+            <th class="r" style="width:12%;">Infant Price</th>
+            <th class="r" style="width:7%;">Total (<?= $curr ?>)</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($tourItemsInv as $titem):
+        $tAdults      = (int)($titem['adults']       ?? 0);
+        $tChildren    = (int)($titem['children']     ?? 0);
+        $tInfants     = (int)($titem['infants']      ?? 0);
+        $tPriceAdult  = (float)($titem['price_adult']  ?? $titem['price_per_person'] ?? 0);
+        $tPriceChild  = (float)($titem['price_child']  ?? 0);
+        $tPriceInfant = (float)($titem['price_infant'] ?? $titem['price_per_infant'] ?? 0);
+        $tTotal       = (float)($titem['total'] ?? ($tAdults * $tPriceAdult + $tChildren * $tPriceChild + $tInfants * $tPriceInfant));
+    ?>
+    <tr>
+        <td style="font-weight:bold;"><?= htmlspecialchars($titem['name'] ?? '—') ?></td>
+        <td><?= !empty($titem['date']) ? date('d/m/Y', strtotime($titem['date'])) : '—' ?></td>
+        <td><?= htmlspecialchars($titem['duration'] ?? '—') ?></td>
+        <td class="r"><?= $tAdults ?></td>
+        <td class="r"><?= $tPriceAdult > 0 ? number_format($tPriceAdult, 2) : '—' ?></td>
+        <td class="r"><?= $tChildren ?></td>
+        <td class="r"><?= $tPriceChild > 0 ? number_format($tPriceChild, 2) : '—' ?></td>
+        <td class="r"><?= $tInfants ?></td>
+        <td class="r"><?= $tPriceInfant > 0 ? number_format($tPriceInfant, 2) : '—' ?></td>
+        <td class="r" style="font-weight:bold;"><?= number_format($tTotal, 2) ?></td>
+    </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
 <?php elseif (!empty($invoiceItems)): ?>
-<!-- ════════ 4c. GENERIC LINE ITEMS ════════ -->
+<!-- ════════ 4d. GENERIC LINE ITEMS ════════ -->
 <div class="sec">Line Items</div>
 <table class="items-tbl">
     <thead>
@@ -672,6 +748,16 @@ if ($hasContact):
                 <?php if (!empty($guests)): ?>
                 <div style="margin-top:6px; border-top:1px solid #e2e4e9; padding-top:5px;">
                     <?= $guestCount ?> guest<?= $guestCount > 1 ? 's' : '' ?> · see manifest above
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php elseif ($isTour && !empty($tourItemsInv)): ?>
+            <div style="background:#f8f9fc; border:1px solid #e2e4e9; padding:10px 12px; font-size:9px; color:#5a6272;">
+                <strong style="color:#1a2332;"><?= count($tourItemsInv) ?> tour<?= count($tourItemsInv) !== 1 ? 's' : '' ?></strong>
+                &nbsp;·&nbsp; <?= $tourTotalPax ?> pax total &nbsp;·&nbsp; <?= $curr ?>
+                <?php if (!empty($guests)): ?>
+                <div style="margin-top:6px; border-top:1px solid #e2e4e9; padding-top:5px;">
+                    <?= $guestCount ?> passenger<?= $guestCount > 1 ? 's' : '' ?> · see manifest above
                 </div>
                 <?php endif; ?>
             </div>
@@ -770,7 +856,7 @@ if ($hasContact):
     <br>
     <span style="font-size:7px; color:#aaa;">
         Generated <?= date('d F Y · H:i') ?> &nbsp;·&nbsp;
-        <?= $isTransfer ? 'Transfer Invoice' : ($isHotel ? 'Hotel Invoice' : 'Invoice') ?>: <?= htmlspecialchars($inv['invoice_no']) ?>
+        <?= $isTour ? 'Tour Invoice' : ($isTransfer ? 'Transfer Invoice' : ($isHotel ? 'Hotel Invoice' : 'Invoice')) ?>: <?= htmlspecialchars($inv['invoice_no']) ?>
     </span>
 </div>
 
