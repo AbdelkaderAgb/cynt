@@ -713,4 +713,5 @@ return [
     'no_catalog_match' => 'No pricing found in catalog. You can add it via Services & Pricing.',
     'add_service' => 'Add Service',
     'service_linked' => 'Linked to catalog',
+    'add_tour' => 'Add Tour',
 ];

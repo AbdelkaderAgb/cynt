@@ -56,6 +56,9 @@ $typeIcons = [
             </div>
         </div>
         <div class="flex gap-2">
+            <a href="<?= url('missions/pdf') ?>?id=<?= (int)$m['id'] ?>" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl text-sm font-semibold hover:bg-red-100 transition">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
             <a href="<?= url('missions/edit') ?>?id=<?= (int)$m['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
                 <i class="fas fa-edit"></i> <?= __('edit') ?: 'Edit' ?>
             </a>

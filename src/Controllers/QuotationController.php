@@ -78,6 +78,11 @@ class QuotationController extends Controller
         $this->requireCsrf();
         $db = Database::getInstance()->getConnection();
 
+        if (empty(trim($_POST['client_name'] ?? ''))) {
+            header('Location: ' . url('quotations/create') . '?error=missing_client');
+            exit;
+        }
+
         $quoteNumber = 'QT-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
         $items = json_decode($_POST['items_json'] ?? '[]', true) ?: [];
@@ -125,11 +130,6 @@ class QuotationController extends Controller
             trim($_POST['notes'] ?? ''),
             $_SESSION['user_id'] ?? null,
         ]);
-
-        if (empty($_POST['client_name'])) {
-             header('Location: ' . url('quotations/create') . '?error=missing_client');
-             exit;
-        }
 
         // Save items
         $this->saveItems($db, $nextId, $items);
@@ -276,10 +276,19 @@ class QuotationController extends Controller
         $itemsStmt->execute([$id]);
         $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $this->viewStandalone('quotations/pdf', [
+        $settingRows = Database::fetchAll("SELECT setting_key, setting_value FROM settings WHERE setting_group = 'company'");
+        $s = array_column($settingRows, 'setting_value', 'setting_key');
+        $co = [
+            'companyName'    => $s['company_name']    ?? COMPANY_NAME,
+            'companyAddress' => $s['company_address'] ?? COMPANY_ADDRESS,
+            'companyPhone'   => $s['company_phone']   ?? COMPANY_PHONE,
+            'companyEmail'   => $s['company_email']   ?? COMPANY_EMAIL,
+        ];
+
+        $this->viewStandalone('quotations/pdf', array_merge([
             'q'     => $quotation,
             'items' => $items,
-        ]);
+        ], $co));
     }
 
     /**
@@ -301,7 +310,7 @@ class QuotationController extends Controller
         }
 
         // Mark as converted
-        $db->prepare("UPDATE quotations SET status = 'converted', converted_at = NOW() WHERE id = ?")->execute([$id]);
+        $db->prepare("UPDATE quotations SET status = 'converted', converted_at = datetime('now') WHERE id = ?")->execute([$id]);
 
         header('Location: ' . url('quotations/show') . '?id=' . $id . '&converted=1');
         exit;

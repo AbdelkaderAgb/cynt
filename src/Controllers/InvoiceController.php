@@ -7,6 +7,7 @@ class InvoiceController extends Controller
 {
     public function index(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $filters = [
@@ -34,6 +35,7 @@ class InvoiceController extends Controller
 
     public function create(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Partner.php';
 
         $this->view('invoices/form', [
@@ -97,6 +99,15 @@ class InvoiceController extends Controller
             Invoice::update($id, $data);
         } else {
             $id = Invoice::create($data);
+        }
+
+        // Auto-link to partner portal: if company_id is set it IS the partner id
+        $companyId = (int)($data['company_id'] ?? 0);
+        if ($companyId > 0) {
+            Database::execute(
+                "UPDATE invoices SET partner_id = ? WHERE id = ? AND (partner_id IS NULL OR partner_id = 0)",
+                [$companyId, $id]
+            );
         }
 
         // Save line items
@@ -180,7 +191,9 @@ class InvoiceController extends Controller
 
     public function show(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
+        require_once ROOT_PATH . '/src/Models/CreditTransaction.php';
 
         $id = (int)($_GET['id'] ?? 0);
         $invoice = Invoice::getById($id);
@@ -189,16 +202,35 @@ class InvoiceController extends Controller
 
         $items = $this->getLineItems($id);
 
+        // Resolve the authoritative partner ID:
+        // company_id is set at invoice creation (definitive owner).
+        // partner_id may differ due to manual linking — prefer company_id.
+        $partnerId = (int)($invoice['company_id'] ?? 0) ?: (int)($invoice['partner_id'] ?? 0);
+
+        // Per-currency credit balance for Pay with Credit — use invoice's own currency
+        $partnerBalance = 0.0;
+        if ($partnerId > 0) {
+            $invCurrency    = strtoupper($invoice['currency'] ?? 'EUR');
+            $partnerBalance = CreditTransaction::getPartnerBalance($partnerId, $invCurrency);
+        }
+
+        $flash = $_SESSION['invoice_flash'] ?? null;
+        unset($_SESSION['invoice_flash']);
+
         $this->view('invoices/show', [
-            'invoice'      => $invoice,
-            'invoiceItems' => $items,
-            'pageTitle'    => 'Fatura: ' . $invoice['invoice_no'],
-            'activePage'   => 'invoices',
+            'invoice'        => $invoice,
+            'invoiceItems'   => $items,
+            'partnerBalance' => $partnerBalance,
+            'partnerId'      => $partnerId,
+            'flash'          => $flash,
+            'pageTitle'      => 'Fatura: ' . $invoice['invoice_no'],
+            'activePage'     => 'invoices',
         ]);
     }
 
     public function edit(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
         require_once ROOT_PATH . '/src/Models/Partner.php';
 
@@ -206,6 +238,12 @@ class InvoiceController extends Controller
         $invoice = Invoice::getById($id);
 
         if (!$invoice) { header('Location: ' . url('invoices')); exit; }
+
+        // Transfer invoices use their own dedicated edit form
+        if (($invoice['type'] ?? '') === 'transfer') {
+            header('Location: ' . url('transfer-invoice/edit') . '?id=' . $id);
+            exit;
+        }
 
         $items = $this->getLineItems($id);
 
@@ -221,6 +259,7 @@ class InvoiceController extends Controller
 
     public function markPaid(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $id = (int)($_GET['id'] ?? 0);
@@ -230,8 +269,50 @@ class InvoiceController extends Controller
         exit;
     }
 
+    /**
+     * AJAX: update invoice status inline
+     * POST /invoices/update-status  { id, status }
+     */
+    public function updateStatus(): void
+    {
+        $this->requireAuth();
+        header('Content-Type: application/json');
+
+        $id     = (int)($_POST['id'] ?? 0);
+        $status = trim($_POST['status'] ?? '');
+        $allowed = ['draft', 'sent', 'paid', 'overdue', 'partial', 'cancelled'];
+
+        if (!$id || !in_array($status, $allowed, true)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
+            exit;
+        }
+
+        try {
+            Database::execute(
+                "UPDATE invoices SET status = ?, updated_at = datetime('now') WHERE id = ?",
+                [$status, $id]
+            );
+            // If marking as paid, also ensure paid_amount = total_amount
+            if ($status === 'paid') {
+                Database::execute(
+                    "UPDATE invoices
+                     SET paid_amount  = total_amount,
+                         payment_date = COALESCE(payment_date, date('now')),
+                         updated_at   = datetime('now')
+                     WHERE id = ? AND (paid_amount IS NULL OR paid_amount < total_amount)",
+                    [$id]
+                );
+            }
+            echo json_encode(['success' => true, 'status' => $status]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
     public function delete(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Invoice.php';
         $id = (int)($_GET['id'] ?? 0);
         if ($id) Invoice::delete($id);

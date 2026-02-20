@@ -3,9 +3,12 @@
 
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-cog text-gray-500 mr-2"></i><?= __('settings') ?></h1>
-    <div class="flex gap-2 mt-3">
+    <div class="flex flex-wrap gap-2 mt-3">
         <a href="<?= url('settings') ?>" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold"><?= __('general') ?></a>
         <a href="<?= url('settings/email') ?>" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-200 transition"><?= __('email') ?: 'Email' ?></a>
+        <a href="<?= url('settings/currencies') ?>" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Currencies</a>
+        <a href="<?= url('settings/currencies/rates') ?>" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Exchange Rates</a>
+        <a href="<?= url('settings/tax-rates') ?>" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Tax Rates</a>
     </div>
 </div>
 

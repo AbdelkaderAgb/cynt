@@ -232,6 +232,39 @@ class MissionController extends Controller
         exit;
     }
 
+    public function pdf(): void
+    {
+        $this->requireAuth();
+        $db = Database::getInstance()->getConnection();
+        $id = (int)($_GET['id'] ?? 0);
+
+        $stmt = $db->prepare(
+            "SELECT m.*,
+                d.first_name || ' ' || d.last_name AS driver_name, d.phone AS driver_phone,
+                v.plate_number, v.make AS vehicle_make, v.model AS vehicle_model,
+                g.first_name || ' ' || g.last_name AS guide_name, g.phone AS guide_phone
+             FROM missions m
+             LEFT JOIN drivers d ON d.id = m.driver_id
+             LEFT JOIN vehicles v ON v.id = m.vehicle_id
+             LEFT JOIN tour_guides g ON g.id = m.guide_id
+             WHERE m.id = ?"
+        );
+        $stmt->execute([$id]);
+        $mission = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$mission) { header('Location: ' . url('missions')); exit; }
+
+        $settingRows = Database::fetchAll("SELECT setting_key, setting_value FROM settings WHERE setting_group = 'company'");
+        $s = array_column($settingRows, 'setting_value', 'setting_key');
+        $co = [
+            'companyName'    => $s['company_name']    ?? COMPANY_NAME,
+            'companyAddress' => $s['company_address'] ?? COMPANY_ADDRESS,
+            'companyPhone'   => $s['company_phone']   ?? COMPANY_PHONE,
+            'companyEmail'   => $s['company_email']   ?? COMPANY_EMAIL,
+        ];
+
+        $this->viewStandalone('missions/pdf', array_merge(['m' => $mission], $co));
+    }
+
     /**
      * Calendar page view (FullCalendar)
      */
@@ -257,8 +290,8 @@ class MissionController extends Controller
         $end = $_GET['end'] ?? date('Y-m-t');
 
         $stmt = $db->prepare("SELECT m.*,
-            CONCAT(COALESCE(d.first_name,''), ' ', COALESCE(d.last_name,'')) AS driver_name,
-            CONCAT(COALESCE(g.first_name,''), ' ', COALESCE(g.last_name,'')) AS guide_name,
+            (COALESCE(d.first_name,'') || ' ' || COALESCE(d.last_name,'')) AS driver_name,
+            (COALESCE(g.first_name,'') || ' ' || COALESCE(g.last_name,'')) AS guide_name,
             v.plate_number
             FROM missions m
             LEFT JOIN drivers d ON m.driver_id = d.id

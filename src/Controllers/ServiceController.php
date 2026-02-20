@@ -213,49 +213,54 @@ class ServiceController extends Controller
     public function searchApi(): void
     {
         $type = $_GET['type'] ?? '';
-        $q = trim($_GET['q'] ?? '');
-        
-        $where = ['status = ?'];
+        $q    = trim($_GET['q'] ?? '');
+
+        $where  = ['status = ?'];
         $params = ['active'];
-        
+
         if ($type) {
-            $where[] = 'service_type = ?';
+            $where[]  = 'service_type = ?';
             $params[] = $type;
         }
 
-        // Check if new columns exist (from migration_pricing_system.sql)
-        $hasNewCols = false;
-        try {
-            $db = Database::getInstance()->getConnection();
-            $colCheck = $db->query("SELECT price_adult FROM services LIMIT 0");
-            $hasNewCols = ($colCheck !== false);
-        } catch (\Exception $e) {
-            $hasNewCols = false;
+        // Detect which optional columns exist
+        $db = Database::getInstance()->getConnection();
+        $existingCols = array_column(
+            $db->query("PRAGMA table_info(services)")->fetchAll(PDO::FETCH_ASSOC),
+            'name'
+        );
+        $hasFromTo    = in_array('from_location',  $existingCols);
+        $hasPriceAdult= in_array('price_adult',    $existingCols);
+
+        // Build search clause — always search name + description + from/to if present
+        if ($q) {
+            $searchFields = ['name LIKE ?', 'description LIKE ?'];
+            $params[] = "%{$q}%";
+            $params[] = "%{$q}%";
+            if ($hasFromTo) {
+                $searchFields[] = 'from_location LIKE ?';
+                $searchFields[] = 'to_location LIKE ?';
+                $params[] = "%{$q}%";
+                $params[] = "%{$q}%";
+            }
+            $where[] = '(' . implode(' OR ', $searchFields) . ')';
         }
 
-        if ($hasNewCols) {
-            if ($q) {
-                $where[] = '(name LIKE ? OR description LIKE ? OR destination LIKE ?)';
-                $params[] = "%{$q}%";
-                $params[] = "%{$q}%";
-                $params[] = "%{$q}%";
-            }
-            $cols = 'id, service_type, name, description, price, price_adult, price_child, price_infant, currency, unit, destination, duration, vehicle_type, max_pax, pickup_location, dropoff_location';
-        } else {
-            if ($q) {
-                $where[] = '(name LIKE ? OR description LIKE ?)';
-                $params[] = "%{$q}%";
-                $params[] = "%{$q}%";
-            }
-            $cols = 'id, service_type, name, description, price, currency, unit';
+        // Always return from_location / to_location when they exist
+        $cols = 'id, service_type, name, description, price, currency, unit';
+        if ($hasPriceAdult) {
+            $cols .= ', price_adult, price_child, price_infant';
         }
-        
+        if ($hasFromTo) {
+            $cols .= ', from_location, to_location';
+        }
+
         $whereStr = implode(' AND ', $where);
         $services = Database::fetchAll(
             "SELECT {$cols} FROM services WHERE {$whereStr} ORDER BY name ASC LIMIT 50",
             $params
         );
-        
+
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($services, JSON_UNESCAPED_UNICODE);
         exit;

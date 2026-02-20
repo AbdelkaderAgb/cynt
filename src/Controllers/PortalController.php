@@ -84,12 +84,12 @@ class PortalController extends Controller
         $recentInvoices = [];
 
         try {
-            $stmt = $db->prepare("SELECT COUNT(*) FROM invoices WHERE company_id = ? OR company_name = ?");
-            $stmt->execute([$pid, $companyName]);
+            $stmt = $db->prepare("SELECT COUNT(*) FROM invoices WHERE partner_id = ? OR company_id = ? OR LOWER(TRIM(company_name)) = LOWER(TRIM(?))");
+            $stmt->execute([$pid, $pid, $companyName]);
             $invoiceCount = (int)$stmt->fetchColumn();
 
-            $stmt = $db->prepare("SELECT COUNT(*) FROM invoices WHERE (company_id = ? OR company_name = ?) AND status IN ('sent','draft')");
-            $stmt->execute([$pid, $companyName]);
+            $stmt = $db->prepare("SELECT COUNT(*) FROM invoices WHERE (partner_id = ? OR company_id = ? OR LOWER(TRIM(company_name)) = LOWER(TRIM(?))) AND status IN ('sent','draft')");
+            $stmt->execute([$pid, $pid, $companyName]);
             $pendingInvoices = (int)$stmt->fetchColumn();
 
             // Count all voucher types
@@ -116,8 +116,8 @@ class PortalController extends Controller
             $unreadMessages = (int)$stmt->fetchColumn();
 
             // Recent invoices
-            $stmt = $db->prepare("SELECT id, invoice_no, invoice_date, total_amount, currency, status FROM invoices WHERE company_id = ? OR company_name = ? ORDER BY invoice_date DESC LIMIT 5");
-            $stmt->execute([$pid, $companyName]);
+            $stmt = $db->prepare("SELECT id, invoice_no, invoice_date, total_amount, currency, status FROM invoices WHERE partner_id = ? OR company_id = ? OR LOWER(TRIM(company_name)) = LOWER(TRIM(?)) ORDER BY invoice_date DESC LIMIT 5");
+            $stmt->execute([$pid, $pid, $companyName]);
             $recentInvoices = $stmt->fetchAll();
         } catch (Exception $e) {
             // Continue with defaults
@@ -150,8 +150,8 @@ class PortalController extends Controller
         $search = trim($_GET['search'] ?? '');
         $status = $_GET['status'] ?? '';
 
-        $where = "(company_id = ? OR company_name = ?)";
-        $params = [$pid, $companyName];
+        $where = "(partner_id = ? OR company_id = ? OR LOWER(TRIM(company_name)) = LOWER(TRIM(?)))";
+        $params = [$pid, $pid, $companyName];
 
         if ($search) {
             $where .= " AND (invoice_no LIKE ? OR company_name LIKE ?)";
@@ -192,8 +192,8 @@ class PortalController extends Controller
         $companyName = $partner['company_name'] ?? '';
         $id = (int)($_GET['id'] ?? 0);
 
-        $stmt = $db->prepare("SELECT * FROM invoices WHERE id = ? AND (company_id = ? OR company_name = ?)");
-        $stmt->execute([$id, $pid, $companyName]);
+        $stmt = $db->prepare("SELECT * FROM invoices WHERE id = ? AND (partner_id = ? OR company_id = ? OR LOWER(TRIM(company_name)) = LOWER(TRIM(?)))");
+        $stmt->execute([$id, $pid, $pid, $companyName]);
         $invoice = $stmt->fetch();
 
         if (!$invoice) {
@@ -490,6 +490,7 @@ class PortalController extends Controller
             $details['room_count']  = (int)($_POST['room_count'] ?? 1);
             $details['adults']      = (int)($_POST['adults'] ?? 1);
             $details['children']    = (int)($_POST['children'] ?? 0);
+            $details['infants']     = (int)($_POST['infants'] ?? 0);
             if (empty($details['date']) && !empty($details['check_in'])) {
                 $details['date'] = $details['check_in'];
             }
@@ -504,14 +505,20 @@ class PortalController extends Controller
             }
         }
 
+        // Resolve hotel_id for all request types (hotel_id is a top-level column)
+        if (!isset($hotelId)) {
+            $hotelId = (int)($_POST['hotel_id'] ?? 0);
+        }
+
         // Use explicit next ID to work even without AUTO_INCREMENT
         $nextId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM partner_booking_requests")->fetchColumn();
-        $stmt = $db->prepare("INSERT INTO partner_booking_requests (id, partner_id, request_type, details, status, created_at) VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)");
+        $stmt = $db->prepare("INSERT INTO partner_booking_requests (id, partner_id, request_type, details, hotel_id, status, created_at) VALUES (?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)");
         $stmt->execute([
             $nextId,
             (int)$partner['id'],
             $requestType,
             json_encode($details, JSON_UNESCAPED_UNICODE),
+            $hotelId ?: null,
         ]);
 
         header('Location: ' . url('portal/bookings') . '?saved=1');

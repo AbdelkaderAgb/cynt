@@ -346,11 +346,22 @@ class HotelProfileController extends Controller
      */
     public function listApi(): void
     {
+        $q      = trim($_GET['q'] ?? '');
+        $params = [];
+        $where  = "WHERE status = 'active'";
+
+        if ($q !== '') {
+            $like   = "%{$q}%";
+            $where .= " AND (name LIKE ? OR city LIKE ? OR country LIKE ?)";
+            $params = [$like, $like, $like];
+        }
+
         $hotels = Database::fetchAll(
-            "SELECT id, name, city, country, stars, phone, address 
-             FROM hotels 
-             WHERE status = 'active' 
-             ORDER BY country, city, name"
+            "SELECT id, name, city, country, stars, phone, address
+             FROM hotels {$where}
+             ORDER BY country, city, name
+             LIMIT 50",
+            $params
         );
         $this->json($hotels);
     }
@@ -369,7 +380,8 @@ class HotelProfileController extends Controller
             return;
         }
         $rooms = Database::fetchAll(
-            "SELECT id, room_type, board_type, capacity, max_adults, max_children
+            "SELECT id, room_type, board_type, capacity, max_adults, max_children,
+                    price_single, price_double, price_triple, price_quad, price_child, currency
              FROM hotel_rooms
              WHERE hotel_id = ?
              ORDER BY room_type, board_type",

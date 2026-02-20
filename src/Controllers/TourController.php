@@ -55,7 +55,7 @@ class TourController extends Controller
     {
         $this->requireAuth();
         $this->view('tours/form', [
-            'pageTitle'  => 'New Tour Voucher',
+            'pageTitle'  => __('new_tour_voucher') ?: 'New Tour Voucher',
             'activePage' => 'tour-voucher',
         ]);
     }
@@ -85,27 +85,15 @@ class TourController extends Controller
         $passengerPassport = trim($_POST['passenger_passport'] ?? '');
         $guestName = trim($_POST['guest_name'] ?? '');
 
-        // Location fields
-        $city = trim($_POST['city'] ?? '');
-        $country = trim($_POST['country'] ?? 'Turkey');
-        $address = trim($_POST['address'] ?? '');
-        $meetingPoint = trim($_POST['meeting_point'] ?? '');
-        $meetingPointAddress = trim($_POST['meeting_point_address'] ?? '');
-        $durationHours = (float)($_POST['duration_hours'] ?? 0);
-        $includes = trim($_POST['includes'] ?? '');
-        $excludes = trim($_POST['excludes'] ?? '');
-
         // Use explicit next ID to work even without AUTO_INCREMENT
         $nextId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM tours")->fetchColumn();
         $stmt = $db->prepare("INSERT INTO tours
             (id, tour_name, guest_name, passenger_passport, tour_code, description, tour_type, destination, pickup_location, dropoff_location,
              tour_date, start_time, end_time, total_pax, price_per_person, price_child, price_per_infant, total_price, currency, status,
-             company_name, hotel_name, customer_phone, adults, children, infants, customers, tour_items,
-             city, country, address, meeting_point, meeting_point_address, duration_hours, includes, excludes)
+             company_name, customer_phone, adults, children, infants, customers, tour_items)
             VALUES (?, ?, ?, ?, ?, ?, 'daily', '', '', '',
                     ?, '', '', ?, ?, ?, ?, ?, ?, 'pending',
-                    ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?)");
+                    ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $nextId,
             $tourName,
@@ -121,21 +109,12 @@ class TourController extends Controller
             $totalPrice,
             $currency,
             trim($_POST['company_name'] ?? ''),
-            trim($_POST['hotel_name'] ?? ''),
             trim($_POST['customer_phone'] ?? ''),
             $adults,
             $children,
             $infants,
             $_POST['customers'] ?? '[]',
             $_POST['tour_items'] ?? '[]',
-            $city,
-            $country,
-            $address,
-            $meetingPoint,
-            $meetingPointAddress,
-            $durationHours,
-            $includes,
-            $excludes,
         ]);
 
         header('Location: ' . url('tour-voucher') . '?saved=1');
@@ -171,7 +150,7 @@ class TourController extends Controller
 
         $this->view('tours/form_edit', [
             't'          => $tour,
-            'pageTitle'  => 'Edit: ' . ($tour['tour_name'] ?: $tour['tour_code']),
+            'pageTitle'  => (__('edit') ?: 'Edit') . ': ' . ($tour['tour_name'] ?: $tour['tour_code']),
             'activePage' => 'tour-voucher',
         ]);
     }
@@ -203,24 +182,12 @@ class TourController extends Controller
         $passengerPassport = trim($_POST['passenger_passport'] ?? '');
         $guestName = trim($_POST['guest_name'] ?? '');
 
-        // Location fields
-        $city = trim($_POST['city'] ?? '');
-        $country = trim($_POST['country'] ?? 'Turkey');
-        $address = trim($_POST['address'] ?? '');
-        $meetingPoint = trim($_POST['meeting_point'] ?? '');
-        $meetingPointAddress = trim($_POST['meeting_point_address'] ?? '');
-        $durationHours = (float)($_POST['duration_hours'] ?? 0);
-        $includes = trim($_POST['includes'] ?? '');
-        $excludes = trim($_POST['excludes'] ?? '');
-
         $stmt = $db->prepare("UPDATE tours SET
             tour_name = ?, guest_name = ?, passenger_passport = ?, description = ?, tour_date = ?,
             total_pax = ?, price_per_person = ?, price_child = ?, price_per_infant = ?, total_price = ?, currency = ?,
-            company_name = ?, hotel_name = ?, customer_phone = ?,
+            company_name = ?, customer_phone = ?,
             adults = ?, children = ?, infants = ?, customers = ?, tour_items = ?,
             status = ?,
-            city = ?, country = ?, address = ?, meeting_point = ?, meeting_point_address = ?,
-            duration_hours = ?, includes = ?, excludes = ?,
             updated_at = CURRENT_TIMESTAMP
             WHERE id = ?");
         $stmt->execute([
@@ -236,7 +203,6 @@ class TourController extends Controller
             $totalPrice,
             $currency,
             trim($_POST['company_name'] ?? ''),
-            trim($_POST['hotel_name'] ?? ''),
             trim($_POST['customer_phone'] ?? ''),
             $adults,
             $children,
@@ -244,14 +210,6 @@ class TourController extends Controller
             $_POST['customers'] ?? '[]',
             $_POST['tour_items'] ?? '[]',
             $_POST['status'] ?? 'pending',
-            $city,
-            $country,
-            $address,
-            $meetingPoint,
-            $meetingPointAddress,
-            $durationHours,
-            $includes,
-            $excludes,
             $id,
         ]);
 
@@ -299,7 +257,25 @@ class TourController extends Controller
     public function invoiceCreate(): void
     {
         $this->requireAuth();
+
+        $prefill = [];
+        $voucherId = (int)($_GET['voucher_id'] ?? 0);
+        if ($voucherId > 0) {
+            $t = Database::fetchOne("SELECT * FROM tours WHERE id = ?", [$voucherId]);
+            if ($t) {
+                $prefill = [
+                    'company_name' => $t['company_name'] ?? '',
+                    'company_id'   => $t['company_id']   ?? 0,
+                    'currency'     => $t['currency']      ?? 'USD',
+                    'tour_name'    => $t['tour_name']     ?? '',
+                    'tour_date'    => $t['tour_date']     ?? '',
+                    'total_pax'    => $t['total_pax']     ?? 1,
+                ];
+            }
+        }
+
         $this->view('tours/invoice_form', [
+            'prefill'    => $prefill,
             'pageTitle'  => 'New Tour Invoice',
             'activePage' => 'tour-invoice',
         ]);
@@ -341,16 +317,30 @@ class TourController extends Controller
             if (!empty($tour['date'])) $desc .= ' (' . $tour['date'] . ')';
             if (!empty($tour['duration'])) $desc .= ' - ' . $tour['duration'];
 
+            $qty = max(1, (int)($tour['pax'] ?? 1));
+            $itemTotal = (float)($tour['price'] ?? 0);
+            $unitPrice = $qty > 0 ? round($itemTotal / $qty, 4) : $itemTotal;
+
             $nextItemId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM invoice_items")->fetchColumn();
             $stmtItem = $db->prepare("INSERT INTO invoice_items (id, invoice_id, description, quantity, unit_price, total_price)
-                VALUES (?, ?, ?, 1, ?, ?)");
+                VALUES (?, ?, ?, ?, ?, ?)");
             $stmtItem->execute([
                 $nextItemId,
                 $invoiceId,
                 $desc,
-                (float)($tour['price'] ?? 0),
-                (float)($tour['price'] ?? 0),
+                $qty,
+                $unitPrice,
+                $itemTotal,
             ]);
+        }
+
+        // Bind partner_id if submitted
+        if (!empty($_POST['partner_id'])) {
+            try {
+                $db->prepare("UPDATE invoices SET partner_id = ? WHERE id = ?")->execute([(int)$_POST['partner_id'], $invoiceId]);
+            } catch (\Exception $e) {
+                // column may not exist in older schema — safe to ignore
+            }
         }
 
         header('Location: ' . url('tour-invoice') . '?saved=1');

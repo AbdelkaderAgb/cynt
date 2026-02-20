@@ -8,7 +8,7 @@ $h = $hotel;
     <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><?= $pageTitle ?></h1>
 </div>
 
-<form method="POST" action="<?= url('hotels/profiles/store') ?>" class="space-y-6" id="hotelForm">
+<form method="POST" action="<?= url('hotels/profiles/store') ?>" class="space-y-6" id="hotelForm" x-data="{sub:false}" @submit="sub=true">
     <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $h['id'] ?>"><?php endif; ?>
 
@@ -58,6 +58,27 @@ $h = $hotel;
             <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1">Website</label>
                 <input type="url" name="website" value="<?= e($h['website'] ?? '') ?>" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-xl">
+            </div>
+        </div>
+        <!-- Age Policy -->
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-3"><i class="fas fa-child text-pink-400 mr-1"></i>Age Policy</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Child Age Min</label>
+                    <input type="number" name="child_age_min" value="<?= (int)($h['child_age_min'] ?? 2) ?>" min="0" max="17" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-xl">
+                    <p class="text-xs text-gray-400 mt-1">Minimum age counted as child</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Child Age Max</label>
+                    <input type="number" name="child_age_max" value="<?= (int)($h['child_age_max'] ?? 12) ?>" min="0" max="17" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-xl">
+                    <p class="text-xs text-gray-400 mt-1">Maximum age counted as child</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Infant Age Max</label>
+                    <input type="number" name="infant_age_max" value="<?= (int)($h['infant_age_max'] ?? 2) ?>" min="0" max="5" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-xl">
+                    <p class="text-xs text-gray-400 mt-1">Maximum age counted as infant</p>
+                </div>
             </div>
         </div>
         <div class="mt-4">
@@ -152,8 +173,8 @@ $h = $hotel;
 
     <!-- Submit -->
     <div class="flex items-center gap-3">
-        <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition">
-            <i class="fas fa-save mr-1"></i><?= $isEdit ? 'Update Hotel' : 'Save Hotel' ?>
+        <button type="submit" :disabled="sub" :class="{'opacity-50 cursor-not-allowed':sub}" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition">
+            <i class="fas fa-save mr-1"></i><span x-text="sub ? 'Saving…' : '<?= $isEdit ? 'Update Hotel' : 'Save Hotel' ?>'"></span>
         </button>
         <a href="<?= url('hotels/profiles') ?>" class="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 transition">Cancel</a>
     </div>

@@ -7,6 +7,18 @@
  */
 ?>
 
+<!-- Company Settings Warning -->
+<?php if (empty($companyComplete)): ?>
+<div class="mb-5 flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl" role="alert">
+    <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5 flex-shrink-0"></i>
+    <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Company identity incomplete</p>
+        <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Name, address, phone and email are required for accurate PDF documents.</p>
+    </div>
+    <a href="<?= url('settings') ?>" class="flex-shrink-0 px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded-lg hover:bg-amber-600 transition">Fix Now</a>
+</div>
+<?php endif; ?>
+
 <!-- Page Header -->
 <div class="mb-6 sm:mb-8 animate-fade-in-up">
     <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white"><?php echo e($pageTitle); ?></h1>

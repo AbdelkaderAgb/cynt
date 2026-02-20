@@ -5,6 +5,11 @@
  */
 $typeLabels = ['hotel' => 'Hotel', 'tour' => 'Tour', 'transfer' => 'Transfer', 'other' => 'Other'];
 
+$logoPath     = ROOT_PATH . '/assets/images/logo.png';
+$tursabPath   = ROOT_PATH . '/assets/images/Toursablogo.png';
+$logoBase64   = file_exists($logoPath)   ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))   : '';
+$tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
+
 // Group items by day
 $days = [];
 foreach ($items as $item) {
@@ -55,10 +60,20 @@ ksort($days);
     <table style="width:100%; margin-bottom: 25px; border-bottom: 3px solid #f97316; padding-bottom: 10px;">
         <tr>
             <td style="border:none; padding: 0;">
+                <?php if ($logoBase64): ?>
+                <img src="<?= $logoBase64 ?>" style="height:48px; margin-bottom:6px; display:block;">
+                <?php endif; ?>
                 <div style="font-size: 22px; color: #f97316; font-weight: 800; letter-spacing: -0.5px;">QUOTATION</div>
-                <div style="font-size: 13px; font-weight: 600; color: #1e293b; margin-top: 4px;"><?= e(defined('COMPANY_NAME') ? COMPANY_NAME : 'CYN Tourism') ?></div>
-                <?php if (defined('COMPANY_ADDRESS')): ?>
-                <div style="font-size: 9px; color: #64748b; margin-top: 2px;"><?= e(COMPANY_ADDRESS) ?></div>
+                <div style="font-size: 13px; font-weight: 600; color: #1e293b; margin-top: 4px;"><?= e($companyName ?? '') ?></div>
+                <?php if (!empty($companyAddress)): ?>
+                <div style="font-size: 9px; color: #64748b; margin-top: 2px;"><?= e($companyAddress) ?></div>
+                <?php endif; ?>
+                <?php if (!empty($companyPhone) || !empty($companyEmail)): ?>
+                <div style="font-size: 9px; color: #64748b; margin-top: 1px;">
+                    <?php if (!empty($companyPhone)): ?>Tel: <?= e($companyPhone) ?><?php endif; ?>
+                    <?php if (!empty($companyPhone) && !empty($companyEmail)): ?> · <?php endif; ?>
+                    <?php if (!empty($companyEmail)): ?><?= e($companyEmail) ?><?php endif; ?>
+                </div>
                 <?php endif; ?>
             </td>
             <td style="border:none; padding: 0; text-align: right;">
@@ -179,8 +194,11 @@ ksort($days);
 
     <!-- Footer -->
     <div class="footer">
-        <?= e(defined('COMPANY_NAME') ? COMPANY_NAME : 'CYN Tourism') ?> — This quotation is valid until <?= $q['valid_until'] ? date('d M Y', strtotime($q['valid_until'])) : 'further notice' ?>.<br>
-        Generated on <?= date('d M Y H:i') ?>
+        <?php if ($tursabBase64): ?>
+        <img src="<?= $tursabBase64 ?>" style="height:20px; margin-bottom:4px;"><br>
+        <?php endif; ?>
+        <?= e($companyName ?? '') ?> · <?= e($companyAddress ?? '') ?> · Tel: <?= e($companyPhone ?? '') ?> · <?= e($companyEmail ?? '') ?><br>
+        This quotation is valid until <?= $q['valid_until'] ? date('d M Y', strtotime($q['valid_until'])) : 'further notice' ?> · Generated on <?= date('d M Y H:i') ?>
     </div>
 </div>
 </body>

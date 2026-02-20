@@ -1,281 +1,246 @@
 <?php
 /**
- * Tour Voucher PDF — Professional Official Document
- * Variables: $tour, $companyName, $companyAddress, $companyPhone, $companyEmail
+ * Tour Voucher PDF — Professional Corporate Document
  */
-$t = $tour;
-$logoPath = ROOT_PATH . '/assets/images/logo.png';
+$t          = $tour;
+$logoPath   = ROOT_PATH . '/assets/images/logo.png';
 $tursabPath = ROOT_PATH . '/assets/images/Toursablogo.png';
-$stampPath = ROOT_PATH . '/stamp.png';
-$logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+$stampPath  = ROOT_PATH . '/stamp.png';
+$logoBase64   = file_exists($logoPath)   ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))   : '';
 $tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
-$stampBase64 = file_exists($stampPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath)) : '';
+$stampBase64  = file_exists($stampPath)  ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath))  : '';
 $partnerLogoBase64 = '';
 if (!empty($partnerLogo) && file_exists(ROOT_PATH . '/' . $partnerLogo)) {
-    $ext = strtolower(pathinfo($partnerLogo, PATHINFO_EXTENSION));
-    $mime = in_array($ext, ['png']) ? 'image/png' : (in_array($ext, ['gif']) ? 'image/gif' : 'image/jpeg');
+    $ext  = strtolower(pathinfo($partnerLogo, PATHINFO_EXTENSION));
+    $mime = $ext === 'png' ? 'image/png' : ($ext === 'gif' ? 'image/gif' : 'image/jpeg');
     $partnerLogoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents(ROOT_PATH . '/' . $partnerLogo));
 }
-$customers = json_decode($t['customers'] ?? '[]', true) ?: [];
-$tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
-$statusLabels = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'In Progress','completed'=>'Completed','cancelled'=>'Cancelled'];
+
+$customers    = json_decode($t['customers'] ?? '[]', true) ?: [];
+$tourItems    = json_decode($t['tour_items'] ?? '[]', true) ?: [];
+$statusLabels = ['pending'=>'PENDING','confirmed'=>'CONFIRMED','in_progress'=>'IN PROGRESS','completed'=>'COMPLETED','cancelled'=>'CANCELLED'];
+$statusColors = ['pending'=>'#b45309','confirmed'=>'#1d4ed8','in_progress'=>'#0f766e','completed'=>'#166534','cancelled'=>'#991b1b'];
+
 $pdfLang = $currentLang ?? 'en';
-$pdfDir = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 'ltr';
+$pdfDir  = (isset($langInfo) && ($langInfo['dir'] ?? 'ltr') === 'rtl') ? 'rtl' : 'ltr';
+
+$st      = $t['status'] ?? 'pending';
+$stLabel = $statusLabels[$st] ?? strtoupper(str_replace('_', ' ', $st));
+$stColor = $statusColors[$st] ?? '#374151';
 ?>
 <!DOCTYPE html>
 <html lang="<?= $pdfLang ?>" dir="<?= $pdfDir ?>">
 <head>
 <meta charset="UTF-8">
-<title>Tour Voucher <?= htmlspecialchars($t['tour_code'] ?? $t['tour_name'] ?? '') ?></title>
+<title>Tour Voucher · <?= htmlspecialchars($t['tour_code'] ?? $t['tour_name'] ?? '') ?></title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; font-size: 11px; color: #222; line-height: 1.5; }
-    .page { padding: 25px 35px; }
-
-    .header { border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 18px; }
-    .header table { width: 100%; }
-    .header .logo-cell { width: 50%; vertical-align: bottom; }
-    .header .logo-cell img { height: 60px; vertical-align: middle; margin-right: 8px; }
-    .header .doc-cell { width: 50%; text-align: right; vertical-align: bottom; }
-    .header .doc-type { font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #111; }
-    .header .doc-no { font-size: 11px; color: #555; margin-top: 2px; }
-
-    .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #333; border-bottom: 1px solid #999; padding-bottom: 3px; margin: 16px 0 8px 0; }
-
-    .info-block { width: 100%; margin-bottom: 14px; border: 1px solid #ccc; border-collapse: collapse; }
-    .info-block td { padding: 6px 10px; vertical-align: top; border: 1px solid #ccc; }
-    .info-block .lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.6px; color: #777; font-weight: bold; display: block; margin-bottom: 1px; }
-    .info-block .val { font-size: 11px; color: #111; font-weight: bold; }
-
-    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-    .data-table th { background: #f5f5f5; border: 1px solid #ccc; padding: 6px 10px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: #333; text-align: left; }
-    .data-table th.r { text-align: right; }
-    .data-table th.c { text-align: center; }
-    .data-table td { border: 1px solid #ccc; padding: 6px 10px; font-size: 11px; }
-    .r { text-align: right; }
-    .c { text-align: center; }
-
-
-    .stamp { display: inline-block; border: 2px solid; padding: 4px 16px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transform: rotate(-5deg); }
-    .stamp-pending { border-color: #e65100; color: #e65100; }
-    .stamp-confirmed { border-color: #1565c0; color: #1565c0; }
-    .stamp-in_progress { border-color: #00695c; color: #00695c; }
-    .stamp-completed { border-color: #2e7d32; color: #2e7d32; }
-    .stamp-cancelled { border-color: #c62828; color: #c62828; }
-
-    .notes { margin-top: 12px; padding: 8px 10px; border: 1px solid #ddd; background: #fafafa; font-size: 10px; }
-    .notes-hd { font-size: 8px; text-transform: uppercase; letter-spacing: 0.6px; color: #777; font-weight: bold; margin-bottom: 3px; }
-
-    .footer { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; font-size: 9px; color: #888; }
-    .footer-tursab { margin-top: 6px; }
-    .footer-tursab img { height: 28px; vertical-align: middle; margin-right: 6px; }
-    .footer-tursab span { font-size: 8px; color: #999; font-style: italic; vertical-align: middle; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"DejaVu Sans",Arial,Helvetica,sans-serif; font-size:10.5px; color:#1a1a1a; line-height:1.55; background:#fff; }
+.page { padding:0 36px 36px; }
+.hd-band { background:#fff; margin:0 -36px; padding:20px 36px 16px; border-bottom:3px solid #0d1b2a; }
+.hd-band table { width:100%; border-collapse:collapse; }
+.hd-right { text-align:right; vertical-align:middle; }
+.hd-doctype { font-size:20px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; color:#0d1b2a; }
+.hd-issued { font-size:8.5px; letter-spacing:0.5px; color:#5a6272; margin-top:4px; }
+.vno-num { font-size:15px; font-weight:bold; letter-spacing:1.5px; color:#0d1b2a; font-family:"Courier New",monospace; }
+.vno-date { font-size:9px; color:#5a6272; margin-top:2px; }
+.status-badge { display:inline-block; border:1.5px solid; padding:3px 12px; font-size:9px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; transform:rotate(-2deg); }
+.sec { font-size:8px; font-weight:bold; text-transform:uppercase; letter-spacing:1.8px; color:#0d1b2a; border-bottom:1px solid #0d1b2a; padding-bottom:3px; margin:18px 0 10px; }
+.grid { width:100%; border-collapse:collapse; margin-bottom:14px; }
+.grid td { padding:7px 10px; border:1px solid #d4d4d4; vertical-align:top; }
+.lbl { font-size:7.5px; text-transform:uppercase; letter-spacing:.8px; color:#5a6272; font-weight:bold; display:block; margin-bottom:2px; }
+.val { font-size:11px; font-weight:bold; color:#1a1a1a; }
+.val-sm { font-size:10px; font-weight:bold; color:#1a1a1a; }
+/* Tour name hero */
+.tour-hero { background:#f7f7f7; border:1px solid #d4d4d4; border-left:4px solid #0d1b2a; padding:12px 16px; margin-bottom:14px; }
+.tour-hero-name { font-size:16px; font-weight:bold; color:#0d1b2a; }
+.tour-hero-code { font-size:9px; color:#5a6272; font-family:"Courier New",monospace; letter-spacing:1px; margin-top:2px; }
+/* Data tables */
+.data-table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+.data-table th { padding:6px 9px; background:#0d1b2a; color:#fff; font-size:7.5px; text-transform:uppercase; letter-spacing:1px; font-weight:bold; border:1px solid #0d1b2a; text-align:left; }
+.data-table th.c { text-align:center; }
+.data-table td { padding:6px 9px; border:1px solid #d4d4d4; font-size:10.5px; vertical-align:middle; }
+.data-table tr:nth-child(even) td { background:#f7f7f7; }
+.data-table .c { text-align:center; }
+/* Includes/Excludes */
+.incl-table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+.incl-table td { padding:10px 14px; border:1px solid #d4d4d4; vertical-align:top; width:50%; }
+.incl-head { font-size:8px; font-weight:bold; text-transform:uppercase; letter-spacing:.8px; margin-bottom:5px; }
+.incl-yes { color:#166534; }
+.incl-no  { color:#991b1b; }
+.incl-body { font-size:10px; color:#374151; line-height:1.6; }
+/* Notes */
+.notes-box { border-left:2px solid #9a7c3f; padding:8px 12px; background:#fffdf7; margin-bottom:14px; font-size:10px; color:#4a3a1a; }
+.notes-lbl { font-size:7.5px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; color:#9a7c3f; margin-bottom:3px; }
+.sig-table { width:100%; border-collapse:collapse; margin-top:32px; }
+.sig-line { border-top:1px solid #1a1a1a; margin-top:32px; padding-top:4px; }
+.sig-lbl { font-size:8px; text-transform:uppercase; letter-spacing:.6px; color:#5a6272; }
+.sig-name { font-size:10px; font-weight:bold; color:#0d1b2a; margin-top:2px; }
+.footer { margin-top:28px; padding-top:8px; border-top:1px solid #d4d4d4; text-align:center; font-size:8.5px; color:#5a6272; }
+.footer img { height:22px; vertical-align:middle; margin-left:8px; }
 </style>
 </head>
 <body>
-<div class="page">
 
-    <!-- HEADER -->
-    <div class="header">
-        <table>
-            <tr>
-                <td class="logo-cell">
-                    <?php if ($logoBase64): ?><img src="<?= $logoBase64 ?>" alt="Logo"><?php endif; ?>
-                    <?php if ($partnerLogoBase64): ?><img src="<?= $partnerLogoBase64 ?>" alt="Partner" style="height:40px; margin-left:10px; vertical-align:middle;"><?php endif; ?>
-                </td>
-                <td class="doc-cell">
-                    <div class="doc-type">Tour Voucher</div>
-                    <div class="doc-no"><?= htmlspecialchars($t['tour_code'] ?? '') ?></div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- TOUR DETAILS -->
-    <div class="section-title">Tour Details</div>
-    <table class="info-block">
-        <tr>
-            <td style="width:50%;">
-                <span class="lbl">Tour Name</span>
-                <span class="val"><?= htmlspecialchars($t['tour_name'] ?? '') ?></span>
-            </td>
-            <td style="width:50%;">
-                <span class="lbl">Company</span>
-                <span class="val"><?= htmlspecialchars($t['company_name'] ?? '') ?></span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span class="lbl">Tour Date</span>
-                <span class="val"><?= $t['tour_date'] ? date('d.m.Y', strtotime($t['tour_date'])) : '—' ?></span>
-            </td>
-            <td>
-                <span class="lbl">Customer Phone</span>
-                <span class="val"><?= htmlspecialchars($t['customer_phone'] ?? '—') ?></span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span class="lbl">Destination</span>
-                <span class="val"><?= htmlspecialchars($t['destination'] ?? '—') ?></span>
-            </td>
-            <td>
-                <span class="lbl">Hotel</span>
-                <span class="val"><?= htmlspecialchars($t['hotel_name'] ?? '—') ?></span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span class="lbl">Guest Name</span>
-                <span class="val"><?= htmlspecialchars($t['guest_name'] ?? '—') ?></span>
-            </td>
-            <td>
-                <span class="lbl">Passport No.</span>
-                <span class="val"><?= htmlspecialchars($t['passenger_passport'] ?? '—') ?></span>
-            </td>
-        </tr>
-        <?php if (!empty($t['meeting_point'])): ?>
-        <tr>
-            <td>
-                <span class="lbl">Meeting Point</span>
-                <span class="val"><?= htmlspecialchars($t['meeting_point']) ?></span>
-            </td>
-            <td>
-                <span class="lbl">Duration</span>
-                <span class="val"><?= $t['duration_hours'] ? $t['duration_hours'] . ' hours' : '—' ?></span>
-            </td>
-        </tr>
-        <?php endif; ?>
-        <?php if (!empty($t['city']) || !empty($t['country']) || !empty($t['address'])): ?>
-        <tr>
-            <td>
-                <span class="lbl">Location</span>
-                <span class="val"><?= htmlspecialchars(trim(($t['city'] ?? '') . ($t['country'] ? ', ' . $t['country'] : ''))) ?: '—' ?></span>
-            </td>
-            <td>
-                <span class="lbl">Address</span>
-                <span class="val"><?= htmlspecialchars($t['address'] ?? '—') ?></span>
-            </td>
-        </tr>
-        <?php endif; ?>
-    </table>
-
-    <?php if (!empty($t['includes']) || !empty($t['excludes'])): ?>
-    <div class="section-title">Includes / Excludes</div>
-    <table class="info-block">
-        <tr>
-            <td style="width:50%;">
-                <span class="lbl">✓ Includes</span>
-                <span class="val" style="font-weight:normal;"><?= nl2br(htmlspecialchars($t['includes'] ?? '—')) ?></span>
-            </td>
-            <td style="width:50%;">
-                <span class="lbl">✗ Excludes</span>
-                <span class="val" style="font-weight:normal;"><?= nl2br(htmlspecialchars($t['excludes'] ?? '—')) ?></span>
-            </td>
-        </tr>
-    </table>
-    <?php endif; ?>
-
-    <!-- TOUR ITEMS (vouchers do not include prices) -->
-    <?php if (!empty($tourItems)): ?>
-    <div class="section-title">Tour Items</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width:5%;">#</th>
-                <th style="width:70%;">Description</th>
-                <th class="c" style="width:25%;">Qty</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($tourItems as $i => $item): ?>
-            <tr>
-                <td><?= $i + 1 ?></td>
-                <td style="font-weight:bold;"><?= htmlspecialchars($item['description'] ?? $item['name'] ?? '') ?></td>
-                <td class="c"><?= $item['quantity'] ?? 1 ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    <?php endif; ?>
-
-    <!-- CUSTOMER LIST -->
-    <?php if (!empty($customers)): ?>
-    <div class="section-title">Customers</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width:5%;">#</th>
-                <th style="width:12%;">Title</th>
-                <th style="width:43%;">Name</th>
-                <th style="width:20%;">Type</th>
-                <th style="width:20%;">Age</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($customers as $i => $c): ?>
-            <tr>
-                <td><?= $i + 1 ?></td>
-                <td><?= htmlspecialchars($c['title'] ?? '') ?></td>
-                <td style="font-weight:bold;"><?= htmlspecialchars($c['name'] ?? '') ?></td>
-                <td><?= htmlspecialchars(ucfirst($c['type'] ?? 'adult')) ?></td>
-                <td><?= htmlspecialchars($c['age'] ?? '—') ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    <?php endif; ?>
-
-    <!-- Vouchers do not include prices — pricing is shown only in invoices and receipts -->
-
-    <!-- STATUS -->
-    <table style="width:100%; margin-bottom: 14px;">
+<div class="hd-band">
+    <table>
         <tr>
             <td style="width:50%; vertical-align:middle;">
-                <div style="font-size:8px; text-transform:uppercase; letter-spacing:0.6px; color:#777; font-weight:bold;">Total Passengers</div>
-                <div style="font-size:22px; font-weight:bold; color:#111;"><?= $t['total_pax'] ?? 0 ?></div>
+                <?php if ($logoBase64): ?><img src="<?= $logoBase64 ?>" alt="Logo" style="height:72px; vertical-align:middle;"><?php endif; ?>
+                <?php if ($partnerLogoBase64): ?><img src="<?= $partnerLogoBase64 ?>" alt="Partner" style="height:36px; vertical-align:middle; margin-left:12px; opacity:.85;"><?php endif; ?>
+                <?php if (!$logoBase64): ?><span style="font-size:18px; font-weight:bold; color:#0d1b2a; letter-spacing:2px;"><?= htmlspecialchars($companyName ?? '') ?></span><?php endif; ?>
             </td>
-            <td style="width:50%; text-align:center; vertical-align:middle;">
-                <?php $st = $t['status'] ?? 'pending'; ?>
-                <span class="stamp stamp-<?= $st ?>"><?= htmlspecialchars($statusLabels[$st] ?? ucfirst(str_replace('_', ' ', $st))) ?></span>
+            <td class="hd-right" style="width:50%;">
+                <div class="hd-doctype">Tour Voucher</div>
+                <div class="hd-issued">Official Tour Document · <?= htmlspecialchars($companyName ?? '') ?></div>
             </td>
         </tr>
     </table>
+</div>
 
-    <!-- NOTES -->
-    <?php if (!empty($t['notes'])): ?>
-    <div class="notes">
-        <div class="notes-hd">Notes</div>
-        <?= nl2br(htmlspecialchars($t['notes'])) ?>
-    </div>
-    <?php endif; ?>
+<div class="page">
 
-    <!-- AUTHORIZATION & STAMP -->
-    <?php if ($stampBase64): ?>
-    <table style="width:100%; margin-top: 30px;">
+<div style="margin-top:14px; margin-bottom:18px;">
+    <table style="width:100%; border-collapse:collapse;">
         <tr>
-            <td style="width:50%; vertical-align:bottom; padding:0;">
-                <div style="font-size:8px; text-transform:uppercase; letter-spacing:0.6px; color:#777; font-weight:bold;">Authorized By</div>
-                <div style="margin-top:4px; font-size:11px; font-weight:bold; color:#222;"><?= htmlspecialchars($companyName) ?></div>
+            <td style="vertical-align:middle; padding:0;">
+                <div class="vno-num"><?= htmlspecialchars($t['tour_code'] ?? '') ?></div>
+                <div class="vno-date">Tour Date: <?= !empty($t['tour_date']) ? date('d F Y', strtotime($t['tour_date'])) : '—' ?></div>
             </td>
-            <td style="width:50%; text-align:right; vertical-align:bottom; padding:0;">
-                <img src="<?= $stampBase64 ?>" alt="Company Seal" style="height:120px; opacity:0.9;">
+            <td style="text-align:right; vertical-align:middle; padding:0;">
+                <span class="status-badge" style="border-color:<?= $stColor ?>; color:<?= $stColor ?>;"><?= $stLabel ?></span>
             </td>
         </tr>
     </table>
-    <?php endif; ?>
+    <div style="border-bottom:1px solid #d4d4d4; margin-top:10px;"></div>
+</div>
 
-    <!-- FOOTER -->
-    <div class="footer">
-        <?= htmlspecialchars($companyName) ?> · <?= htmlspecialchars($companyAddress) ?><br>
-        Tel: <?= htmlspecialchars($companyPhone) ?> · <?= htmlspecialchars($companyEmail) ?> · Generated <?= date('d.m.Y H:i') ?>
-        <?php if ($tursabBase64): ?>
-        <div class="footer-tursab">
-            <img src="<?= $tursabBase64 ?>" alt="TURSAB">
-            <span>TURSAB Üyesi — Belge No: 11738</span>
-        </div>
+<!-- TOUR NAME HERO -->
+<div class="tour-hero">
+    <div class="tour-hero-name"><?= htmlspecialchars($t['tour_name'] ?? '—') ?></div>
+    <?php if (!empty($t['destination'])): ?>
+    <div class="tour-hero-code">Destination: <?= htmlspecialchars($t['destination']) ?><?= !empty($t['duration_hours']) ? '  ·  Duration: ' . $t['duration_hours'] . ' hrs' : '' ?></div>
+    <?php endif; ?>
+</div>
+
+<!-- BOOKING -->
+<div class="sec">Booking Details</div>
+<table class="grid">
+    <tr>
+        <td style="width:50%;">
+            <span class="lbl">Travel Agency / Company</span>
+            <span class="val"><?= htmlspecialchars($t['company_name'] ?? '—') ?></span>
+        </td>
+        <td style="width:50%;">
+            <span class="lbl">Customer Phone</span>
+            <span class="val-sm"><?= htmlspecialchars($t['customer_phone'] ?? '—') ?></span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span class="lbl">Lead Guest</span>
+            <span class="val"><?= htmlspecialchars($t['guest_name'] ?? '—') ?></span>
+        </td>
+        <td>
+            <span class="lbl">Passport / ID No.</span>
+            <span class="val" style="font-family:'Courier New',monospace; letter-spacing:1px;"><?= htmlspecialchars($t['passenger_passport'] ?? '—') ?></span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span class="lbl">Passengers</span>
+            <span style="font-size:11px; font-weight:bold; color:#0d1b2a;">
+                <?= (int)($t['adults'] ?? 0) ?> <?= (int)($t['adults'] ?? 0) == 1 ? 'Adult' : 'Adults' ?>
+                <?php if ((int)($t['children'] ?? 0) > 0): ?> &nbsp;·&nbsp; <?= (int)$t['children'] ?> <?= (int)$t['children'] == 1 ? 'Child' : 'Children' ?><?php endif; ?>
+                <?php if ((int)($t['infants'] ?? 0) > 0): ?> &nbsp;·&nbsp; <?= (int)$t['infants'] ?> <?= (int)$t['infants'] == 1 ? 'Infant' : 'Infants' ?><?php endif; ?>
+            </span>
+            <br><span style="font-size:9px; color:#5a6272;">Total: <?= (int)($t['total_pax'] ?? 0) ?> pax</span>
+        </td>
+        <td></td>
+    </tr>
+</table>
+
+<!-- INCLUDES / EXCLUDES -->
+<?php if (!empty($t['includes']) || !empty($t['excludes'])): ?>
+<div class="sec">Includes &amp; Excludes</div>
+<table class="incl-table">
+    <tr>
+        <td>
+            <div class="incl-head incl-yes">&#10003; Included</div>
+            <div class="incl-body"><?= nl2br(htmlspecialchars($t['includes'] ?? '—')) ?></div>
+        </td>
+        <td>
+            <div class="incl-head incl-no">&#10007; Not Included</div>
+            <div class="incl-body"><?= nl2br(htmlspecialchars($t['excludes'] ?? '—')) ?></div>
+        </td>
+    </tr>
+</table>
+<?php endif; ?>
+
+<!-- TOUR ITEMS -->
+<?php if (!empty($tourItems)): ?>
+<div class="sec">Tour Programme</div>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th style="width:28px; text-align:center;">#</th>
+            <th>Tour Name</th>
+            <th style="width:18%;">Date</th>
+            <th style="width:16%;">Duration</th>
+            <th class="c" style="width:8%;">Adults</th>
+            <th class="c" style="width:8%;">Children</th>
+            <th class="c" style="width:8%;">Infants</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($tourItems as $i => $item): ?>
+        <tr>
+            <td style="text-align:center; font-size:9px; color:#5a6272; font-weight:bold;"><?= $i + 1 ?></td>
+            <td style="font-weight:bold;"><?= htmlspecialchars($item['name'] ?? $item['description'] ?? '—') ?></td>
+            <td><?= !empty($item['date']) ? htmlspecialchars(date('d/m/Y', strtotime($item['date']))) : '—' ?></td>
+            <td><?= htmlspecialchars($item['duration'] ?? '—') ?></td>
+            <td class="c"><?= (int)($item['adults'] ?? 0) ?></td>
+            <td class="c"><?= (int)($item['children'] ?? 0) ?></td>
+            <td class="c"><?= (int)($item['infants'] ?? 0) ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<?php endif; ?>
+
+
+
+<!-- NOTES -->
+<?php if (!empty($t['notes'])): ?>
+<div class="notes-box">
+    <div class="notes-lbl">Notes</div>
+    <?= nl2br(htmlspecialchars($t['notes'])) ?>
+</div>
+<?php endif; ?>
+
+<table class="sig-table">
+    <tr>
+        <td style="width:45%;"><div class="sig-line"><div class="sig-lbl">Authorized Signature</div><div class="sig-name"><?= htmlspecialchars($companyName ?? '') ?></div></div></td>
+        <td style="width:10%;"></td>
+        <?php if ($stampBase64): ?>
+        <td style="width:45%; text-align:right; vertical-align:bottom;"><img src="<?= $stampBase64 ?>" alt="Seal" style="height:90px; opacity:0.85;"></td>
+        <?php else: ?>
+        <td style="width:45%;"><div class="sig-line"><div class="sig-lbl">Company Seal</div></div></td>
         <?php endif; ?>
-    </div>
+    </tr>
+</table>
+
+<div class="footer">
+    <strong><?= htmlspecialchars($companyName ?? '') ?></strong> &nbsp;·&nbsp;
+    <?= htmlspecialchars($companyAddress ?? '') ?> &nbsp;·&nbsp;
+    <?= htmlspecialchars($companyPhone ?? '') ?> &nbsp;·&nbsp;
+    <?= htmlspecialchars($companyEmail ?? '') ?>
+    <?php if ($tursabBase64): ?>
+    &nbsp;&nbsp;<img src="<?= $tursabBase64 ?>" alt="TURSAB"> Licensed Travel Agency
+    <?php endif; ?>
+    <br><span style="font-size:7.5px; color:#aaa;">Generated <?= date('d F Y · H:i') ?> &nbsp;·&nbsp; Tour Code: <?= htmlspecialchars($t['tour_code'] ?? '') ?></span>
+</div>
+
 </div>
 </body>
 </html>

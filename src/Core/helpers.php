@@ -447,13 +447,13 @@ function get_dashboard_stats() {
     try {
         // Today's transfers
         $today = Database::fetchOne(
-            "SELECT COUNT(*) as count FROM vouchers WHERE pickup_date = CURDATE() OR return_date = CURDATE()"
+            "SELECT COUNT(*) as count FROM vouchers WHERE pickup_date = date('now') OR return_date = date('now')"
         );
         $stats['today_transfers'] = (int) ($today['count'] ?? 0);
         
         // Monthly vouchers
         $monthVouchers = Database::fetchOne(
-            "SELECT COUNT(*) as count FROM vouchers WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())"
+            "SELECT COUNT(*) as count FROM vouchers WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', date('now'))"
         );
         $stats['month_vouchers'] = (int) ($monthVouchers['count'] ?? 0);
         
@@ -465,7 +465,7 @@ function get_dashboard_stats() {
         
         // Monthly revenue
         $revenue = Database::fetchOne(
-            "SELECT SUM(total_amount) as total FROM invoices WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE()) AND status = 'paid'"
+            "SELECT SUM(total_amount) as total FROM invoices WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', date('now')) AND status = 'paid'"
         );
         $stats['month_revenue'] = (float) ($revenue['total'] ?? 0);
         

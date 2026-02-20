@@ -12,7 +12,7 @@ class Report
     public static function getMonthlyRevenue(string $startDate, string $endDate): array
     {
         return Database::fetchAll(
-            "SELECT DATE_FORMAT(invoice_date, '%Y-%m') as month,
+            "SELECT strftime('%Y-%m', invoice_date) as month,
                     SUM(total_amount) as revenue, COUNT(*) as count
              FROM invoices
              WHERE invoice_date BETWEEN ? AND ? AND status IN ('paid','partial')
@@ -150,7 +150,7 @@ class Report
                         COALESCE(SUM(total_amount), 0) as total,
                         COALESCE(SUM(CASE WHEN status = 'paid' THEN total_amount ELSE 0 END), 0) as paid,
                         COALESCE(SUM(CASE WHEN status IN ('pending','draft') THEN total_amount ELSE 0 END), 0) as unpaid,
-                        COALESCE(SUM(CASE WHEN status = 'overdue' OR (status = 'pending' AND due_date < CURDATE()) THEN total_amount ELSE 0 END), 0) as overdue
+                        COALESCE(SUM(CASE WHEN status = 'overdue' OR (status = 'pending' AND due_date < date('now')) THEN total_amount ELSE 0 END), 0) as overdue
                  FROM invoices WHERE invoice_date BETWEEN ? AND ?",
                 [$startDate, $endDate]
             );
@@ -239,7 +239,7 @@ class Report
         // Monthly profitability (hotel + tour combined)
         try {
             $months = Database::fetchAll(
-                "SELECT DATE_FORMAT(created_at, '%Y-%m') as month,
+                "SELECT strftime('%Y-%m', created_at) as month,
                         COALESCE(SUM(selling_price), 0) as revenue,
                         COALESCE(SUM(cost_price), 0) as cost
                  FROM hotel_vouchers

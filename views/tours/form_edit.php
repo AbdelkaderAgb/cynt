@@ -1,29 +1,52 @@
 <?php
-$customers = json_decode($t['customers'] ?? '[]', true) ?: [['name'=>'']];
-$tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [['name'=>'','date'=>'','duration'=>'']];
+/**
+ * Tour Voucher Edit Form — Restructured
+ * Removed: hotel_name, city, country, address, meeting_point, meeting_point_address,
+ *          duration_hours, includes, excludes, separate pax counts
+ * Added: per-tour-item pricing (adults, children, infants, price per type, subtotal)
+ */
 $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'In Progress','completed'=>'Completed','cancelled'=>'Cancelled'];
+
+// Pre-process tour items for Alpine hydration
+$tourItemsRaw = json_decode($t['tour_items'] ?? '[]', true) ?: [];
+$tourItemsPrepared = array_map(function($item) {
+    return [
+        'name'     => $item['name']     ?? '',
+        'date'     => $item['date']     ?? '',
+        'duration' => $item['duration'] ?? '',
+        'adults'   => (int)($item['adults']   ?? 1),
+        'children' => (int)($item['children'] ?? 0),
+        'infants'  => (int)($item['infants']  ?? 0),
+    ];
+}, $tourItemsRaw);
 ?>
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
     <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-edit text-amber-500 mr-2"></i>Edit: <?= e($t['tour_name']) ?></h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-edit text-amber-500 mr-2"></i><?= __('edit') ?: 'Edit' ?>: <?= e($t['tour_name']) ?></h1>
         <p class="text-sm text-gray-500 mt-1"><?= e($t['tour_code'] ?? '') ?></p>
     </div>
 </div>
 
-<form method="POST" action="<?= url('tour-voucher/update') ?>" class="space-y-6" x-data="tourEditForm()">
+<div x-data="tourEditForm()">
+<form method="POST" action="<?= url('tour-voucher/update') ?>" class="space-y-6" @submit="submitting=true">
     <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= $t['id'] ?>">
     <input type="hidden" name="company_id" id="tour_company_id" value="<?= e($t['company_id'] ?? '') ?>">
-    <input type="hidden" name="tour_items" :value="JSON.stringify(tours)">
-    <input type="hidden" name="customers" :value="JSON.stringify(guests)">
+
+    <!-- Hidden aggregated fields -->
+    <input type="hidden" name="adults" :value="totalAdults">
+    <input type="hidden" name="children" :value="totalChildren">
+    <input type="hidden" name="infants" :value="totalInfants">
+    <input type="hidden" name="customers" value="<?= htmlspecialchars($t['customers'] ?? '[]', ENT_QUOTES) ?>">
+    <input type="hidden" name="tour_items" :value="tourItemsJson">
 
     <!-- Company Info -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-building text-blue-500 mr-1"></i>Company Information</h3>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-building text-blue-500 mr-1"></i><?= __('company_info') ?: 'Company Information' ?></h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="relative" x-data="tourPartnerSearch()" @click.outside="open = false">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Company Name</label>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('company_name') ?: 'Company Name' ?></label>
                 <input type="text" name="company_name" x-model="query" @input.debounce.300ms="search()" @focus="if(results.length) open=true"
                        autocomplete="off" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500">
                 <div x-show="open && results.length > 0" x-transition class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -36,130 +59,112 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
                 </div>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Customer Phone</label>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('customer_phone') ?: 'Customer Phone' ?></label>
                 <input type="text" name="customer_phone" value="<?= e($t['customer_phone'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Hotel Name</label>
-                <input type="text" name="hotel_name" value="<?= e($t['hotel_name'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
             </div>
         </div>
     </div>
 
-    <!-- Guest & Passport -->
+    <!-- Guest Details -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-passport text-amber-500 mr-1"></i>Guest Details</h3>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('guest_info') ?: 'Guest Details' ?></h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('guest_name') ?: 'Guest Name' ?></label>
-                <input type="text" name="guest_name" value="<?= e($t['guest_name'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Main guest name">
+                <input type="text" name="guest_name" value="<?= e($t['guest_name'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="<?= __('guest_name') ?: 'Main guest name' ?>">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-passport text-amber-500 mr-1"></i><?= __('passenger_passport') ?: 'Passenger Passport' ?></label>
-                <input type="text" name="passenger_passport" value="<?= e($t['passenger_passport'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Passport number">
+                <input type="text" name="passenger_passport" value="<?= e($t['passenger_passport'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="<?= __('passport_no') ?: 'Passport number' ?>">
             </div>
         </div>
     </div>
 
-    <!-- Location & Details -->
+    <!-- Tour Items with Per-Item Pricing -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i>Location & Details</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('city') ?: 'City' ?></label>
-                <input type="text" name="city" value="<?= e($t['city'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Istanbul">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('country') ?: 'Country' ?></label>
-                <input type="text" name="country" value="<?= e($t['country'] ?? 'Turkey') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Turkey">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('address') ?: 'Address' ?></label>
-                <input type="text" name="address" value="<?= e($t['address'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Full address">
-            </div>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"><i class="fas fa-route text-purple-500 mr-1"></i><?= __('tours') ?: 'Tours' ?></h3>
+            <button type="button" @click="openCatalog()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold hover:bg-emerald-200 transition">
+                <i class="fas fa-search-dollar"></i> <?= __('browse_catalog') ?: 'Browse Catalog' ?>
+            </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-map-pin text-purple-500 mr-1"></i><?= __('meeting_point') ?: 'Meeting Point' ?></label>
-                <input type="text" name="meeting_point" value="<?= e($t['meeting_point'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Hotel Lobby">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('meeting_point_address') ?: 'Meeting Point Address' ?></label>
-                <input type="text" name="meeting_point_address" value="<?= e($t['meeting_point_address'] ?? '') ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Full address of meeting point">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-clock text-blue-500 mr-1"></i><?= __('duration') ?: 'Duration (hours)' ?></label>
-                <input type="number" name="duration_hours" step="0.5" min="0" value="<?= (float)($t['duration_hours'] ?? 0) ?>" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. 6">
-            </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-check-circle text-green-500 mr-1"></i><?= __('includes') ?: 'Includes' ?></label>
-                <textarea name="includes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Transport, lunch, guide, entrance fees..."><?= e($t['includes'] ?? '') ?></textarea>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1"><i class="fas fa-times-circle text-red-500 mr-1"></i><?= __('excludes') ?: 'Excludes' ?></label>
-                <textarea name="excludes" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Personal expenses, tips, drinks..."><?= e($t['excludes'] ?? '') ?></textarea>
-            </div>
-        </div>
-    </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-users text-purple-500 mr-1"></i>Passengers</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Adult</label><input type="number" name="adults" value="<?= $t['adults'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Child</label><input type="number" name="children" value="<?= $t['children'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-            <div><label class="block text-xs font-medium text-gray-500 mb-1">Infant</label><input type="number" name="infants" value="<?= $t['infants'] ?>" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></div>
-        </div>
-        <!-- Pricing removed — prices are managed via invoices/receipts only -->
-    </div>
-
-    <!-- Tour Items -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-route text-purple-500 mr-1"></i>Tours</h3>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead><tr>
-                    <th class="text-left pb-2 text-xs font-semibold text-gray-500 uppercase">Tour Name</th>
-                    <th class="text-left pb-2 text-xs font-semibold text-gray-500 uppercase">Tour Date</th>
-                    <th class="text-left pb-2 text-xs font-semibold text-gray-500 uppercase">Duration</th>
-                    <th class="w-10"></th>
-                </tr></thead>
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-700/50">
+                        <th class="px-2 py-2 text-left text-xs font-semibold text-gray-500"><?= __('tour_name') ?: 'Tour Name' ?></th>
+                        <th class="px-2 py-2 text-left text-xs font-semibold text-gray-500"><?= __('tour_date') ?: 'Date' ?></th>
+                        <th class="px-2 py-2 text-left text-xs font-semibold text-gray-500"><?= __('duration') ?: 'Duration' ?></th>
+                        <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500"><?= __('adults') ?: 'Adults' ?></th>
+                        <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500"><?= __('children') ?: 'Children' ?></th>
+                        <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500"><?= __('infants') ?: 'Infants' ?></th>
+                        <th class="px-2 py-2 w-10"></th>
+                    </tr>
+                </thead>
                 <tbody>
-                    <template x-for="(tour, idx) in tours" :key="idx">
-                        <tr>
-                            <td class="pr-2 pb-2"><input type="text" x-model="tour.name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></td>
-                            <td class="pr-2 pb-2"><input type="date" x-model="tour.date" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></td>
-                            <td class="pr-2 pb-2"><input type="text" x-model="tour.duration" placeholder="e.g. Full Day" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"></td>
-                            <td class="pb-2"><button type="button" @click="tours.splice(idx,1)" x-show="tours.length>1" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                    <template x-for="(tour, index) in tourItems" :key="index">
+                        <tr class="border-b border-gray-100 dark:border-gray-700">
+                            <td class="px-2 py-2">
+                                <input type="text" x-model="tour.name" placeholder="<?= __('tour_name') ?: 'Tour name' ?>" class="w-full min-w-[140px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="date" x-model="tour.date" class="w-full min-w-[130px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="text" x-model="tour.duration" placeholder="e.g. Full Day" class="w-full min-w-[100px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="number" x-model.number="tour.adults" min="0" class="w-full min-w-[60px] px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-center">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="number" x-model.number="tour.children" min="0" class="w-full min-w-[60px] px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-center">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="number" x-model.number="tour.infants" min="0" class="w-full min-w-[60px] px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-center">
+                            </td>
+                            <td class="px-2 py-2">
+                                <button type="button" @click="removeTour(index)" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
             </table>
         </div>
-        <button type="button" @click="tours.push({name:'',date:'',duration:''})" class="text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"><i class="fas fa-plus mr-1"></i>Add Tour</button>
-    </div>
 
-    <!-- Customers -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"><i class="fas fa-user-friends text-teal-500 mr-1"></i>Customers</h3>
-        <template x-for="(g, idx) in guests" :key="idx">
-            <div class="flex items-center gap-2 mb-2">
-                <input type="text" x-model="g.name" placeholder="Customer name" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                <button type="button" @click="guests.splice(idx, 1)" x-show="guests.length > 1" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-trash"></i></button>
+        <div class="flex items-center justify-between mt-3">
+            <button type="button" @click="addTour()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm hover:bg-indigo-100 transition">
+                <i class="fas fa-plus text-xs"></i> <?= __('add_tour') ?: 'Add Tour' ?>
+            </button>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                <?= __('total_pax') ?: 'Total PAX' ?>:
+                <span class="font-bold text-gray-700 dark:text-gray-200">
+                    <span x-text="totalAdults"></span> <?= __('adults') ?: 'adults' ?>,
+                    <span x-text="totalChildren"></span> <?= __('children') ?: 'children' ?>,
+                    <span x-text="totalInfants"></span> <?= __('infants') ?: 'infants' ?>
+                </span>
             </div>
-        </template>
-        <button type="button" @click="guests.push({name:''})" class="text-sm text-teal-600 hover:text-teal-700 font-medium"><i class="fas fa-plus mr-1"></i>Add Customer</button>
+        </div>
     </div>
 
-    <!-- Status -->
+    <!-- Status & Currency -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('status') ?: 'Status' ?></label>
                 <select name="status" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
                     <?php foreach ($statusOptions as $k => $lbl): ?>
                     <option value="<?= $k ?>" <?= $t['status'] === $k ? 'selected' : '' ?>><?= $lbl ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1"><?= __('currency') ?: 'Currency' ?></label>
+                <select name="currency" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                    <?php foreach (['USD'=>'USD ($)','EUR'=>'EUR (€)','TRY'=>'TRY (₺)','GBP'=>'GBP (£)'] as $c => $l): ?>
+                    <option value="<?= $c ?>" <?= ($t['currency'] ?? 'USD') === $c ? 'selected' : '' ?>><?= $l ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -168,18 +173,82 @@ $statusOptions = ['pending'=>'Pending','confirmed'=>'Confirmed','in_progress'=>'
 
     <!-- Actions -->
     <div class="flex items-center gap-3">
-        <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:-translate-y-0.5">
-            <i class="fas fa-save mr-2"></i>Update Tour Voucher
+        <button type="submit" :disabled="submitting" :class="{'opacity-50 cursor-not-allowed':submitting}" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:-translate-y-0.5">
+            <i class="fas fa-save mr-2"></i><span x-text="submitting ? '<?= __('processing') ?: 'Saving…' ?>' : '<?= __('update') ?: 'Update Tour Voucher' ?>'"></span>
         </button>
-        <a href="<?= url('tour-voucher/show') ?>?id=<?= $t['id'] ?>" class="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-semibold hover:bg-gray-200 transition">Cancel</a>
+        <a href="<?= url('tour-voucher/show') ?>?id=<?= $t['id'] ?>" class="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-semibold hover:bg-gray-200 transition"><?= __('cancel') ?: 'Cancel' ?></a>
     </div>
 </form>
+
+<!-- Catalog Picker Modal -->
+<div x-show="catalogOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="catalogOpen = false">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-lg mx-4 max-h-[70vh] flex flex-col" @click.stop>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white"><i class="fas fa-search-dollar text-emerald-500 mr-2"></i><?= __('pricing_catalog') ?: 'Tour Catalog' ?></h3>
+            <button type="button" @click="catalogOpen = false" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg"><i class="fas fa-times"></i></button>
+        </div>
+        <input type="text" x-model="catalogQuery" @input.debounce.300ms="searchCatalog()" placeholder="<?= __('search') ?: 'Search tour pricing...' ?>" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm mb-4">
+        <div class="flex-1 overflow-y-auto space-y-2">
+            <template x-for="svc in catalogResults" :key="svc.id">
+                <div @click="addFromCatalog(svc)" class="p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 cursor-pointer transition">
+                    <div class="font-semibold text-gray-800 dark:text-gray-200" x-text="svc.name"></div>
+                    <div class="text-xs text-gray-400" x-text="svc.description"></div>
+                    <div class="mt-1 text-sm font-bold text-purple-600">
+                        <?= __('adult') ?: 'Adult' ?>: <span x-text="parseFloat(svc.price_adult || svc.price || 0).toFixed(2)"></span>
+                        <span x-show="parseFloat(svc.price_child) > 0" class="text-gray-400 ml-2"><?= __('child') ?: 'Child' ?>: <span x-text="parseFloat(svc.price_child).toFixed(2)"></span></span>
+                        <span x-show="parseFloat(svc.price_infant) > 0" class="text-gray-400 ml-2"><?= __('infant') ?: 'Infant' ?>: <span x-text="parseFloat(svc.price_infant).toFixed(2)"></span></span>
+                        <span class="text-xs text-gray-400 ml-1" x-text="svc.currency"></span>
+                    </div>
+                </div>
+            </template>
+            <div x-show="catalogResults.length === 0" class="text-center py-6 text-gray-400"><?= __('no_results') ?: 'No tours found' ?></div>
+        </div>
+    </div>
+</div>
+</div>
 
 <script>
 function tourEditForm() {
     return {
-        tours: <?= json_encode($tourItems) ?>,
-        guests: <?= json_encode($customers) ?>
+        tourItems: <?= htmlspecialchars(json_encode($tourItemsPrepared), ENT_QUOTES) ?>,
+        submitting: false,
+        catalogOpen: false,
+        catalogQuery: '',
+        catalogResults: [],
+
+        get totalAdults()   { return this.tourItems.reduce((s,r) => s + (+r.adults   || 0), 0); },
+        get totalChildren() { return this.tourItems.reduce((s,r) => s + (+r.children || 0), 0); },
+        get totalInfants()  { return this.tourItems.reduce((s,r) => s + (+r.infants  || 0), 0); },
+        get tourItemsJson() {
+            return JSON.stringify(this.tourItems.map(r => ({
+                name:     r.name,
+                date:     r.date,
+                duration: r.duration,
+                pax:      (+r.adults||0) + (+r.children||0) + (+r.infants||0),
+                adults:   r.adults,
+                children: r.children,
+                infants:  r.infants,
+            })));
+        },
+
+        addTour() {
+            this.tourItems.push({name:'', date:'', duration:'', adults:1, children:0, infants:0});
+        },
+        removeTour(i) { this.tourItems.splice(i, 1); },
+
+        openCatalog() { this.catalogOpen = true; this.searchCatalog(); },
+        async searchCatalog() {
+            try {
+                const params = new URLSearchParams({ type: 'tour' });
+                if (this.catalogQuery) params.set('q', this.catalogQuery);
+                const res = await fetch('<?= url('api/services/search') ?>?' + params);
+                this.catalogResults = await res.json();
+            } catch(e) { this.catalogResults = []; }
+        },
+        addFromCatalog(svc) {
+            this.tourItems.push({ name: svc.name, date: '', duration: '', adults: 1, children: 0, infants: 0 });
+            this.catalogOpen = false;
+        },
     };
 }
 function tourPartnerSearch() {

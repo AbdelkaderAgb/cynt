@@ -20,6 +20,7 @@ $tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
         <button onclick="window.print()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-200 transition flex items-center gap-1.5"><i class="fas fa-print"></i><?= __('print') ?></button>
         <button @click="showShare = true" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fas fa-share-alt"></i>Share</button>
         <a href="<?= url('tour-voucher/pdf') ?>?id=<?= $t['id'] ?>&download=1" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition flex items-center gap-1.5"><i class="fas fa-download"></i><?= __('download') ?></a>
+        <a href="<?= url('tour-invoice/create') ?>?voucher_id=<?= $t['id'] ?>" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fas fa-file-invoice-dollar"></i>Create Invoice</a>
         <a href="<?= url('tour-voucher/edit') ?>?id=<?= $t['id'] ?>" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 transition flex items-center gap-1.5"><i class="fas fa-edit"></i><?= __('edit') ?></a>
         <a href="<?= url('tour-voucher') ?>" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-200 transition flex items-center gap-1.5"><i class="fas fa-arrow-left"></i><?= __('back') ?></a>
     </div>
@@ -32,7 +33,7 @@ $tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-building text-blue-500 mr-1"></i><?= __('company_name') ?> & <?= __('tour_name') ?></h3>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div><p class="text-xs text-gray-400"><?= __('company_name') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['company_name'] ?: '—') ?></p></div>
-                <div><p class="text-xs text-gray-400"><?= __('hotel_name') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['hotel_name'] ?: '—') ?></p></div>
+
                 <div><p class="text-xs text-gray-400"><?= __('phone') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['customer_phone'] ?: '—') ?></p></div>
                 <div><p class="text-xs text-gray-400"><?= __('tour_date') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= $t['tour_date'] ? date('d/m/Y', strtotime($t['tour_date'])) : '—' ?></p></div>
                 <div><p class="text-xs text-gray-400"><?= __('description') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($t['description'] ?: '—') ?></p></div>
@@ -55,8 +56,9 @@ $tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
                     <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold"><?= $i + 1 ?></span>
                     <div class="flex-1">
                         <span class="font-medium text-gray-800 dark:text-gray-200"><?= e($ti['name'] ?? '') ?></span>
-                        <?php if (!empty($ti['date'])): ?><span class="text-xs text-gray-400 ml-2"><?= e($ti['date']) ?></span><?php endif; ?>
+                        <?php if (!empty($ti['date'])): ?><span class="text-xs text-gray-400 ml-2"><?= e(date('d/m/Y', strtotime($ti['date']))) ?></span><?php endif; ?>
                         <?php if (!empty($ti['duration'])): ?><span class="text-xs text-gray-400 ml-2">· <?= e($ti['duration']) ?></span><?php endif; ?>
+                        <?php $paxParts = []; if (!empty($ti['adults'])) $paxParts[] = $ti['adults'].' '.(__('adults')?:'adults'); if (!empty($ti['children'])) $paxParts[] = $ti['children'].' '.(__('children')?:'children'); if (!empty($ti['infants'])) $paxParts[] = $ti['infants'].' '.(__('infants')?:'infants'); if ($paxParts): ?><span class="text-xs text-indigo-500 ml-2">· <?= e(implode(', ', $paxParts)) ?></span><?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -64,20 +66,7 @@ $tourItems = json_decode($t['tour_items'] ?? '[]', true) ?: [];
         </div>
         <?php endif; ?>
 
-        <!-- Customers -->
-        <?php if (!empty($customers)): ?>
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-users text-teal-500 mr-1"></i><?= __('customers') ?></h3>
-            <div class="space-y-2">
-                <?php foreach ($customers as $i => $c): ?>
-                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold"><?= $i + 1 ?></span>
-                    <span class="font-medium text-gray-800 dark:text-gray-200"><?= e(($c['title'] ?? '') . ' ' . ($c['name'] ?? '')) ?></span>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
+
     </div>
 
     <!-- Sidebar -->

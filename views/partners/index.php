@@ -1,7 +1,9 @@
 <?php
-$typeMap = ['agency'=>__('agency'),'hotel'=>__('hotel'),'supplier'=>__('supplier'),'other'=>__('other')];
-$statusMap = ['active'=>__('active'),'inactive'=>__('inactive'),'suspended'=>__('suspended'),'blacklisted'=>'Blacklisted'];
+$typeMap    = ['agency'=>__('agency'),'hotel'=>__('hotel'),'supplier'=>__('supplier'),'other'=>__('other')];
+$statusMap  = ['active'=>__('active'),'inactive'=>__('inactive'),'suspended'=>__('suspended'),'blacklisted'=>'Blacklisted'];
 $statusColors = ['active'=>'bg-emerald-100 text-emerald-700','inactive'=>'bg-gray-100 text-gray-500','suspended'=>'bg-amber-100 text-amber-700','blacklisted'=>'bg-red-100 text-red-700'];
+$creditBalances = $creditBalances ?? [];
+$currencySymbols = ['EUR'=>'€','USD'=>'$','TRY'=>'₺','GBP'=>'£','DZD'=>'د.ج','AZN'=>'₼'];
 ?>
 
 <?php if (isset($_GET['saved'])): ?>
@@ -31,7 +33,7 @@ $statusColors = ['active'=>'bg-emerald-100 text-emerald-700','inactive'=>'bg-gra
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"><?= __('company_name') ?></th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"><?= __('contact') ?></th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase"><?= __('type') ?></th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Commission</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Credit Balance</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase"><?= __('status') ?></th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase"><?= __('actions') ?></th>
             </tr></thead>
@@ -40,13 +42,33 @@ $statusColors = ['active'=>'bg-emerald-100 text-emerald-700','inactive'=>'bg-gra
                 <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400"><i class="fas fa-handshake text-4xl mb-3 block"></i><?= __('no_data_found') ?></td></tr>
                 <?php else: foreach ($partners as $p): $sc = $statusColors[$p['status']] ?? 'bg-gray-100 text-gray-500'; ?>
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
-                    <td class="px-4 py-3"><p class="font-semibold text-gray-800"><?= e($p['company_name']) ?></p><p class="text-xs text-gray-400"><?= e($p['contact_person'] ?? '') ?></p></td>
+                    <td class="px-4 py-3">
+                        <a href="<?= url('partners/show') ?>?id=<?= $p['id'] ?>" class="font-semibold text-blue-600 hover:text-blue-700 hover:underline"><?= e($p['company_name']) ?></a>
+                        <p class="text-xs text-gray-400"><?= e($p['contact_person'] ?? '') ?></p>
+                    </td>
                     <td class="px-4 py-3 text-gray-500"><p><?= e($p['email'] ?? '') ?></p><p class="text-xs"><?= e($p['phone'] ?? '') ?></p></td>
                     <td class="px-4 py-3"><span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full"><?= $typeMap[$p['partner_type']] ?? $p['partner_type'] ?></span></td>
-                    <td class="px-4 py-3 text-right font-medium"><?= $p['commission_rate'] ?? 0 ?>%</td>
+                    <td class="px-4 py-3 text-right">
+                        <?php $pcb = $creditBalances[(int)$p['id']] ?? []; ?>
+                        <?php if (!empty($pcb)): ?>
+                        <a href="<?= url('partners/show') ?>?id=<?= $p['id'] ?>#credits"
+                           class="inline-flex flex-wrap justify-end gap-1" title="Click to view credit details">
+                            <?php foreach ($pcb as $cur => $bal): ?>
+                            <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full hover:bg-amber-100 transition whitespace-nowrap">
+                                <i class="fas fa-coins text-[8px] text-amber-500"></i>
+                                <?= number_format($bal, 2) ?> <?= e($cur) ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </a>
+                        <?php else: ?>
+                        <span class="text-xs text-gray-400">—</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="px-4 py-3 text-center"><span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full <?= $sc ?>"><?= $statusMap[$p['status']] ?? $p['status'] ?></span></td>
                     <td class="px-4 py-3 text-center">
-                        <a href="<?= url('partners/edit') ?>?id=<?= $p['id'] ?>" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition inline-block" title="<?= __('edit') ?>"><i class="fas fa-edit"></i></a>
+                        <a href="<?= url('partners/show') ?>?id=<?= $p['id'] ?>" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition inline-block" title="View Details"><i class="fas fa-eye"></i></a>
+                        <a href="<?= url('partners/credits') ?>?id=<?= $p['id'] ?>" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition inline-block" title="Credits"><i class="fas fa-coins"></i></a>
+                        <a href="<?= url('partners/edit') ?>?id=<?= $p['id'] ?>" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition inline-block" title="<?= __('edit') ?>"><i class="fas fa-edit"></i></a>
                         <a href="<?= url('partners/delete') ?>?id=<?= $p['id'] ?>" onclick="return confirm('<?= __('confirm_delete') ?>')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition inline-block" title="<?= __('delete') ?>"><i class="fas fa-trash"></i></a>
                     </td>
                 </tr>

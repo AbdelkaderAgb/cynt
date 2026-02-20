@@ -16,7 +16,7 @@ class SettingsController extends Controller
 
         $this->view('settings/index', [
             'settings'   => $settings,
-            'pageTitle'  => 'Sistem Ayarları',
+            'pageTitle'  => __('system_settings') ?: 'System Settings',
             'activePage' => 'settings',
         ]);
     }
@@ -29,8 +29,10 @@ class SettingsController extends Controller
         foreach ($_POST as $key => $value) {
             if ($key === '_token') continue;
             Database::execute(
-                "UPDATE settings SET setting_value = ? WHERE setting_key = ?",
-                [trim($value), $key]
+                "INSERT INTO settings (setting_key, setting_value, setting_group)
+                 VALUES (?, ?, 'general')
+                 ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = datetime('now')",
+                [trim($key), trim($value)]
             );
         }
 
@@ -77,7 +79,7 @@ class SettingsController extends Controller
 
         $this->view('settings/email', [
             'config'     => $config,
-            'pageTitle'  => 'Email Ayarları',
+            'pageTitle'  => __('email_settings') ?: 'Email Settings',
             'activePage' => 'settings',
         ]);
     }

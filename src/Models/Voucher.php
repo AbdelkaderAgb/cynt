@@ -84,7 +84,7 @@ class Voucher
     public static function getUpcoming(int $limit = 10): array
     {
         return Database::fetchAll(
-            "SELECT * FROM vouchers WHERE pickup_date >= CURDATE() ORDER BY pickup_date ASC, pickup_time ASC LIMIT ?",
+            "SELECT * FROM vouchers WHERE pickup_date >= date('now') ORDER BY pickup_date ASC, pickup_time ASC LIMIT ?",
             [$limit]
         );
     }

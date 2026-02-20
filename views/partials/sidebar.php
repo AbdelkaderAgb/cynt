@@ -118,7 +118,7 @@ $user = $user ?? Auth::user();
             </div>
             <?php
             $tourLinks = [
-                ['url' => '/calendar', 'icon' => 'fa-calendar-alt', 'label' => __('tour_calendar'), 'page' => 'calendar'],
+                ['url' => '/tour-calendar', 'icon' => 'fa-calendar-alt', 'label' => __('tour_calendar'), 'page' => 'tour-calendar'],
                 ['url' => '/tour-voucher', 'icon' => 'fa-map-marked-alt', 'label' => __('tour_voucher'), 'page' => 'tour-voucher'],
                 ['url' => '/tour-invoice', 'icon' => 'fa-file-invoice', 'label' => __('tour_invoice') ?: 'Tour Invoice', 'page' => 'tour-invoice'],
             ];
@@ -168,20 +168,24 @@ $user = $user ?? Auth::user();
                  :class="sidebarCollapsed ? 'opacity-0 h-0 mb-0 overflow-hidden' : ''">
                 <?php echo __('finance'); ?>
             </div>
-            <a href="<?php echo url('/receipts'); ?>"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative group text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white">
-                <i class="fas fa-receipt w-5 text-center flex-shrink-0 text-slate-400 group-hover:text-brand-500"></i>
-                <span class="whitespace-nowrap transition-all duration-300" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
-                    <?php echo __('receipts'); ?>
-                </span>
-            </a>
-            <a href="<?php echo url('/invoices'); ?>"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative group text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white">
-                <i class="fas fa-list-alt w-5 text-center flex-shrink-0 text-slate-400 group-hover:text-brand-500"></i>
-                <span class="whitespace-nowrap transition-all duration-300" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
-                    <?php echo __('invoice_list'); ?>
-                </span>
-            </a>
+            <?php
+            $financeLinks = [
+                ['url' => '/receipts',     'icon' => 'fa-receipt',          'label' => __('receipts'),           'page' => 'receipts'],
+                ['url' => '/invoices',     'icon' => 'fa-list-alt',         'label' => __('invoice_list'),       'page' => 'invoices'],
+                ['url' => '/credit-notes', 'icon' => 'fa-file-invoice',     'label' => __('credit_notes') ?: 'Credit Notes', 'page' => 'credit-notes'],
+            ];
+            foreach ($financeLinks as $link): ?>
+                <a href="<?php echo url($link['url']); ?>"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative group
+                          <?php echo $activePage === $link['page']
+                              ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'; ?>">
+                    <i class="fas <?php echo $link['icon']; ?> w-5 text-center flex-shrink-0 <?php echo $activePage === $link['page'] ? 'text-brand-500' : 'text-slate-400 group-hover:text-brand-500'; ?>"></i>
+                    <span class="whitespace-nowrap transition-all duration-300" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                        <?php echo e($link['label']); ?>
+                    </span>
+                </a>
+            <?php endforeach; ?>
         </div>
 
         <!-- Admin Section -->

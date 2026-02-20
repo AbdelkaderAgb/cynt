@@ -69,6 +69,7 @@ App::any('/vouchers/store', ['VoucherController', 'store']);
 App::get('/vouchers/show', ['VoucherController', 'show']);
 App::get('/vouchers/edit', ['VoucherController', 'edit']);
 App::get('/vouchers/delete', ['VoucherController', 'delete']);
+App::any('/vouchers/update-status', ['VoucherController', 'updateStatus']);
 
 // Invoices
 App::get('/invoices', ['InvoiceController', 'index']);
@@ -78,6 +79,7 @@ App::get('/invoices/show', ['InvoiceController', 'show']);
 App::get('/invoices/edit', ['InvoiceController', 'edit']);
 App::get('/invoices/delete', ['InvoiceController', 'delete']);
 App::get('/invoices/mark-paid', ['InvoiceController', 'markPaid']);
+App::any('/invoices/update-status', ['InvoiceController', 'updateStatus']);
 
 // Partners
 App::get('/partners', ['PartnerController', 'index']);
@@ -87,6 +89,11 @@ App::get('/partners/show', ['PartnerController', 'show']);
 App::get('/partners/edit', ['PartnerController', 'edit']);
 App::get('/partners/delete', ['PartnerController', 'delete']);
 App::get('/api/partners/search', ['PartnerController', 'searchApi']);
+// Partner Credits
+App::get('/partners/credits',              ['PartnerController', 'credits']);
+App::any('/partners/credits/recharge',     ['PartnerController', 'creditRecharge']);
+App::any('/partners/credits/pay-invoice',  ['PartnerController', 'creditPayInvoice']);
+App::get('/partners/credits/receipt-pdf',  ['ExportController', 'creditRechargeReceiptPdf']);
 App::get('/api/search-services', ['HotelController', 'searchServicesApi']);
 
 // Fleet — Drivers
@@ -110,13 +117,23 @@ App::get('/guides/delete', ['FleetController', 'guideDelete']);
 // Calendar
 App::get('/calendar', ['CalendarController', 'index']);
 App::get('/hotel-calendar', ['CalendarController', 'hotelCalendar']);
+App::get('/tour-calendar', ['CalendarController', 'tourCalendar']);
 
 // Transfers
 App::get('/transfers', ['TransferController', 'index']);
+App::get('/transfers/create', ['TransferController', 'create']);
 App::any('/transfers/store', ['TransferController', 'store']);
+App::get('/transfers/show', ['TransferController', 'show']);
+App::get('/transfers/edit', ['TransferController', 'edit']);
+App::any('/transfers/update', ['TransferController', 'update']);
+App::get('/transfers/delete', ['TransferController', 'delete']);
+App::get('/transfers/pdf', ['TransferController', 'pdf']);
+App::any('/transfers/update-status', ['TransferController', 'updateStatus']);
 App::get('/transfer-invoice', ['TransferController', 'invoice']);
 App::get('/transfer-invoice/create', ['TransferController', 'invoiceCreate']);
 App::any('/transfer-invoice/store', ['TransferController', 'invoiceStore']);
+App::get('/transfer-invoice/edit', ['TransferController', 'invoiceEdit']);
+App::any('/transfer-invoice/update', ['TransferController', 'invoiceUpdate']);
 
 // Hotels
 App::get('/hotel-voucher', ['HotelController', 'voucher']);
@@ -128,7 +145,16 @@ App::get('/hotel-voucher/delete', ['HotelController', 'voucherDelete']);
 App::get('/hotel-voucher/pdf', ['ExportController', 'hotelVoucherPdf']);
 App::get('/hotel-invoice', ['HotelController', 'invoice']);
 App::get('/hotel-invoice/create', ['HotelController', 'invoiceCreate']);
-App::any('/hotel-invoice/store', ['HotelController', 'invoiceStore']);
+App::any('/hotel-invoice/store',  ['HotelController', 'invoiceStore']);
+App::get('/hotel-invoice/show',   ['InvoiceController', 'show']);
+App::get('/hotel-invoice/edit',   ['HotelController', 'invoiceEdit']);
+App::any('/hotel-invoice/update', ['HotelController', 'invoiceUpdate']);
+App::get('/hotel-invoice/delete', ['InvoiceController', 'delete']);
+App::get('/hotel-invoice/pdf',    ['ExportController', 'invoicePdf']);
+// Pay invoice from partner credit (shared by all invoice types)
+App::any('/partners/credits/pay-invoice', ['PartnerController', 'payInvoiceCredit']);
+App::get('/invoices/update-status', ['InvoiceController', 'updateStatus']);
+App::any('/invoices/update-status', ['InvoiceController', 'updateStatus']);
 
 // Tours
 App::get('/tour-voucher', ['TourController', 'voucher']);
@@ -154,6 +180,7 @@ App::get('/missions/delete', ['MissionController', 'delete']);
 App::get('/missions/calendar', ['MissionController', 'calendar']);
 App::get('/missions/calendar-data', ['MissionController', 'calendarData']);
 App::any('/missions/quick-create', ['MissionController', 'quickCreate']);
+App::get('/missions/pdf', ['MissionController', 'pdf']);
 
 // Quotations
 App::get('/quotations', ['QuotationController', 'index']);
@@ -214,6 +241,15 @@ App::any('/profile/update', ['UserController', 'updateProfile']);
 App::get('/settings', ['SettingsController', 'index']);
 App::any('/settings/update', ['SettingsController', 'update']);
 App::any('/settings/email', ['SettingsController', 'email']);
+
+// Currency & Exchange Rate Settings
+App::get('/settings/currencies', ['CurrencyController', 'index']);
+App::any('/settings/currencies/store', ['CurrencyController', 'store']);
+App::get('/settings/currencies/delete', ['CurrencyController', 'delete']);
+App::get('/settings/currencies/rates', ['CurrencyController', 'rates']);
+App::any('/settings/currencies/rates/store', ['CurrencyController', 'rateStore']);
+App::get('/settings/currencies/rates/delete', ['CurrencyController', 'rateDelete']);
+App::get('/api/currencies/convert', ['CurrencyController', 'convertApi']);
 
 // Export / PDF / Share
 App::get('/invoices/pdf', ['ExportController', 'invoicePdf']);
@@ -297,6 +333,7 @@ App::get('/credit-notes', ['CreditNoteController', 'index']);
 App::get('/credit-notes/create', ['CreditNoteController', 'create']);
 App::any('/credit-notes/store', ['CreditNoteController', 'store']);
 App::get('/credit-notes/delete', ['CreditNoteController', 'delete']);
+App::get('/credit-notes/pdf', ['CreditNoteController', 'pdf']);
 
 // Tax Rates
 App::get('/settings/tax-rates', ['TaxController', 'index']);
@@ -305,7 +342,8 @@ App::get('/settings/tax-rates/delete', ['TaxController', 'delete']);
 App::get('/api/tax/default', ['TaxController', 'defaultApi']);
 
 // Partner Statement of Account
-App::get('/partners/statement', ['PartnerController', 'statement']);
+App::get('/partners/statement',     ['PartnerController', 'statement']);
+App::get('/partners/statement/pdf', ['PartnerController', 'statementPdf']);
 
 // ============================================
 // Run the Application

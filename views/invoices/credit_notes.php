@@ -86,6 +86,7 @@ $summary = $summary ?? [];
                     <td class="px-5 py-3 text-gray-500 dark:text-gray-400"><?= date('M d, Y', strtotime($n['created_at'])) ?></td>
                     <td class="px-5 py-3 text-center">
                         <div class="flex items-center justify-center gap-2">
+                            <a href="<?= url('credit-notes/pdf') ?>?id=<?= $n['id'] ?>" target="_blank" class="p-1.5 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition" title="PDF"><i class="fas fa-file-pdf"></i></a>
                             <a href="<?= url('credit-notes/create') ?>?id=<?= $n['id'] ?>" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"><i class="fas fa-edit"></i></a>
                             <a href="<?= url('credit-notes/delete') ?>?id=<?= $n['id'] ?>" onclick="return confirm('<?= __('confirm_delete') ?>')" class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"><i class="fas fa-trash"></i></a>
                         </div>

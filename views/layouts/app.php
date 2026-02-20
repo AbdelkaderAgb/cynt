@@ -15,6 +15,9 @@
 $user = $user ?? Auth::user();
 $pageTitle = $pageTitle ?? 'Dashboard';
 $currentLang = function_exists('getCurrentLang') ? getCurrentLang() : 'en';
+// Read company name from DB settings with fallback to constant
+$_layoutCompanyRow = Database::fetchOne("SELECT setting_value FROM settings WHERE setting_key = 'company_name'");
+$_layoutCompanyName = !empty($_layoutCompanyRow['setting_value']) ? $_layoutCompanyRow['setting_value'] : COMPANY_NAME;
 $notificationCount = function_exists('get_notification_count') ? get_notification_count() : 0;
 $currentLangInfo = function_exists('getCurrentLangInfo') ? getCurrentLangInfo() : ['dir' => 'ltr'];
 $isRtl = ($currentLangInfo['dir'] ?? 'ltr') === 'rtl';
@@ -24,7 +27,7 @@ $isRtl = ($currentLangInfo['dir'] ?? 'ltr') === 'rtl';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo e($pageTitle); ?> - <?php echo e(COMPANY_NAME); ?></title>
+    <title><?php echo e($pageTitle); ?> - <?php echo e($_layoutCompanyName); ?></title>
 
     <!-- Google Fonts: Inter + Amiri (Arabic) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,6 +112,25 @@ $isRtl = ($currentLangInfo['dir'] ?? 'ltr') === 'rtl';
             .no-print { display: none !important; }
             .main-area { margin-left: 0 !important; }
         }
+
+        /* Responsive tables — horizontal scroll on mobile */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-responsive table { min-width: 600px; }
+
+        /* Mobile: make action buttons wrap */
+        @media (max-width: 640px) {
+            .flex-wrap-mobile { flex-wrap: wrap !important; }
+            .btn-mobile-full { width: 100% !important; justify-content: center !important; }
+        }
+
+        /* Sticky table headers */
+        .sticky-header thead th { position: sticky; top: 0; z-index: 1; background: inherit; }
+
+        /* Responsive card grid */
+        .card-grid { display: grid; gap: 1rem; }
+        @media (min-width: 640px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .card-grid { grid-template-columns: repeat(4, 1fr); } }
     </style>
 </head>
 <body class="font-sans bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 antialiased min-h-screen">
@@ -137,7 +159,7 @@ $isRtl = ($currentLangInfo['dir'] ?? 'ltr') === 'rtl';
 
             <!-- Footer -->
             <footer class="border-t border-slate-200 dark:border-slate-700 px-6 py-4 text-center text-sm text-slate-500 dark:text-slate-400 no-print">
-                &copy; <?php echo date('Y'); ?> <?php echo e(COMPANY_NAME); ?>. All rights reserved.
+                &copy; <?php echo date('Y'); ?> <?php echo e($_layoutCompanyName); ?>. All rights reserved.
             </footer>
         </div>
     </div>

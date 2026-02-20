@@ -8,7 +8,7 @@ class Fleet
     public static function getDrivers(array $filters = [], int $page = 1, int $perPage = 20): array
     {
         return self::getEntities('drivers', $filters, $page, $perPage,
-            "CONCAT(first_name, ' ', last_name) LIKE ? OR phone LIKE ?", 2);
+            "(first_name || ' ' || last_name) LIKE ? OR phone LIKE ?", 2);
     }
 
     public static function getDriver(int $id): ?array
@@ -52,7 +52,7 @@ class Fleet
     public static function getGuides(array $filters = [], int $page = 1, int $perPage = 20): array
     {
         return self::getEntities('tour_guides', $filters, $page, $perPage,
-            "CONCAT(first_name, ' ', last_name) LIKE ? OR languages LIKE ?", 2);
+            "(first_name || ' ' || last_name) LIKE ? OR languages LIKE ?", 2);
     }
 
     public static function getGuide(int $id): ?array
@@ -73,17 +73,17 @@ class Fleet
     // ── Active lists (for dropdowns) ─────────────────────
     public static function getActiveDrivers(): array
     {
-        return Database::fetchAll("SELECT id, CONCAT(first_name,' ',last_name) as name, phone FROM drivers WHERE status='active' ORDER BY first_name");
+        return Database::fetchAll("SELECT id, first_name, last_name, (first_name || ' ' || last_name) as name, phone FROM drivers WHERE status='active' ORDER BY first_name");
     }
 
     public static function getActiveVehicles(): array
     {
-        return Database::fetchAll("SELECT id, plate_number, CONCAT(make,' ',model) as name, capacity FROM vehicles WHERE status='available' ORDER BY plate_number");
+        return Database::fetchAll("SELECT id, plate_number, make, model, (make || ' ' || model) as name, capacity FROM vehicles WHERE status IN ('active','available') ORDER BY plate_number");
     }
 
     public static function getActiveGuides(): array
     {
-        return Database::fetchAll("SELECT id, CONCAT(first_name,' ',last_name) as name, languages FROM tour_guides WHERE status='active' ORDER BY first_name");
+        return Database::fetchAll("SELECT id, first_name, last_name, (first_name || ' ' || last_name) as name, languages FROM tour_guides WHERE status='active' ORDER BY first_name");
     }
 
     // ── Private helpers ──────────────────────────────────

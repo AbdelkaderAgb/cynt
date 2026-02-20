@@ -385,10 +385,13 @@ CREATE TABLE `invoices` (
   `file_path` varchar(255) NOT NULL DEFAULT '',
   `sent_at` datetime NOT NULL DEFAULT current_timestamp(),
   `sent_by` int(11) UNSIGNED NOT NULL DEFAULT 0,
+  `hotels_json` longtext NOT NULL DEFAULT '[]' COMMENT 'JSON: multi-hotel rooms for hotel invoices',
+  `guests_json` longtext NOT NULL DEFAULT '[]' COMMENT 'JSON: guest passenger list for hotel invoices',
   `created_by` int(11) UNSIGNED NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 --
 -- Dumping data for table `invoices`

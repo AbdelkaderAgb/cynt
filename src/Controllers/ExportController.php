@@ -11,10 +11,31 @@
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-require_once __DIR__ . '/HotelController.php';
-
 class ExportController extends Controller
 {
+    /**
+     * Read company identity settings from DB, falling back to config constants.
+     * Returns array: [companyName, companyAddress, companyPhone, companyEmail, companyWebsite, companyVat]
+     */
+    private function getCompanySettings(): array
+    {
+        $rows = Database::fetchAll(
+            "SELECT setting_key, setting_value FROM settings WHERE setting_group = 'company'"
+        );
+        $s = [];
+        foreach ($rows as $r) {
+            $s[$r['setting_key']] = $r['setting_value'];
+        }
+        return [
+            'companyName'    => $s['company_name']    ?? COMPANY_NAME,
+            'companyAddress' => $s['company_address'] ?? COMPANY_ADDRESS,
+            'companyPhone'   => $s['company_phone']   ?? COMPANY_PHONE,
+            'companyEmail'   => $s['company_email']   ?? COMPANY_EMAIL,
+            'companyWebsite' => $s['company_website'] ?? '',
+            'companyVat'     => $s['company_vat']     ?? '',
+        ];
+    }
+
     /**
      * Resolve partner logo path if partner has logo_on_vouchers enabled.
      * Looks up partner by partner_id or company_name.
@@ -53,14 +74,23 @@ class ExportController extends Controller
             "SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC", [$id]
         );
 
+        // Decode transfer-specific JSON fields
+        $invoiceStops  = json_decode($invoice['stops_json']  ?? '[]', true) ?: [];
+        $invoiceGuests = json_decode($invoice['guests_json'] ?? '[]', true) ?: [];
+
+        $co = $this->getCompanySettings();
         $html = $this->renderPdfTemplate('invoices/pdf', [
             'invoice'        => $invoice,
             'invoiceItems'   => $invoiceItems,
+            'invoiceStops'   => $invoiceStops,
+            'invoiceGuests'  => $invoiceGuests,
             'partnerLogo'    => $this->resolvePartnerLogo($invoice),
-            'companyName'    => COMPANY_NAME,
-            'companyAddress' => COMPANY_ADDRESS,
-            'companyPhone'   => COMPANY_PHONE,
-            'companyEmail'   => COMPANY_EMAIL,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+            'companyVat'     => $co['companyVat'],
         ]);
 
         $filename = 'Invoice-' . $invoice['invoice_no'] . '.pdf';
@@ -79,12 +109,15 @@ class ExportController extends Controller
         $voucher = Voucher::getById($id);
         if (!$voucher) { header('Location: ' . url('vouchers')); exit; }
 
+        $co = $this->getCompanySettings();
         $html = $this->renderPdfTemplate('vouchers/pdf', [
             'voucher'        => $voucher,
-            'companyName'    => COMPANY_NAME,
-            'companyAddress' => COMPANY_ADDRESS,
-            'companyPhone'   => COMPANY_PHONE,
-            'companyEmail'   => COMPANY_EMAIL,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+            'companyVat'     => $co['companyVat'],
         ]);
 
         $filename = 'Voucher-' . $voucher['voucher_no'] . '.pdf';
@@ -110,35 +143,52 @@ class ExportController extends Controller
         }
 
         // Generate PDF
+        $co = $this->getCompanySettings();
         if ($type === 'invoice') {
             require_once ROOT_PATH . '/src/Models/Invoice.php';
             $record = Invoice::getById($id);
             if (!$record) { $this->jsonResponse(['success' => false, 'message' => 'Invoice not found']); return; }
-            $emailItems = Database::fetchAll("SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC", [$id]);
+            $emailItems  = Database::fetchAll("SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC", [$id]);
+            $emailStops  = json_decode($record['stops_json']  ?? '[]', true) ?: [];
+            $emailGuests = json_decode($record['guests_json'] ?? '[]', true) ?: [];
             $html = $this->renderPdfTemplate('invoices/pdf', [
-                'invoice' => $record, 'invoiceItems' => $emailItems, 'companyName' => COMPANY_NAME,
-                'companyAddress' => COMPANY_ADDRESS, 'companyPhone' => COMPANY_PHONE, 'companyEmail' => COMPANY_EMAIL,
+                'invoice'        => $record,
+                'invoiceItems'   => $emailItems,
+                'invoiceStops'   => $emailStops,
+                'invoiceGuests'  => $emailGuests,
+                'partnerLogo'    => $this->resolvePartnerLogo($record),
+                'companyName'    => $co['companyName'],
+                'companyAddress' => $co['companyAddress'],
+                'companyPhone'   => $co['companyPhone'],
+                'companyEmail'   => $co['companyEmail'],
+                'companyWebsite' => $co['companyWebsite'],
+                'companyVat'     => $co['companyVat'],
             ]);
             $filename = 'Invoice-' . $record['invoice_no'] . '.pdf';
-            $subject = $subject ?: 'Invoice ' . $record['invoice_no'] . ' — ' . COMPANY_NAME;
+            $subject = $subject ?: 'Invoice ' . $record['invoice_no'] . ' — ' . $co['companyName'];
         } else {
             require_once ROOT_PATH . '/src/Models/Voucher.php';
             $record = Voucher::getById($id);
             if (!$record) { $this->jsonResponse(['success' => false, 'message' => 'Voucher not found']); return; }
             $html = $this->renderPdfTemplate('vouchers/pdf', [
-                'voucher' => $record, 'companyName' => COMPANY_NAME,
-                'companyAddress' => COMPANY_ADDRESS, 'companyPhone' => COMPANY_PHONE, 'companyEmail' => COMPANY_EMAIL,
+                'voucher'        => $record,
+                'companyName'    => $co['companyName'],
+                'companyAddress' => $co['companyAddress'],
+                'companyPhone'   => $co['companyPhone'],
+                'companyEmail'   => $co['companyEmail'],
+                'companyWebsite' => $co['companyWebsite'],
+                'companyVat'     => $co['companyVat'],
             ]);
             $filename = 'Voucher-' . $record['voucher_no'] . '.pdf';
-            $subject = $subject ?: 'Voucher ' . $record['voucher_no'] . ' — ' . COMPANY_NAME;
+            $subject = $subject ?: 'Voucher ' . $record['voucher_no'] . ' — ' . $co['companyName'];
         }
 
         $pdfContent = $this->generatePdfContent($html);
 
         // Build MIME email with attachment
         $boundary = md5(time());
-        $headers  = "From: " . COMPANY_NAME . " <" . COMPANY_EMAIL . ">\r\n";
-        $headers .= "Reply-To: " . COMPANY_EMAIL . "\r\n";
+        $headers  = "From: " . $co['companyName'] . " <" . $co['companyEmail'] . ">\r\n";
+        $headers .= "Reply-To: " . $co['companyEmail'] . "\r\n";
         $headers .= "MIME-Version: 1.0\r\n";
         $headers .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n";
 
@@ -146,7 +196,7 @@ class ExportController extends Controller
         $body .= "Content-Type: text/html; charset=UTF-8\r\n";
         $body .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
         $body .= "<html><body><p>" . nl2br(htmlspecialchars($message ?: 'Please find the attached document.')) . "</p>";
-        $body .= "<p>Best regards,<br>" . htmlspecialchars(COMPANY_NAME) . "</p></body></html>\r\n\r\n";
+        $body .= "<p>Best regards,<br>" . htmlspecialchars($co['companyName']) . "</p></body></html>\r\n\r\n";
         $body .= "--{$boundary}\r\n";
         $body .= "Content-Type: application/pdf; name=\"{$filename}\"\r\n";
         $body .= "Content-Transfer-Encoding: base64\r\n";
@@ -178,13 +228,15 @@ class ExportController extends Controller
             $record = Invoice::getById($id);
             $docNo = $record['invoice_no'] ?? 'N/A';
             $amount = number_format($record['total_amount'] ?? 0, 2) . ' ' . ($record['currency'] ?? 'USD');
-            $text = "📄 *Invoice: {$docNo}*\n💰 Amount: {$amount}\n🏢 " . COMPANY_NAME . "\n📞 " . COMPANY_PHONE;
+            $co = $this->getCompanySettings();
+            $text = "📄 *Invoice: {$docNo}*\n💰 Amount: {$amount}\n🏢 " . $co['companyName'] . "\n📞 " . $co['companyPhone'];
             $downloadUrl = url("invoices/pdf") . "?id={$id}";
         } else {
             require_once ROOT_PATH . '/src/Models/Voucher.php';
             $record = Voucher::getById($id);
             $docNo = $record['voucher_no'] ?? 'N/A';
-            $text = "🎫 *Voucher: {$docNo}*\n📍 {$record['pickup_location']} ➜ {$record['dropoff_location']}\n📅 " . date('d/m/Y', strtotime($record['pickup_date'])) . " {$record['pickup_time']}\n👥 {$record['total_pax']} Pax\n🏢 " . COMPANY_NAME;
+            if (!isset($co)) $co = $this->getCompanySettings();
+            $text = "🎫 *Voucher: {$docNo}*\n📍 {$record['pickup_location']} ➜ {$record['dropoff_location']}\n📅 " . date('d/m/Y', strtotime($record['pickup_date'])) . " {$record['pickup_time']}\n👥 {$record['total_pax']} Pax\n🏢 " . $co['companyName'];
             $downloadUrl = url("vouchers/pdf") . "?id={$id}";
         }
 
@@ -212,14 +264,17 @@ class ExportController extends Controller
 
         $guestProgram = HotelController::resolveGuestProgram($id);
 
+        $co = $this->getCompanySettings();
         $html = $this->renderPdfTemplate('hotels/voucher_pdf', [
             'voucher'        => $voucher,
             'guestProgram'   => $guestProgram,
             'partnerLogo'    => $this->resolvePartnerLogo($voucher),
-            'companyName'    => COMPANY_NAME,
-            'companyAddress' => COMPANY_ADDRESS,
-            'companyPhone'   => COMPANY_PHONE,
-            'companyEmail'   => COMPANY_EMAIL,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+            'companyVat'     => $co['companyVat'],
         ]);
 
         $filename = 'HotelVoucher-' . $voucher['voucher_no'] . '.pdf';
@@ -239,13 +294,16 @@ class ExportController extends Controller
         $tour = $stmt->fetch();
         if (!$tour) { header('Location: ' . url('tour-voucher')); exit; }
 
+        $co = $this->getCompanySettings();
         $html = $this->renderPdfTemplate('tours/voucher_pdf', [
             'tour'           => $tour,
             'partnerLogo'    => $this->resolvePartnerLogo($tour),
-            'companyName'    => COMPANY_NAME,
-            'companyAddress' => COMPANY_ADDRESS,
-            'companyPhone'   => COMPANY_PHONE,
-            'companyEmail'   => COMPANY_EMAIL,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+            'companyVat'     => $co['companyVat'],
         ]);
 
         $filename = 'TourVoucher-' . ($tour['tour_code'] ?? $tour['id']) . '.pdf';
@@ -264,13 +322,16 @@ class ExportController extends Controller
         $voucher = Voucher::getById($id);
         if (!$voucher) { header('Location: ' . url('transfers')); exit; }
 
+        $co = $this->getCompanySettings();
         $html = $this->renderPdfTemplate('transfers/pdf', [
             'voucher'        => $voucher,
             'partnerLogo'    => $this->resolvePartnerLogo($voucher),
-            'companyName'    => COMPANY_NAME,
-            'companyAddress' => COMPANY_ADDRESS,
-            'companyPhone'   => COMPANY_PHONE,
-            'companyEmail'   => COMPANY_EMAIL,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+            'companyVat'     => $co['companyVat'],
         ]);
 
         $filename = 'TransferVoucher-' . ($voucher['voucher_no'] ?? $voucher['id']) . '.pdf';
@@ -292,12 +353,15 @@ class ExportController extends Controller
             exit;
         }
 
+        $co = $this->getCompanySettings();
         $html = $this->renderPdfTemplate('receipts/pdf', [
             'receipt'        => $receipt,
-            'companyName'    => COMPANY_NAME,
-            'companyAddress' => COMPANY_ADDRESS,
-            'companyPhone'   => COMPANY_PHONE,
-            'companyEmail'   => COMPANY_EMAIL,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+            'companyVat'     => $co['companyVat'],
         ]);
 
         $filename = 'Receipt-' . $receipt['invoice_no'] . '.pdf';
@@ -391,6 +455,41 @@ class ExportController extends Controller
         }
 
         return $html;
+    }
+
+    /**
+     * Generate and stream Credit Recharge Receipt PDF
+     * GET /partners/credits/receipt-pdf?id=TX_ID
+     */
+    public function creditRechargeReceiptPdf(): void
+    {
+        $this->requireAuth();
+
+        $txId = (int)($_GET['id'] ?? 0);
+        $tx   = Database::fetchOne("SELECT * FROM credit_transactions WHERE id = ?", [$txId]);
+        if (!$tx || $tx['type'] !== 'recharge') {
+            header('Location: ' . url('partners'));
+            exit;
+        }
+
+        $partner = Database::fetchOne("SELECT * FROM partners WHERE id = ?", [$tx['partner_id']]);
+        $co      = $this->getCompanySettings();
+
+        $receiptNo = 'CR-' . date('Ymd', strtotime($tx['created_at'])) . '-' . str_pad($txId, 4, '0', STR_PAD_LEFT);
+
+        $html = $this->renderPdfTemplate('partners/credit_receipt_pdf', [
+            'tx'             => $tx,
+            'partner'        => $partner ?? [],
+            'receiptNo'      => $receiptNo,
+            'companyName'    => $co['companyName'],
+            'companyAddress' => $co['companyAddress'],
+            'companyPhone'   => $co['companyPhone'],
+            'companyEmail'   => $co['companyEmail'],
+            'companyWebsite' => $co['companyWebsite'],
+        ]);
+
+        $filename = 'CreditReceipt-' . $receiptNo . '.pdf';
+        $this->streamPdf($html, $filename);
     }
 
     /**

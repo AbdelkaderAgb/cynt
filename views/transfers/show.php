@@ -11,16 +11,54 @@ $typeLabels = ['one_way'=>'One Way','round_trip'=>'Round Trip','multi_stop'=>'Mu
 <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl" x-data="{s:true}" x-show="s" x-init="setTimeout(()=>s=false,3000)"><i class="fas fa-check-circle mr-1"></i><?= __('updated_successfully') ?></div>
 <?php endif; ?>
 
-<div x-data="{ showShare: false, shareTab: 'email', sending: false, sent: false, error: '' }">
+<script>
+function transferShowData() {
+    return {
+        showShare: false, shareTab: 'email', sending: false, sent: false, error: '',
+        vStatus: '<?= e($v['status']) ?>',
+        statusSaving: false, statusSaved: false, statusError: '',
+        statusClasses: {
+            pending:   'bg-amber-100 text-amber-700',
+            confirmed: 'bg-blue-100 text-blue-700',
+            completed: 'bg-emerald-100 text-emerald-700',
+            cancelled: 'bg-red-100 text-red-700',
+            no_show:   'bg-gray-100 text-gray-600'
+        },
+        statusLabels: { pending: 'Pending', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled', no_show: 'No Show' },
+        async changeStatus(val) {
+            this.statusSaving = true; this.statusSaved = false; this.statusError = '';
+            try {
+                const r = await fetch('<?= url('transfers/update-status') ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: <?= (int)$v['id'] ?>, status: val })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    this.vStatus = val;
+                    this.statusSaved = true;
+                    setTimeout(() => { this.statusSaved = false; }, 2500);
+                } else {
+                    this.statusError = d.message || 'Failed';
+                }
+            } catch(e) { this.statusError = 'Network error'; }
+            this.statusSaving = false;
+        }
+    };
+}
+</script>
+
+<div x-data="transferShowData()">
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
     <div>
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-shuttle-van text-teal-500 mr-2"></i><?= e($v['voucher_no']) ?></h1>
         <p class="text-sm text-gray-500 mt-1"><?= e($v['pickup_location']) ?> → <?= e($v['dropoff_location']) ?></p>
     </div>
     <div class="flex flex-wrap gap-2">
-        <a href="<?= url('transfers/pdf') ?>?id=<?= $v['id'] ?>" target="_blank" class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fas fa-file-pdf"></i>PDF</a>
-        <button onclick="window.print()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-200 transition flex items-center gap-1.5"><i class="fas fa-print"></i><?= __('print') ?></button>
+        <a href="<?= url('vouchers/pdf') ?>?id=<?= $v['id'] ?>" target="_blank" class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fas fa-file-pdf"></i>PDF</a>
+        <a href="<?= url('vouchers/pdf') ?>?id=<?= $v['id'] ?>" target="_blank" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-200 transition flex items-center gap-1.5"><i class="fas fa-print"></i><?= __('print') ?></a>
         <button @click="showShare = true" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fas fa-share-alt"></i>Share</button>
+        <a href="<?= url('transfer-invoice/create') ?>?voucher_id=<?= $v['id'] ?>" class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-1.5"><i class="fas fa-file-invoice-dollar"></i>Create Invoice</a>
         <a href="<?= url('transfers/edit') ?>?id=<?= $v['id'] ?>" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 transition flex items-center gap-1.5"><i class="fas fa-edit"></i><?= __('edit') ?></a>
         <a href="<?= url('transfers') ?>" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-200 transition flex items-center gap-1.5"><i class="fas fa-arrow-left"></i><?= __('back') ?></a>
     </div>
@@ -33,7 +71,12 @@ $typeLabels = ['one_way'=>'One Way','round_trip'=>'Round Trip','multi_stop'=>'Mu
             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-route text-teal-500 mr-1"></i>Transfer Details</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div><p class="text-xs text-gray-400"><?= __('company_name') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['company_name'] ?: '—') ?></p></div>
-                <div><p class="text-xs text-gray-400"><?= __('hotel_name') ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['hotel_name'] ?: '—') ?></p></div>
+                <?php if (!empty($v['partner_phone'] ?? '')): ?>
+                <div><p class="text-xs text-gray-400"><i class="fas fa-phone text-green-500 mr-1"></i><?= __('phone') ?: 'Phone' ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['partner_phone']) ?></p></div>
+                <?php endif; ?>
+                <?php if (!empty($v['partner_address'] ?? '')): ?>
+                <div><p class="text-xs text-gray-400"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i><?= __('address') ?: 'Address' ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['partner_address']) ?></p></div>
+                <?php endif; ?>
                 <div><p class="text-xs text-gray-400">Transfer Type</p><p class="font-medium text-gray-800 dark:text-gray-200"><?= $typeLabels[$v['transfer_type']] ?? $v['transfer_type'] ?></p></div>
                 <?php if (!empty($v['guest_name'])): ?>
                 <div><p class="text-xs text-gray-400"><i class="fas fa-user text-blue-500 mr-1"></i><?= __('guest_name') ?: 'Guest Name' ?></p><p class="font-medium text-gray-800 dark:text-gray-200"><?= e($v['guest_name']) ?></p></div>
@@ -49,20 +92,90 @@ $typeLabels = ['one_way'=>'One Way','round_trip'=>'Round Trip','multi_stop'=>'Mu
 
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-map-marker-alt text-rose-500 mr-1"></i>Route & Schedule</h3>
+            <?php
+            $stops = json_decode($v['stops_json'] ?? '[]', true);
+            if (($v['transfer_type'] ?? '') === 'multi_stop' && !empty($stops)):
+            ?>
+            <!-- Multi-Stop Timeline -->
+            <div class="relative">
+                <div class="absolute left-5 top-6 bottom-6 w-0.5 bg-gray-200 dark:bg-gray-600 z-0"></div>
+                <div class="space-y-3">
+                <?php foreach ($stops as $si => $stop): ?>
+                    <?php
+                    $isFirst = $si === 0;
+                    $isLast  = $si === count($stops) - 1;
+                    $bubbleClass = $isFirst ? 'bg-teal-500' : ($isLast ? 'bg-rose-500' : 'bg-blue-500');
+                    $label = $isFirst ? 'Starting Point' : ($isLast ? 'Final Destination' : 'Stop ' . ($si + 1));
+                    ?>
+                    <div class="relative flex gap-4 items-start">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full <?= $bubbleClass ?> flex items-center justify-center z-10 text-white text-xs font-bold shadow-md">
+                            <?= $si + 1 ?>
+                        </div>
+                        <div class="flex-1 bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-600 rounded-xl p-4">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2"><?= $label ?></p>
+                            <div class="flex items-center gap-2 mb-2">
+                                <?php $sType = $stop['type'] ?? 'one_way'; ?>
+                                <span class="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full <?= $sType === 'round_trip' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' ?>">
+                                    <i class="fas <?= $sType === 'round_trip' ? 'fa-exchange-alt' : 'fa-long-arrow-alt-right' ?> mr-1 text-[9px]"></i>
+                                    <?= $sType === 'round_trip' ? 'Round Trip' : 'One Way' ?>
+                                </span>
+                                <?php if (!empty($stop['price']) && (float)$stop['price'] > 0): ?>
+                                <span class="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-700">
+                                    <i class="fas fa-tag mr-1 text-[9px]"></i><?= number_format((float)$stop['price'], 2) ?>
+                                </span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <p class="text-[10px] text-gray-400"><i class="fas fa-circle text-teal-400 mr-1" style="font-size:7px"></i>From</p>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200"><?= e($stop['from'] ?? '—') ?></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-gray-400"><i class="fas fa-map-marker-alt text-rose-400 mr-1" style="font-size:7px"></i>To</p>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200"><?= e($stop['to'] ?? '—') ?></p>
+                                </div>
+                            </div>
+                            <?php if (!empty($stop['date']) || !empty($stop['time'])): ?>
+                            <p class="text-sm text-gray-500 mt-2">
+                                <i class="fas fa-calendar mr-1 text-blue-400"></i><?= !empty($stop['date']) ? date('d/m/Y', strtotime($stop['date'])) : '—' ?>
+                                <span class="mx-1">·</span>
+                                <i class="fas fa-clock mr-1 text-blue-400"></i><?= e($stop['time'] ?: '—') ?>
+                            </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                </div>
+            </div>
+            <?php else: ?>
+            <!-- Simple one-way / round-trip route -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
                     <p class="text-xs font-semibold text-teal-600 uppercase mb-1"><i class="fas fa-circle text-[8px] mr-1"></i>Pickup</p>
                     <p class="font-bold text-gray-800 dark:text-gray-200 text-lg"><?= e($v['pickup_location']) ?></p>
-                    <p class="text-sm text-gray-500 mt-1"><?= $v['pickup_date'] ? date('d/m/Y', strtotime($v['pickup_date'])) : '—' ?> · <?= e($v['pickup_time'] ?: '—') ?></p>
+                    <p class="text-sm text-gray-500 mt-1"><i class="fas fa-calendar mr-1"></i><?= $v['pickup_date'] ? date('d/m/Y', strtotime($v['pickup_date'])) : '—' ?> · <i class="fas fa-clock mr-1"></i><?= e($v['pickup_time'] ?: '—') ?></p>
                 </div>
                 <div class="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-200 dark:border-rose-800">
                     <p class="text-xs font-semibold text-rose-600 uppercase mb-1"><i class="fas fa-map-marker text-[10px] mr-1"></i>Drop-off</p>
                     <p class="font-bold text-gray-800 dark:text-gray-200 text-lg"><?= e($v['dropoff_location']) ?></p>
-                    <?php if (!empty($v['return_date'])): ?>
-                    <p class="text-sm text-gray-500 mt-1"><?= date('d/m/Y', strtotime($v['return_date'])) ?> · <?= e($v['return_time'] ?: '—') ?></p>
-                    <?php endif; ?>
                 </div>
             </div>
+            <?php if (($v['transfer_type'] ?? 'one_way') === 'round_trip' && !empty($v['return_date']) && $v['return_date'] !== '1970-01-01'): ?>
+            <div class="mt-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
+                <p class="text-xs font-semibold text-indigo-600 uppercase mb-1"><i class="fas fa-undo-alt text-[10px] mr-1"></i>Return Trip</p>
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                        <p class="text-xs text-gray-400">Return Date</p>
+                        <p class="font-bold text-gray-800 dark:text-gray-200"><i class="fas fa-calendar mr-1 text-indigo-400"></i><?= date('d/m/Y', strtotime($v['return_date'])) ?></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Return Time</p>
+                        <p class="font-bold text-gray-800 dark:text-gray-200"><i class="fas fa-clock mr-1 text-indigo-400"></i><?= e($v['return_time'] ?: '—') ?></p>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            <?php endif; ?>
         </div>
 
         <?php if (!empty($v['passengers'])): ?>
@@ -94,16 +207,33 @@ $typeLabels = ['one_way'=>'One Way','round_trip'=>'Round Trip','multi_stop'=>'Mu
 
     <!-- Sidebar -->
     <div class="space-y-6">
+        <!-- Status Card -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-info-circle text-blue-500 mr-1"></i><?= __('status') ?></h3>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500"><?= __('status') ?></span>
-                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full <?= $statusColors[$v['status']] ?? 'bg-gray-100 text-gray-600' ?>"><?= $statusLabels[$v['status']] ?? $v['status'] ?></span>
-                </div>
-                <div class="flex justify-between"><span class="text-sm text-gray-500"><?= __('total_pax') ?></span><span class="font-bold text-lg"><?= $v['total_pax'] ?></span></div>
-                <!-- Pricing hidden — managed via invoices/receipts -->
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <i class="fas fa-tag text-indigo-400"></i> Transfer Status
+            </h3>
+            <div class="mb-3 flex items-center justify-between">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-semibold rounded-full"
+                      :class="statusClasses[vStatus] || 'bg-gray-100 text-gray-600'">
+                    <i class="fas fa-circle text-[8px]"></i>
+                    <span x-text="statusLabels[vStatus] || vStatus"></span>
+                </span>
+                <span class="text-sm text-gray-500"><?= __('total_pax') ?>: <strong><?= $v['total_pax'] ?></strong></span>
             </div>
+            <div class="grid grid-cols-2 gap-1.5">
+                <?php foreach (['pending' => ['fa-clock','amber'], 'confirmed' => ['fa-check','blue'], 'completed' => ['fa-check-double','emerald'], 'cancelled' => ['fa-times','red'], 'no_show' => ['fa-user-slash','gray']] as $s => [$icon, $color]): ?>
+                <button @click="changeStatus('<?= $s ?>')"
+                        :disabled="statusSaving || vStatus === '<?= $s ?>'"
+                        :class="vStatus === '<?= $s ?>' ? 'ring-2 ring-<?= $color ?>-500 bg-<?= $color ?>-50 dark:bg-<?= $color ?>-900/20' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-<?= $color ?>-50 dark:hover:bg-<?= $color ?>-900/20'"
+                        class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 transition disabled:opacity-40">
+                    <i class="fas <?= $icon ?> text-<?= $color ?>-500 w-3"></i>
+                    <?= $statusLabels[$s] ?>
+                </button>
+                <?php endforeach; ?>
+            </div>
+            <div x-show="statusSaving" class="mt-2 text-xs text-gray-400 flex items-center gap-1"><i class="fas fa-spinner fa-spin"></i> Saving…</div>
+            <div x-show="statusSaved" x-cloak class="mt-2 text-xs text-emerald-600 flex items-center gap-1"><i class="fas fa-check-circle"></i> Saved!</div>
+            <div x-show="statusError" x-cloak class="mt-2 text-xs text-red-600" x-text="statusError"></div>
         </div>
 
         <?php if (!empty($v['driver_name']) || !empty($v['vehicle_plate'])): ?>

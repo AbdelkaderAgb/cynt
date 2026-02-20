@@ -30,6 +30,10 @@ class Invoice
             $where[]  = "type = ?";
             $params[] = $filters['type'];
         }
+        if (!empty($filters['currency'])) {
+            $where[]  = "currency = ?";
+            $params[] = $filters['currency'];
+        }
 
         $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
         $offset = ($page - 1) * $perPage;
@@ -82,22 +86,45 @@ class Invoice
     public static function markPaid(int $id, string $method = 'cash'): void
     {
         Database::execute(
-            "UPDATE invoices SET status = 'paid', payment_method = ?, payment_date = CURDATE(), paid_amount = total_amount WHERE id = ?",
+            "UPDATE invoices SET status = 'paid', payment_method = ?, payment_date = date('now'), paid_amount = total_amount WHERE id = ?",
             [$method, $id]
         );
     }
 
     public static function getSummary(): array
     {
-        return Database::fetchOne(
+        $row = Database::fetchOne(
             "SELECT
-                COUNT(*) as total,
-                SUM(CASE WHEN status='pending' OR status='sent' THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN status='paid' THEN 1 ELSE 0 END) as paid,
-                SUM(CASE WHEN status='overdue' THEN 1 ELSE 0 END) as overdue,
-                SUM(total_amount) as total_amount,
-                SUM(paid_amount) as paid_amount
+                COUNT(*)                                                                     AS total,
+                SUM(CASE WHEN status IN ('sent','draft')     THEN 1 ELSE 0 END)             AS pending,
+                SUM(CASE WHEN status = 'paid'                THEN 1 ELSE 0 END)             AS paid,
+                SUM(CASE WHEN status = 'partial'             THEN 1 ELSE 0 END)             AS partial,
+                SUM(CASE WHEN status = 'overdue'             THEN 1 ELSE 0 END)             AS overdue,
+                COALESCE(SUM(total_amount), 0)                                              AS total_amount,
+                COALESCE(SUM(paid_amount),  0)                                              AS paid_amount,
+                COALESCE(SUM(total_amount) - SUM(paid_amount), 0)                          AS outstanding_amount,
+                COALESCE(SUM(CASE WHEN status = 'overdue'
+                               THEN total_amount - COALESCE(paid_amount,0) ELSE 0 END), 0) AS overdue_amount
              FROM invoices"
         ) ?: [];
+
+        // Collection rate (avoid division by zero)
+        $row['collection_rate'] = ($row['total_amount'] ?? 0) > 0
+            ? round(($row['paid_amount'] / $row['total_amount']) * 100, 1)
+            : 0;
+
+        // Per-currency breakdown (amounts only — counts already in $row)
+        $row['by_currency'] = Database::fetchAll(
+            "SELECT currency,
+                    COUNT(*)                            AS count,
+                    COALESCE(SUM(total_amount), 0)      AS total_amount,
+                    COALESCE(SUM(paid_amount),  0)      AS paid_amount,
+                    COALESCE(SUM(total_amount) - SUM(paid_amount), 0) AS outstanding
+             FROM invoices
+             GROUP BY currency
+             ORDER BY SUM(total_amount) DESC"
+        ) ?: [];
+
+        return $row;
     }
 }

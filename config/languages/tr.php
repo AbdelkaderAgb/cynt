@@ -713,4 +713,5 @@ return [
     'no_catalog_match' => 'Katalogda fiyat bulunamadi. Hizmetler & Fiyatlar bolumunden ekleyebilirsiniz.',
     'add_service' => 'Hizmet Ekle',
     'service_linked' => 'Kataloga bagli',
+    'add_tour' => 'Tur Ekle',
 ];

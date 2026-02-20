@@ -3,7 +3,11 @@
  * Tour Invoice Create Form — Enhanced with pricing catalog lookup
  * Searches tour services from catalog for price auto-fill
  */
+$prefill = $prefill ?? [];
 ?>
+<?php if (!empty($prefill)): ?>
+<script>window.__tourInvPrefill = <?= json_encode($prefill, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
+<?php endif; ?>
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
     <div>
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white"><i class="fas fa-file-invoice text-purple-500 mr-2"></i>New Tour Invoice</h1>
@@ -15,21 +19,39 @@
 </div>
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-     x-data="tourInvoiceForm()">
+     x-data="tourInvoiceForm()"
+     x-init="if(window.__tourInvPrefill){currency=window.__tourInvPrefill.currency||currency;if(window.__tourInvPrefill.tour_name&&tours.length===1&&!tours[0].name){tours[0].name=window.__tourInvPrefill.tour_name;tours[0].date=window.__tourInvPrefill.tour_date||'';tours[0].adults=parseInt(window.__tourInvPrefill.total_pax)||1;calcTourTotal(0);}}">
     <form method="POST" action="<?= url('tour-invoice/store') ?>" @submit.prevent="submitForm($el)" class="space-y-6">
         <?= csrf_field() ?>
 
         <!-- Company Info -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
             <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-building text-purple-400 mr-1"></i> Company Information</h3>
+            <input type="hidden" name="company_id" id="ti_company_id" value="">
+            <input type="hidden" name="partner_id" id="ti_partner_id" value="">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div class="relative" x-data="tourInvoicePartnerSearch()" @click.outside="open = false"
+                     x-init="if(window.__tourInvPrefill&&window.__tourInvPrefill.company_name){query=window.__tourInvPrefill.company_name;document.getElementById('ti_company_id').value=window.__tourInvPrefill.company_id||''}">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name *</label>
-                    <input type="text" name="company_name" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Company name">
+                    <input type="text" name="company_name" x-model="query" @input.debounce.300ms="search()" @focus="if(results.length) open=true" required autocomplete="off"
+                           class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Type to search company...">
+                    <div x-show="open && results.length > 0" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl max-h-52 overflow-y-auto">
+                        <template x-for="r in results" :key="r.id">
+                            <div @click="selectPartner(r)" class="px-4 py-2.5 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0">
+                                <div class="font-semibold text-sm text-gray-800 dark:text-gray-100" x-text="r.company_name"></div>
+                                <div class="text-xs text-gray-400" x-text="(r.contact_person || '') + (r.phone ? ' · ' + r.phone : '')"></div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hotel Name</label>
-                    <input type="text" name="hotel_name" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Hotel name">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('currency') ?: 'Currency' ?></label>
+                    <select name="currency" x-model="currency" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="TRY">TRY (₺)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -46,11 +68,15 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-700/50">
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Tour Name</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Date</th>
-                            <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500">Pax</th>
-                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500">Unit Price</th>
-                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500">Total</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500"><?= __('tour_name') ?: 'Tour Name' ?></th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500"><?= __('tour_date') ?: 'Date' ?></th>
+                            <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500"><?= __('adults') ?: 'Adults' ?></th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500"><?= __('price_adult') ?: 'Adult Price' ?></th>
+                            <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500"><?= __('children') ?: 'Children' ?></th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500"><?= __('price_child') ?: 'Child Price' ?></th>
+                            <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500"><?= __('infants') ?: 'Infants' ?></th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500"><?= __('price_infant') ?: 'Infant Price' ?></th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500"><?= __('total') ?: 'Total' ?></th>
                             <th class="px-3 py-2 w-10"></th>
                         </tr>
                     </thead>
@@ -59,8 +85,12 @@
                             <tr class="border-b border-gray-100 dark:border-gray-700">
                                 <td class="px-3 py-2"><input type="text" x-model="tour.name" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" placeholder="Tour name"></td>
                                 <td class="px-3 py-2"><input type="date" x-model="tour.date" class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"></td>
-                                <td class="px-3 py-2"><input type="number" x-model.number="tour.pax" @input="calcTourTotal(idx)" min="1" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center"></td>
-                                <td class="px-3 py-2"><input type="number" x-model.number="tour.price" @input="calcTourTotal(idx)" step="0.01" class="w-24 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-right"></td>
+                                <td class="px-3 py-2"><input type="number" x-model.number="tour.adults" @input="calcTourTotal(idx)" min="0" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center"></td>
+                                <td class="px-3 py-2"><input type="number" x-model.number="tour.price_adult" @input="calcTourTotal(idx)" step="0.01" min="0" class="w-24 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-right"></td>
+                                <td class="px-3 py-2"><input type="number" x-model.number="tour.children" @input="calcTourTotal(idx)" min="0" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center"></td>
+                                <td class="px-3 py-2"><input type="number" x-model.number="tour.price_child" @input="calcTourTotal(idx)" step="0.01" min="0" class="w-24 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-right"></td>
+                                <td class="px-3 py-2"><input type="number" x-model.number="tour.infants" @input="calcTourTotal(idx)" min="0" class="w-16 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-center"></td>
+                                <td class="px-3 py-2"><input type="number" x-model.number="tour.price_infant" @input="calcTourTotal(idx)" step="0.01" min="0" class="w-24 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-right"></td>
                                 <td class="px-3 py-2 text-right font-bold text-gray-700 dark:text-gray-300" x-text="tour.total.toFixed(2)"></td>
                                 <td class="px-3 py-2"><button type="button" @click="removeTour(idx)" class="text-red-400 hover:text-red-600 transition" x-show="tours.length > 1"><i class="fas fa-trash-alt"></i></button></td>
                             </tr>
@@ -73,26 +103,12 @@
             </button>
         </div>
 
-        <!-- Pricing -->
-        <div>
-            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4"><i class="fas fa-calculator text-purple-400 mr-1"></i> Pricing</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
-                    <select name="currency" x-model="currency" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
-                        <option value="USD">USD ($)</option>
-                        <option value="EUR">EUR</option>
-                        <option value="TRY">TRY</option>
-                        <option value="GBP">GBP</option>
-                    </select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount</label>
-                    <div class="px-4 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <span class="text-2xl font-bold text-purple-700 dark:text-purple-300" x-text="grandTotal.toFixed(2)"></span>
-                        <span class="text-sm text-purple-500 ml-1" x-text="currency"></span>
-                    </div>
-                </div>
+        <!-- Total -->
+        <div class="flex justify-end">
+            <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl border border-purple-200 dark:border-purple-800 text-right">
+                <div class="text-xs text-purple-500 uppercase tracking-wider mb-1"><?= __('total_amount') ?: 'Total Amount' ?></div>
+                <span class="text-2xl font-bold text-purple-700 dark:text-purple-300" x-text="grandTotal.toFixed(2)"></span>
+                <span class="text-sm text-purple-500 ml-1" x-text="currency"></span>
             </div>
         </div>
 
@@ -138,21 +154,45 @@
 </div>
 
 <script>
+function tourInvoicePartnerSearch() {
+    return {
+        query: '', results: [], open: false,
+        async search() {
+            if (this.query.length < 1) { this.results = []; this.open = false; return; }
+            try {
+                const res = await fetch('<?= url('api/partners/search') ?>?q=' + encodeURIComponent(this.query));
+                this.results = await res.json();
+                this.open = this.results.length > 0;
+            } catch(e) { this.results = []; }
+        },
+        selectPartner(r) {
+            this.query = r.company_name;
+            this.open = false;
+            const idEl = document.getElementById('ti_company_id');
+            if (idEl) idEl.value = r.id;
+            const pidEl = document.getElementById('ti_partner_id');
+            if (pidEl) pidEl.value = r.id;
+        }
+    };
+}
+
 function tourInvoiceForm() {
     return {
-        tours: [{ name: '', date: '', pax: 1, price: 0, total: 0 }],
+        tours: [{ name: '', date: '', adults: 1, price_adult: 0, children: 0, price_child: 0, infants: 0, price_infant: 0, total: 0 }],
         currency: 'USD',
         grandTotal: 0,
         catalogOpen: false,
         catalogQuery: '',
         catalogResults: [],
 
-        addTour() { this.tours.push({ name: '', date: '', pax: 1, price: 0, total: 0 }); },
+        addTour() { this.tours.push({ name: '', date: '', adults: 1, price_adult: 0, children: 0, price_child: 0, infants: 0, price_infant: 0, total: 0 }); },
         removeTour(i) { if (this.tours.length > 1) { this.tours.splice(i, 1); this.recalcTotal(); } },
 
         calcTourTotal(idx) {
             const t = this.tours[idx];
-            t.total = (t.pax || 1) * (t.price || 0);
+            t.total = (t.adults || 0) * (t.price_adult || 0)
+                    + (t.children || 0) * (t.price_child || 0)
+                    + (t.infants || 0) * (t.price_infant || 0);
             this.recalcTotal();
         },
 
@@ -172,14 +212,10 @@ function tourInvoiceForm() {
         },
 
         addFromCatalog(svc) {
-            const price = parseFloat(svc.price_adult || svc.price) || 0;
-            this.tours.push({
-                name: svc.name,
-                date: '',
-                pax: 1,
-                price: price,
-                total: price
-            });
+            const priceAdult  = parseFloat(svc.price_adult || svc.price || 0);
+            const priceChild  = parseFloat(svc.price_child || 0);
+            const priceInfant = parseFloat(svc.price_infant || 0);
+            this.tours.push({ name: svc.name, date: '', adults: 1, price_adult: priceAdult, children: 0, price_child: priceChild, infants: 0, price_infant: priceInfant, total: priceAdult });
             this.catalogOpen = false;
             this.recalcTotal();
         },
@@ -190,8 +226,11 @@ function tourInvoiceForm() {
             fd.set('tours', JSON.stringify(this.tours));
             fd.set('total_price', this.grandTotal);
             fetch(el.action, { method: 'POST', body: fd }).then(r => {
-                if(r.redirected) window.location = r.url;
-                else r.text().then(t => { document.open(); document.write(t); document.close(); });
+                if(r.redirected) { window.location = r.url; return; }
+                r.text().then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    document.body.replaceWith(doc.body);
+                });
             });
         }
     };

@@ -52,7 +52,7 @@ ini_set('error_log', LOG_PATH . 'php-errors.log');
 
 // MySQL configuration (uncomment and set DB_DRIVER to 'mysql' to use MySQL)
 // SWITCHED TO SQLITE FOR LOCAL TESTING — restore 'mysql' for production
-define('DB_DRIVER', 'mysql');
+define('DB_DRIVER', 'sqlite');
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'barqvkxs_cyn');
 define('DB_USER', 'barqvkxs_cyn');
@@ -229,9 +229,18 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Autoloader for classes
 spl_autoload_register(function ($class) {
-    $file = APP_ROOT . '/' . $class . '.php';
-    if (file_exists($file)) {
-        require_once $file;
+    $dirs = [
+        APP_ROOT . '/',
+        APP_ROOT . '/src/Controllers/',
+        APP_ROOT . '/src/Models/',
+        APP_ROOT . '/src/Core/',
+    ];
+    foreach ($dirs as $dir) {
+        $file = $dir . $class . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
     }
 });
 

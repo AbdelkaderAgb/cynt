@@ -7,6 +7,7 @@ class FleetController extends Controller
     // ── Drivers ──────────────────────────────────────────
     public function drivers(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $filters = ['search' => $_GET['search'] ?? '', 'status' => $_GET['status'] ?? ''];
         $page = max(1, (int)($_GET['page'] ?? 1));
@@ -18,13 +19,14 @@ class FleetController extends Controller
             'page'       => $result['page'],
             'pages'      => $result['pages'],
             'filters'    => $filters,
-            'pageTitle'  => 'Şoför Yönetimi',
+            'pageTitle'  => __('driver_management') ?: 'Driver Management',
             'activePage' => 'drivers',
         ]);
     }
 
     public function driverForm(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $id = (int)($_GET['id'] ?? 0);
         $driver = $id ? Fleet::getDriver($id) : [];
@@ -32,7 +34,7 @@ class FleetController extends Controller
         $this->view('fleet/driver_form', [
             'driver'     => $driver,
             'isEdit'     => (bool)$id,
-            'pageTitle'  => $id ? 'Şoför Düzenle' : 'Yeni Şoför',
+            'pageTitle'  => $id ? (__('edit_driver') ?: 'Edit Driver') : (__('new_driver') ?: 'New Driver'),
             'activePage' => 'drivers',
         ]);
     }
@@ -66,6 +68,7 @@ class FleetController extends Controller
 
     public function driverDelete(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         Fleet::deleteDriver((int)($_GET['id'] ?? 0));
         header('Location: ' . url('drivers') . '?deleted=1');
@@ -75,6 +78,7 @@ class FleetController extends Controller
     // ── Vehicles ─────────────────────────────────────────
     public function vehicles(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $filters = ['search' => $_GET['search'] ?? '', 'status' => $_GET['status'] ?? ''];
         $page = max(1, (int)($_GET['page'] ?? 1));
@@ -86,13 +90,14 @@ class FleetController extends Controller
             'page'       => $result['page'],
             'pages'      => $result['pages'],
             'filters'    => $filters,
-            'pageTitle'  => 'Araç Yönetimi',
+            'pageTitle'  => __('vehicle_management') ?: 'Vehicle Management',
             'activePage' => 'vehicles',
         ]);
     }
 
     public function vehicleForm(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $id = (int)($_GET['id'] ?? 0);
         $vehicle = $id ? Fleet::getVehicle($id) : [];
@@ -101,7 +106,7 @@ class FleetController extends Controller
             'vehicle'    => $vehicle,
             'isEdit'     => (bool)$id,
             'drivers'    => Fleet::getActiveDrivers(),
-            'pageTitle'  => $id ? 'Araç Düzenle' : 'Yeni Araç',
+            'pageTitle'  => $id ? (__('edit_vehicle') ?: 'Edit Vehicle') : (__('new_vehicle') ?: 'New Vehicle'),
             'activePage' => 'vehicles',
         ]);
     }
@@ -138,6 +143,7 @@ class FleetController extends Controller
 
     public function vehicleDelete(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         Fleet::deleteVehicle((int)($_GET['id'] ?? 0));
         header('Location: ' . url('vehicles') . '?deleted=1');
@@ -147,6 +153,7 @@ class FleetController extends Controller
     // ── Tour Guides ──────────────────────────────────────
     public function guides(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $filters = ['search' => $_GET['search'] ?? '', 'status' => $_GET['status'] ?? ''];
         $page = max(1, (int)($_GET['page'] ?? 1));
@@ -158,13 +165,14 @@ class FleetController extends Controller
             'page'       => $result['page'],
             'pages'      => $result['pages'],
             'filters'    => $filters,
-            'pageTitle'  => 'Rehber Yönetimi',
+            'pageTitle'  => __('guide_management') ?: 'Tour Guide Management',
             'activePage' => 'guides',
         ]);
     }
 
     public function guideForm(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         $id = (int)($_GET['id'] ?? 0);
         $guide = $id ? Fleet::getGuide($id) : [];
@@ -172,7 +180,7 @@ class FleetController extends Controller
         $this->view('fleet/guide_form', [
             'guide'      => $guide,
             'isEdit'     => (bool)$id,
-            'pageTitle'  => $id ? 'Rehber Düzenle' : 'Yeni Rehber',
+            'pageTitle'  => $id ? (__('edit_guide') ?: 'Edit Guide') : (__('new_guide') ?: 'New Guide'),
             'activePage' => 'guides',
         ]);
     }
@@ -206,6 +214,7 @@ class FleetController extends Controller
 
     public function guideDelete(): void
     {
+        $this->requireAuth();
         require_once ROOT_PATH . '/src/Models/Fleet.php';
         Fleet::deleteGuide((int)($_GET['id'] ?? 0));
         header('Location: ' . url('guides') . '?deleted=1');

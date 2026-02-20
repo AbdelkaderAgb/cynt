@@ -3,6 +3,11 @@
  * Group File PDF Dossier — No prices shown (voucher rule)
  * Timeline-based layout for group travel management
  */
+$logoPath     = ROOT_PATH . '/assets/images/logo.png';
+$tursabPath   = ROOT_PATH . '/assets/images/Toursablogo.png';
+$logoBase64   = file_exists($logoPath)   ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))   : '';
+$tursabBase64 = file_exists($tursabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($tursabPath)) : '';
+
 $statusLabels = [
     'planning' => 'Planning', 'confirmed' => 'Confirmed', 'in_progress' => 'In Progress',
     'completed' => 'Completed', 'cancelled' => 'Cancelled', 'pending' => 'Pending',
@@ -63,15 +68,28 @@ ksort($days);
 <div class="page">
     <!-- Header -->
     <div class="header-bar">
-        <h1><?= e($g['group_name']) ?></h1>
-        <div class="sub">
-            <?= e($g['file_number']) ?> &nbsp;|&nbsp;
-            <?= (int)$g['total_pax'] ?> Passengers &nbsp;|&nbsp;
-            <?= $g['arrival_date'] ? date('d M Y', strtotime($g['arrival_date'])) : '—' ?> → <?= $g['departure_date'] ? date('d M Y', strtotime($g['departure_date'])) : '—' ?>
-            <?php if ($g['arrival_date'] && $g['departure_date']): ?>
-            &nbsp;|&nbsp; <?= (int)((strtotime($g['departure_date']) - strtotime($g['arrival_date'])) / 86400) ?> Nights
-            <?php endif; ?>
-        </div>
+        <table style="width:100%; border:none;">
+            <tr>
+                <td style="border:none; padding:0; vertical-align:middle;">
+                    <?php if ($logoBase64): ?>
+                    <img src="<?= $logoBase64 ?>" style="height:44px; margin-bottom:4px; display:block; filter:brightness(0) invert(1);">
+                    <?php endif; ?>
+                    <h1 style="font-size:20px; font-weight:800; letter-spacing:-0.5px;"><?= e($g['group_name']) ?></h1>
+                    <div style="font-size:11px; opacity:0.85; margin-top:4px;">
+                        <?= e($g['file_number']) ?> &nbsp;|&nbsp;
+                        <?= (int)$g['total_pax'] ?> Passengers &nbsp;|&nbsp;
+                        <?= $g['arrival_date'] ? date('d M Y', strtotime($g['arrival_date'])) : '—' ?> → <?= $g['departure_date'] ? date('d M Y', strtotime($g['departure_date'])) : '—' ?>
+                        <?php if ($g['arrival_date'] && $g['departure_date']): ?>
+                        &nbsp;|&nbsp; <?= (int)((strtotime($g['departure_date']) - strtotime($g['arrival_date'])) / 86400) ?> Nights
+                        <?php endif; ?>
+                    </div>
+                </td>
+                <td style="border:none; padding:0; text-align:right; vertical-align:middle; opacity:0.9; font-size:10px;">
+                    <?= e($companyName ?? '') ?><br>
+                    <?= e($companyAddress ?? '') ?>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <!-- Info -->
@@ -137,8 +155,11 @@ ksort($days);
 
     <!-- Footer -->
     <div class="footer">
-        <?= e(defined('COMPANY_NAME') ? COMPANY_NAME : 'CYN Tourism') ?> — Group Dossier: <?= e($g['file_number']) ?><br>
-        Generated on <?= date('d M Y H:i') ?>
+        <?php if ($tursabBase64): ?>
+        <img src="<?= $tursabBase64 ?>" style="height:18px; margin-bottom:4px;"><br>
+        <?php endif; ?>
+        <?= e($companyName ?? '') ?> · <?= e($companyAddress ?? '') ?> · Tel: <?= e($companyPhone ?? '') ?> · <?= e($companyEmail ?? '') ?><br>
+        Group Dossier: <?= e($g['file_number']) ?> · Generated on <?= date('d M Y H:i') ?>
     </div>
 </div>
 </body>

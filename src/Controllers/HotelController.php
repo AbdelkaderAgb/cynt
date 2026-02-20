@@ -98,13 +98,15 @@ class HotelController extends Controller
 
         $hotelId = (int)($_POST['hotel_id'] ?? 0);
 
+        $companyId = (int)($_POST['company_id'] ?? 0);
+
         $stmt = $db->prepare("INSERT INTO hotel_vouchers
-            (id, voucher_no, guest_name, passenger_passport, hotel_name, hotel_id, company_name, address, telephone,
+            (id, voucher_no, guest_name, passenger_passport, hotel_name, hotel_id, company_name, company_id, address, telephone,
              room_type, room_count, board_type, transfer_type,
              check_in, check_out, nights, total_pax, adults, children, infants,
              price_per_night, total_price, currency, customers,
              special_requests, additional_services, rooms_json, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $nextId,
             $voucherNo,
@@ -113,6 +115,7 @@ class HotelController extends Controller
             trim($_POST['hotel_name'] ?? ''),
             $hotelId,
             trim($_POST['company_name'] ?? ''),
+            $companyId,
             trim($_POST['address'] ?? ''),
             trim($_POST['telephone'] ?? ''),
             $roomType,
@@ -232,9 +235,10 @@ class HotelController extends Controller
         $roomsJson = $_POST['rooms_json'] ?? '';
 
         $hotelId = (int)($_POST['hotel_id'] ?? 0);
+        $companyId = (int)($_POST['company_id'] ?? 0);
 
         $stmt = $db->prepare("UPDATE hotel_vouchers SET
-            guest_name = ?, passenger_passport = ?, hotel_name = ?, hotel_id = ?, company_name = ?, address = ?, telephone = ?,
+            guest_name = ?, passenger_passport = ?, hotel_name = ?, hotel_id = ?, company_name = ?, company_id = ?, address = ?, telephone = ?,
             room_type = ?, room_count = ?, board_type = ?, transfer_type = ?,
             check_in = ?, check_out = ?, nights = ?, total_pax = ?, adults = ?, children = ?, infants = ?,
             price_per_night = ?, total_price = ?, currency = ?, customers = ?,
@@ -246,6 +250,7 @@ class HotelController extends Controller
             trim($_POST['hotel_name'] ?? ''),
             $hotelId,
             trim($_POST['company_name'] ?? ''),
+            $companyId,
             trim($_POST['address'] ?? ''),
             trim($_POST['telephone'] ?? ''),
             $roomType,
@@ -391,12 +396,26 @@ class HotelController extends Controller
         require_once ROOT_PATH . '/src/Models/Invoice.php';
 
         $filters = [
-            'search' => $_GET['search'] ?? '',
-            'status' => $_GET['status'] ?? '',
-            'type'   => 'hotel',
+            'search'    => $_GET['search']    ?? '',
+            'status'    => $_GET['status']    ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to'   => $_GET['date_to']   ?? '',
+            'currency'  => $_GET['currency']  ?? '',
+            'type'      => 'hotel',
         ];
-        $page = max(1, (int)($_GET['page'] ?? 1));
+        $page   = max(1, (int)($_GET['page'] ?? 1));
         $result = Invoice::getAll($filters, $page);
+
+        // Stats for hotel invoices
+        $db = Database::getInstance()->getConnection();
+        $statsRow = $db->query("
+            SELECT
+                COUNT(*)                                             AS total,
+                SUM(CASE WHEN status='paid'    THEN 1 ELSE 0 END)  AS paid_count,
+                SUM(CASE WHEN status='overdue' THEN 1 ELSE 0 END)  AS overdue_count,
+                SUM(CASE WHEN status IN ('sent','draft','overdue') THEN 1 ELSE 0 END) AS outstanding
+            FROM invoices WHERE type='hotel'
+        ")->fetch(\PDO::FETCH_ASSOC);
 
         $this->view('hotels/invoice', [
             'invoices'   => $result['data'],
@@ -404,6 +423,7 @@ class HotelController extends Controller
             'page'       => $result['page'],
             'pages'      => $result['pages'],
             'filters'    => $filters,
+            'stats'      => $statsRow ?: [],
             'pageTitle'  => __('hotel_invoice') ?: 'Hotel Invoices',
             'activePage' => 'hotel-invoice',
         ]);
@@ -412,7 +432,26 @@ class HotelController extends Controller
     public function invoiceCreate(): void
     {
         $this->requireAuth();
+
+        $prefill = [];
+        $voucherId = (int)($_GET['voucher_id'] ?? 0);
+        if ($voucherId > 0) {
+            $v = Database::fetchOne("SELECT * FROM hotel_vouchers WHERE id = ?", [$voucherId]);
+            if ($v) {
+                $prefill = [
+                    'company_name' => $v['company_name'] ?? '',
+                    'company_id'   => $v['company_id']   ?? 0,
+                    'currency'     => $v['currency']      ?? 'USD',
+                    'hotel_name'   => $v['hotel_name']    ?? '',
+                    'check_in'     => $v['check_in']      ?? '',
+                    'check_out'    => $v['check_out']     ?? '',
+                    'nights'       => $v['nights']        ?? 1,
+                ];
+            }
+        }
+
         $this->view('hotels/invoice_form', [
+            'prefill'    => $prefill,
             'pageTitle'  => 'New Hotel Invoice',
             'activePage' => 'hotel-invoice',
         ]);
@@ -426,49 +465,351 @@ class HotelController extends Controller
 
         $db = Database::getInstance()->getConnection();
 
-        $invoiceNo = 'HI-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        $rooms = json_decode($_POST['rooms'] ?? '[]', true) ?: [];
+        /* ── parse multi-hotel payload ── */
+        $hotelsData  = json_decode($_POST['hotels_json'] ?? '[]', true) ?: [];
+        $guestsData  = json_decode($_POST['guests_json']  ?? '[]', true) ?: [];
 
-        // Calculate totals from rooms
-        $subtotal = 0;
-        foreach ($rooms as $room) {
-            $subtotal += (float)($room['price'] ?? 0);
+        /* ── totals from all hotel rooms ── */
+        $subtotal = 0.0;
+        foreach ($hotelsData as $h) {
+            $nights = max(1, (int)($h['nights'] ?? 1));
+            foreach ($h['rooms'] ?? [] as $r) {
+                $count      = max(1, (int)($r['count']      ?? 1));
+                $adults     = (int)($r['adults']     ?? 1);
+                $children   = max(0, (int)($r['children']   ?? 0));
+                $basePrice  = (float)($r['price']      ?? 0);
+                $childPrice = (float)($r['childPrice'] ?? 0);
+                if ($adults === 0) {
+                    // Child-only room: base price IS the child rate
+                    $subtotal += $basePrice * $count * $nights;
+                } else {
+                    // Adult room ± extra-bed supplement
+                    $subtotal += ($basePrice * $count + $childPrice * $children * $count) * $nights;
+                }
+            }
         }
 
-        // Use explicit next ID to work even without AUTO_INCREMENT
-        $nextInvId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM invoices")->fetchColumn();
-        $stmt = $db->prepare("INSERT INTO invoices
-            (id, invoice_no, company_name, invoice_date, due_date, subtotal, total_amount, currency, status, notes, type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, 'hotel')");
-        $stmt->execute([
-            $nextInvId,
-            $invoiceNo,
-            trim($_POST['company_name'] ?? ''),
-            date('Y-m-d'),
-            date('Y-m-d', strtotime('+30 days')),
-            $subtotal,
-            $subtotal,
-            $_POST['currency'] ?? 'USD',
-            'Hotel: ' . trim($_POST['hotel_name'] ?? ''),
+        $taxRate    = (float)($_POST['tax_rate']    ?? 0);
+        $discount   = (float)($_POST['discount']    ?? 0);
+        $paidAmount = (float)($_POST['paid_amount'] ?? 0);
+        $taxAmount  = round($subtotal * $taxRate / 100, 2);
+        $total      = round(max(0, $subtotal + $taxAmount - $discount), 2);
+        $paidAmount = min($paidAmount, $total);
+
+        /* ── invoice header notes (all hotel names) ── */
+        $hotelNames = array_filter(array_map(fn($h) => trim($h['name'] ?? ''), $hotelsData));
+        $hotelNote  = count($hotelNames) ? 'Hotel: ' . implode(', ', $hotelNames) : '';
+        $userNotes  = trim($_POST['notes'] ?? '');
+        $notes      = $hotelNote . ($userNotes !== '' ? "\n" . $userNotes : '');
+
+        /* ── build unique invoice number ── */
+        $invoiceNo   = 'HI-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        $invoiceDate = !empty($_POST['invoice_date']) ? $_POST['invoice_date'] : date('Y-m-d');
+        $dueDate     = !empty($_POST['due_date'])     ? $_POST['due_date']     : date('Y-m-d', strtotime('+30 days'));
+        $currency    = $_POST['currency'] ?? 'USD';
+        $companyName = trim($_POST['company_name'] ?? '');
+
+        $companyId = (int)($_POST['company_id'] ?? 0);
+
+        /* ── snapshot partner contact details ── */
+        $partnerContact = '';
+        $partnerPhone   = '';
+        $partnerEmail   = '';
+        $partnerAddress = '';
+        $partnerCity    = '';
+        $partnerCountry = '';
+        if ($companyId > 0) {
+            $p = Database::fetchOne(
+                "SELECT contact_person, phone, email, address, city, country FROM partners WHERE id = ?",
+                [$companyId]
+            );
+            if ($p) {
+                $partnerContact = $p['contact_person'] ?? '';
+                $partnerPhone   = $p['phone']          ?? '';
+                $partnerEmail   = $p['email']          ?? '';
+                $partnerAddress = $p['address']        ?? '';
+                $partnerCity    = $p['city']           ?? '';
+                $partnerCountry = $p['country']        ?? '';
+            }
+        }
+
+        /* ── insert invoice row ── */
+        $nextInvId = (int)$db->query("SELECT COALESCE(MAX(id),0)+1 FROM invoices")->fetchColumn();
+        $db->prepare(
+            "INSERT INTO invoices
+             (id, invoice_no, company_name, company_id, partner_id, invoice_date, due_date,
+              subtotal, total_amount, tax_rate, tax_amount, discount, paid_amount,
+              currency, status, notes, terms, payment_method, hotels_json, guests_json, type,
+              partner_contact, partner_phone, partner_email, partner_address, partner_city, partner_country)
+             VALUES (?,?,?,?,?, ?,?, ?,?,?,?,?, ?, ?,?,'draft',?,?,?, ?,?,?, ?,?,?,?,?,?)"
+        )->execute([
+            $nextInvId, $invoiceNo, $companyName, $companyId, $companyId,
+            $invoiceDate, $dueDate,
+            round($subtotal, 2), $total, $taxRate, $taxAmount, $discount, $paidAmount,
+            $currency, 'draft', $notes,
+            trim($_POST['terms'] ?? ''),
+            trim($_POST['payment_method'] ?? ''),
+            $_POST['hotels_json']  ?? '[]',
+            $_POST['guests_json']  ?? '[]',
+            'hotel',
+            $partnerContact, $partnerPhone, $partnerEmail, $partnerAddress, $partnerCity, $partnerCountry,
         ]);
 
         $invoiceId = $nextInvId;
 
-        // Insert room items
-        foreach ($rooms as $room) {
-            $nextItemId = (int)$db->query("SELECT COALESCE(MAX(id), 0) + 1 FROM invoice_items")->fetchColumn();
-            $stmtItem = $db->prepare("INSERT INTO invoice_items (id, invoice_id, description, quantity, unit_price, total_price)
-                VALUES (?, ?, ?, 1, ?, ?)");
-            $stmtItem->execute([
-                $nextItemId,
-                $invoiceId,
-                'Room: ' . ($room['type'] ?? 'Standard'),
-                (float)($room['price'] ?? 0),
-                (float)($room['price'] ?? 0),
-            ]);
+        /* ── insert invoice_items: one row per hotel × room-line ── */
+        foreach ($hotelsData as $h) {
+            $nights    = max(1, (int)($h['nights'] ?? 1));
+            $hotelName = trim($h['name'] ?? 'Hotel');
+
+            foreach ($h['rooms'] ?? [] as $r) {
+                $roomType   = trim($r['roomType'] ?? $r['type'] ?? 'Standard');
+                $board      = strtoupper(trim($r['board'] ?? ''));
+                $count      = max(1, (int)($r['count']      ?? 1));
+                $adults     = (int)($r['adults']     ?? 1);
+                $children   = max(0, (int)($r['children']   ?? 0));
+                $infants    = max(0, (int)($r['infants']    ?? 0));
+                $basePrice  = (float)($r['price']      ?? 0);
+                $childPrice = (float)($r['childPrice'] ?? 0);
+                $qty        = $count * $nights;
+
+                if ($adults === 0) {
+                    // Child-only room: price is the child room rate — no extra supplement
+                    $lineTotal = round($basePrice * $count * $nights, 2);
+                    $paxParts  = [$children . ' CHD (room)'];
+                    if ($infants > 0) $paxParts[] = $infants . ' INF';
+                } else {
+                    // Adult room ± extra-bed supplement per child
+                    $lineTotal = round(($basePrice * $count + $childPrice * $children * $count) * $nights, 2);
+                    $paxParts  = [$adults . ' ADL'];
+                    if ($children > 0) {
+                        $paxParts[] = $children . ' CHD' . ($childPrice > 0 ? ' extra bed' : '');
+                    }
+                    if ($infants > 0) $paxParts[] = $infants . ' INF';
+                }
+                $paxStr = implode(' + ', $paxParts);
+
+                $desc = "{$hotelName} — {$roomType}";
+                if ($board)      $desc .= " ({$board})";
+                $desc .= " [{$paxStr}]";
+                if ($count > 1)  $desc .= " × {$count} rooms";
+                if ($nights > 1) $desc .= " × {$nights} nights";
+
+                $db->prepare(
+                    "INSERT INTO invoice_items (invoice_id, item_type, description, quantity, unit_price, total_price)
+                     VALUES (?, 'other', ?, ?, ?, ?)"
+                )->execute([$invoiceId, $desc, $qty, $basePrice, $lineTotal]);
+            }
         }
 
-        header('Location: ' . url('hotel-invoice') . '?saved=1');
+        header('Location: ' . url('hotel-invoice/show') . '?id=' . $invoiceId);
+        exit;
+    }
+
+    public function invoiceEdit(): void
+    {
+        $this->requireAuth();
+        require_once ROOT_PATH . '/src/Models/Invoice.php';
+
+        $id      = (int)($_GET['id'] ?? 0);
+        $invoice = Database::fetchOne("SELECT * FROM invoices WHERE id = ? AND type = 'hotel'", [$id]);
+        if (!$invoice) { header('Location: ' . url('hotel-invoice')); exit; }
+
+        $invoiceItems = Database::fetchAll(
+            "SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC", [$id]
+        );
+
+        $this->view('hotels/invoice_form', [
+            'invoice'      => $invoice,
+            'invoiceItems' => $invoiceItems,
+            'isEdit'       => true,
+            'pageTitle'    => 'Edit Invoice — ' . $invoice['invoice_no'],
+            'activePage'   => 'hotel-invoice',
+        ]);
+    }
+
+    public function invoiceUpdate(): void
+    {
+        $this->requireAuth();
+        $this->requireCsrf();
+        require_once ROOT_PATH . '/src/Models/Invoice.php';
+
+        $db = Database::getInstance()->getConnection();
+
+        $id = (int)($_POST['invoice_id'] ?? 0);
+        if (!$id) { header('Location: ' . url('hotel-invoice')); exit; }
+
+        /* ── parse multi-hotel payload ── */
+        $hotelsData = json_decode($_POST['hotels_json'] ?? '[]', true) ?: [];
+
+        /* ── recalculate totals from posted hotels_json ── */
+        $subtotal = 0.0;
+        foreach ($hotelsData as $h) {
+            $nights = max(1, (int)($h['nights'] ?? 1));
+            foreach ($h['rooms'] ?? [] as $r) {
+                $count      = max(1, (int)($r['count']      ?? 1));
+                $adults     = (int)($r['adults']     ?? 1);
+                $children   = max(0, (int)($r['children']   ?? 0));
+                $basePrice  = (float)($r['price']      ?? 0);
+                $childPrice = (float)($r['childPrice'] ?? 0);
+                if ($adults === 0) {
+                    $subtotal += $basePrice * $count * $nights;
+                } else {
+                    $subtotal += ($basePrice * $count + $childPrice * $children * $count) * $nights;
+                }
+            }
+        }
+
+        $taxRate    = (float)($_POST['tax_rate']    ?? 0);
+        $discount   = (float)($_POST['discount']    ?? 0);
+        $paidAmount = (float)($_POST['paid_amount'] ?? 0);
+        $taxAmount  = round($subtotal * $taxRate / 100, 2);
+        $total      = round(max(0, $subtotal + $taxAmount - $discount), 2);
+        $paidAmount = min($paidAmount, $total);
+
+        /* ── auto-status from paid amount ── */
+        if ($paidAmount >= $total && $total > 0) {
+            $status = 'paid';
+        } elseif ($paidAmount > 0) {
+            $status = 'partial';
+        } else {
+            $status = $_POST['status'] ?? 'draft';
+        }
+
+        /* ── hotel names for notes ── */
+        $hotelNames = array_filter(array_map(fn($h) => trim($h['name'] ?? ''), $hotelsData));
+        $hotelNote  = count($hotelNames) ? 'Hotel: ' . implode(', ', $hotelNames) : '';
+        $userNotes  = trim($_POST['notes'] ?? '');
+        $notes      = $hotelNote . ($userNotes !== '' ? "\n" . $userNotes : '');
+
+        /* ── snapshot partner contact details ── */
+        $companyId      = (int)($_POST['company_id'] ?? 0);
+        $partnerContact = '';
+        $partnerPhone   = '';
+        $partnerEmail   = '';
+        $partnerAddress = '';
+        $partnerCity    = '';
+        $partnerCountry = '';
+        if ($companyId > 0) {
+            $p = Database::fetchOne(
+                "SELECT contact_person, phone, email, address, city, country FROM partners WHERE id = ?",
+                [$companyId]
+            );
+            if ($p) {
+                $partnerContact = $p['contact_person'] ?? '';
+                $partnerPhone   = $p['phone']          ?? '';
+                $partnerEmail   = $p['email']          ?? '';
+                $partnerAddress = $p['address']        ?? '';
+                $partnerCity    = $p['city']           ?? '';
+                $partnerCountry = $p['country']        ?? '';
+            }
+        }
+
+        /* ── update invoice row ── */
+        $db->prepare(
+            "UPDATE invoices SET
+                company_name    = ?,
+                company_id      = ?,
+                partner_id      = ?,
+                invoice_date    = ?,
+                due_date        = ?,
+                subtotal        = ?,
+                tax_rate        = ?,
+                tax_amount      = ?,
+                discount        = ?,
+                total_amount    = ?,
+                paid_amount     = ?,
+                status          = ?,
+                currency        = ?,
+                payment_method  = ?,
+                notes           = ?,
+                terms           = ?,
+                hotels_json     = ?,
+                guests_json     = ?,
+                partner_contact = ?,
+                partner_phone   = ?,
+                partner_email   = ?,
+                partner_address = ?,
+                partner_city    = ?,
+                partner_country = ?,
+                updated_at      = datetime('now')
+             WHERE id = ? AND type = 'hotel'"
+        )->execute([
+            trim($_POST['company_name'] ?? ''),
+            $companyId,
+            $companyId ?: null,
+            $_POST['invoice_date'] ?? date('Y-m-d'),
+            $_POST['due_date']     ?? date('Y-m-d', strtotime('+30 days')),
+            round($subtotal, 2),
+            $taxRate,
+            $taxAmount,
+            $discount,
+            $total,
+            $paidAmount,
+            $status,
+            $_POST['currency']        ?? 'USD',
+            trim($_POST['payment_method'] ?? ''),
+            $notes,
+            trim($_POST['terms'] ?? ''),
+            $_POST['hotels_json'] ?? '[]',
+            $_POST['guests_json'] ?? '[]',
+            $partnerContact,
+            $partnerPhone,
+            $partnerEmail,
+            $partnerAddress,
+            $partnerCity,
+            $partnerCountry,
+            $id,
+        ]);
+
+        /* ── rebuild invoice_items: delete old, insert new ── */
+        $db->prepare("DELETE FROM invoice_items WHERE invoice_id = ?")->execute([$id]);
+
+        foreach ($hotelsData as $h) {
+            $nights    = max(1, (int)($h['nights'] ?? 1));
+            $hotelName = trim($h['name'] ?? 'Hotel');
+
+            foreach ($h['rooms'] ?? [] as $r) {
+                $roomType   = trim($r['roomType'] ?? $r['type'] ?? 'Standard');
+                $board      = strtoupper(trim($r['board'] ?? ''));
+                $count      = max(1, (int)($r['count']      ?? 1));
+                $adults     = (int)($r['adults']     ?? 1);
+                $children   = max(0, (int)($r['children']   ?? 0));
+                $infants    = max(0, (int)($r['infants']    ?? 0));
+                $basePrice  = (float)($r['price']      ?? 0);
+                $childPrice = (float)($r['childPrice'] ?? 0);
+                $qty        = $count * $nights;
+
+                if ($adults === 0) {
+                    // Child-only room: price IS the child room rate
+                    $lineTotal = round($basePrice * $count * $nights, 2);
+                    $paxParts  = [$children . ' CHD (room)'];
+                    if ($infants > 0) $paxParts[] = $infants . ' INF';
+                } else {
+                    // Adult room ± extra-bed supplement per child
+                    $lineTotal = round(($basePrice * $count + $childPrice * $children * $count) * $nights, 2);
+                    $paxParts  = [$adults . ' ADL'];
+                    if ($children > 0) {
+                        $paxParts[] = $children . ' CHD' . ($childPrice > 0 ? ' extra bed' : '');
+                    }
+                    if ($infants > 0) $paxParts[] = $infants . ' INF';
+                }
+                $paxStr = implode(' + ', $paxParts);
+
+                $desc = "{$hotelName} — {$roomType}";
+                if ($board)      $desc .= " ({$board})";
+                $desc .= " [{$paxStr}]";
+                if ($count > 1)  $desc .= " × {$count} rooms";
+                if ($nights > 1) $desc .= " × {$nights} nights";
+
+                $db->prepare(
+                    "INSERT INTO invoice_items (invoice_id, item_type, description, quantity, unit_price, total_price)
+                     VALUES (?, 'other', ?, ?, ?, ?)"
+                )->execute([$id, $desc, $qty, $basePrice, $lineTotal]);
+            }
+        }
+
+        header('Location: ' . url('hotel-invoice/show') . '?id=' . $id . '&updated=1');
         exit;
     }
 

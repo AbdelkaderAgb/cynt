@@ -220,10 +220,19 @@ class GroupFileController extends Controller
 
         $items = $this->loadItemsWithDetails($db, $id);
 
-        $this->viewStandalone('group_files/pdf', [
+        $settingRows = Database::fetchAll("SELECT setting_key, setting_value FROM settings WHERE setting_group = 'company'");
+        $s = array_column($settingRows, 'setting_value', 'setting_key');
+        $co = [
+            'companyName'    => $s['company_name']    ?? COMPANY_NAME,
+            'companyAddress' => $s['company_address'] ?? COMPANY_ADDRESS,
+            'companyPhone'   => $s['company_phone']   ?? COMPANY_PHONE,
+            'companyEmail'   => $s['company_email']   ?? COMPANY_EMAIL,
+        ];
+
+        $this->viewStandalone('group_files/pdf', array_merge([
             'g'     => $group,
             'items' => $items,
-        ]);
+        ], $co));
     }
 
     private function saveItems(PDO $db, int $groupId, array $items): void

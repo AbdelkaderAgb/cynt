@@ -1,6 +1,6 @@
 <?php $u = $user ?? []; ?>
 <div class="mb-6"><h1 class="text-2xl font-bold text-gray-800 dark:text-white"><?= $pageTitle ?></h1></div>
-<form method="POST" action="<?= url('users/store') ?>" class="space-y-6">
+<form method="POST" action="<?= url('users/store') ?>" class="space-y-6" x-data="{sub:false}" @submit="sub=true">
     <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $u['id'] ?>"><?php endif; ?>
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="flex items-center gap-3">
-        <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg transition-all hover:-translate-y-0.5"><i class="fas fa-save mr-2"></i><?= $isEdit ? __('update') : __('save') ?></button>
+        <button type="submit" :disabled="sub" :class="{'opacity-50 cursor-not-allowed':sub}" class="px-6 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg transition-all hover:-translate-y-0.5"><i class="fas fa-save mr-2"></i><span x-text="sub ? 'Saving…' : '<?= $isEdit ? __('update') : __('save') ?>'"></span></button>
         <a href="<?= url('users') ?>" class="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-semibold hover:bg-gray-200 transition"><?= __('cancel') ?></a>
     </div>
 </form>

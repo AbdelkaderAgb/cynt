@@ -627,4 +627,5 @@ return [
     'voucher_management' => 'إدارة القسائم',
     'new_voucher' => 'قسيمة جديدة',
     'transfer_details' => 'تفاصيل التحويل',
+    'add_tour' => 'إضافة جولة',
 ];

@@ -35,7 +35,7 @@ class UserController extends Controller
             'page'       => $page,
             'pages'      => (int)ceil($total / $perPage),
             'search'     => $search,
-            'pageTitle'  => 'Kullanıcı Yönetimi',
+            'pageTitle'  => __('user_management') ?: 'User Management',
             'activePage' => 'users',
         ]);
     }
@@ -46,7 +46,7 @@ class UserController extends Controller
         $this->view('users/form', [
             'user'       => [],
             'isEdit'     => false,
-            'pageTitle'  => 'Yeni Kullanıcı',
+            'pageTitle'  => __('new_user') ?: 'New User',
             'activePage' => 'users',
         ]);
     }
@@ -97,13 +97,14 @@ class UserController extends Controller
         $this->view('users/form', [
             'user'       => $user,
             'isEdit'     => true,
-            'pageTitle'  => 'Düzenle: ' . $user['first_name'],
+            'pageTitle'  => __('edit_user') . ': ' . $user['first_name'],
             'activePage' => 'users',
         ]);
     }
 
     public function profile(): void
     {
+        $this->requireAuth();
         $userId = $_SESSION['user_id'];
         $user = Database::fetchOne("SELECT * FROM users WHERE id = ?", [$userId]);
 
@@ -116,6 +117,7 @@ class UserController extends Controller
 
     public function updateProfile(): void
     {
+        $this->requireAuth();
         $this->requireCsrf();
         $userId = $_SESSION['user_id'];
         $data = [

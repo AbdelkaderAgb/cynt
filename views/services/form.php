@@ -20,7 +20,7 @@ $isEdit = $isEdit ?? false;
     </div>
 </div>
 
-<form method="POST" action="<?= url('services/store') ?>" class="space-y-6 max-w-4xl" x-data="serviceForm()">
+<form method="POST" action="<?= url('services/store') ?>" class="space-y-6 max-w-4xl" x-data="serviceForm()" @submit="submitting=true">
     <?= csrf_field() ?>
     <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $s['id'] ?>"><?php endif; ?>
 
@@ -196,8 +196,8 @@ $isEdit = $isEdit ?? false;
 
     <!-- Submit -->
     <div class="flex items-center gap-3">
-        <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-brand-600 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5">
-            <i class="fas fa-save mr-2"></i><?= $isEdit ? 'Update Service' : 'Save Service' ?>
+        <button type="submit" :disabled="submitting" :class="{'opacity-50 cursor-not-allowed':submitting}" class="px-6 py-2.5 bg-gradient-to-r from-brand-600 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5">
+            <i class="fas fa-save mr-2"></i><span x-text="submitting ? 'Saving…' : '<?= $isEdit ? 'Update Service' : 'Save Service' ?>'"></span>
         </button>
         <a href="<?= url('services') ?>" class="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 transition">Cancel</a>
     </div>
@@ -207,6 +207,7 @@ $isEdit = $isEdit ?? false;
 function serviceForm() {
     return {
         serviceType: '<?= e($s['service_type'] ?? 'tour') ?>',
+        submitting: false,
     };
 }
 </script>
